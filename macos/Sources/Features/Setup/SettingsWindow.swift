@@ -18,6 +18,7 @@ private struct TellurionSettingsView: View {
     @ObservedObject private var settings = TellurionSettings.shared
     @ObservedObject private var setup = SetupChecks.shared
     @AppStorage(AgentAurora.enabledKey) private var aurora = false
+    @AppStorage(NewTabSplash.enabledKey) private var splash = false
     @AppStorage(VerticalTabs.widthKey) private var sidebarWidth: Double = VerticalTabs.defaultWidth
     @AppStorage(VerticalTabs.condensedKey) private var condensed = false
 
@@ -54,6 +55,9 @@ private struct TellurionSettingsView: View {
                             .pickerStyle(.segmented)
                             .frame(width: 200)
                             .accessibilityLabel("Animation")
+                        }
+                        settingRow("New tab splash", "The sigil assembling over a tab when it opens") {
+                            Toggle("", isOn: $splash).toggleStyle(.switch).accessibilityLabel("New tab splash")
                         }
                         settingRow("Aurora", "Light behind the terminal that follows the tab's agents") {
                             Toggle("", isOn: $aurora).toggleStyle(.switch).accessibilityLabel("Aurora")

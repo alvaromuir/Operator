@@ -55,16 +55,61 @@ enum NewSessionKind: CaseIterable, Identifiable {
     }
 }
 
-/// "+ New" in the sidebar header: a pixel button that opens a menu of session kinds.
-/// (SwiftUI menus drop custom label drawing on macOS, so this pops up an NSMenu instead.)
+/// "+ New" in the sidebar header, split in two: the main part opens a terminal, the chevron
+/// opens a menu of every session kind. (SwiftUI menus drop custom label drawing on macOS, so
+/// the chevron pops up an NSMenu instead.)
 struct NewSessionMenu: View {
     let owner: BaseTerminalController
     let compact: Bool
+    @State private var hoveringMain = false
+    @State private var hoveringMenu = false
 
     var body: some View {
-        TellurionIconButton(icon: .plus, label: compact ? "New" : "New tab", help: "New session", tint: Tellurion.gold) {
-            NewSessionMenuBuilder.popUp(for: owner)
+        let shape = RoundedRectangle(cornerRadius: 7, style: .continuous)
+        let hovering = hoveringMain || hoveringMenu
+        HStack(spacing: 0) {
+            Button { NewSessionKind.terminal.open(from: owner) } label: {
+                HStack(spacing: 6) {
+                    PixelIconView(icon: .plus, color: hoveringMain ? Tellurion.gold : Tellurion.text.opacity(0.85), pixel: 1.5)
+                    Text(compact ? "New" : "New tab")
+                        .font(Tellurion.font(11.5, weight: .semibold))
+                        .foregroundColor(hoveringMain ? Tellurion.gold : Tellurion.text.opacity(0.85))
+                        .fixedSize()
+                }
+                .padding(.leading, 10)
+                .padding(.trailing, 8)
+                .frame(maxHeight: .infinity)
+                .background(hoveringMain ? Tellurion.raised : Color.clear)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .onHover { hoveringMain = $0 }
+            .help("New terminal")
+            .accessibilityLabel("New terminal")
+
+            Rectangle()
+                .fill(hovering ? Tellurion.gold.opacity(0.45) : Tellurion.line)
+                .frame(width: 1)
+
+            Button { NewSessionMenuBuilder.popUp(for: owner) } label: {
+                PixelIconView(icon: .chevronDown, color: hoveringMenu ? Tellurion.gold : Tellurion.text.opacity(0.85), pixel: 1.1)
+                    .frame(width: 22)
+                    .frame(maxHeight: .infinity)
+                    .background(hoveringMenu ? Tellurion.raised : Color.clear)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .onHover { hoveringMenu = $0 }
+            .help("New session: agents, Docker, localhost")
+            .accessibilityLabel("More kinds of new session")
         }
+        .frame(height: 28)
+        .background(Tellurion.panel)
+        .clipShape(shape)
+        .overlay(shape.strokeBorder(hovering ? Tellurion.gold.opacity(0.55) : Tellurion.line, lineWidth: 1))
+        .shadow(color: hovering ? Tellurion.gold.opacity(0.2) : .clear, radius: 6)
+        .animation(.easeOut(duration: 0.12), value: hovering)
+        .fixedSize()
     }
 }
 

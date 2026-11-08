@@ -18,6 +18,7 @@ typeset -g _gc_running_agent=""
 
 # The shared Codex daemon does not inherit this terminal's environment. Keep local
 # terminal sessions attached to this pane so their hooks inherit the correct TTY.
+unalias codex 2>/dev/null
 codex() {
   # A pane on Venice or on a model on this Mac (TELLURION_CODEX_BACKEND comes with the pane):
   # Codex with its usual setup, its model requests going where the pane says. This must never

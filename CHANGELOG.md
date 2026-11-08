@@ -4,6 +4,12 @@ What changed in each Tellurion (formerly GhosttyEXTREME) release. Work in progre
 **Unreleased**; at release time that heading becomes the version number, and
 `./release.sh` uses the section as the release notes.
 
+## Unreleased
+
+- **New is a split button.** Clicking **New** opens a terminal right away; the arrow beside it opens the menu of agents, Docker and localhost sessions.
+- **The new-tab splash is off by default.** Turn it on in **Settings → Look → New tab splash**. It also does not play when Animation is set to **Status only**.
+- **A narrow sidebar keeps its left edge.** Dragged to its narrowest, the sidebar no longer slides the logo and the New button off the window's edge; anything that doesn't fit is cut on the terminal's side.
+
 ## 1.9.2
 
 Codex on the models on your Mac, and the shipped app no longer carries phone access's test switches.

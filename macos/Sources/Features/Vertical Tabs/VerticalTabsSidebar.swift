@@ -23,6 +23,11 @@ struct VerticalTabsLayout<Content: View>: View {
     @AppStorage(AgentAurora.enabledKey) private var aurora = false
     @AppStorage(VerticalTabs.visibleKey) private var visible: Bool = true
     @AppStorage(VerticalTabs.widthKey) private var width: Double = VerticalTabs.defaultWidth
+
+    /// The stored width kept inside the allowed range, in case it was saved under another one.
+    private var shownWidth: Double {
+        min(max(width, VerticalTabs.widthRange.lowerBound), VerticalTabs.widthRange.upperBound)
+    }
     @ObservedObject private var layout = WindowLayout.shared
     /// Where the sidebar is, so the hover card opens beside it on the terminal's side.
     @State private var sidebarFrame: CGRect = .zero
@@ -55,7 +60,7 @@ struct VerticalTabsLayout<Content: View>: View {
     /// The most room the editor and Visual Fix can each have. When both want more than the
     /// window has, they share it in proportion.
     private func panelLimits(in total: CGFloat) -> (editor: CGFloat, visualFix: CGFloat) {
-        let sidebar = visible && ghostty.readiness == .ready ? CGFloat(width) + 1 : 0
+        let sidebar = visible && ghostty.readiness == .ready ? CGFloat(shownWidth) + 1 : 0
         let history: CGFloat = commandBlocks.isVisible(controller) ? 400 : 0
         let available = max(0, total - sidebar - history - minTerminalWidth - 2)
         let editor = editorPanel.isVisible(controller) ? CGFloat(editorWidth) : 0
@@ -102,9 +107,12 @@ struct VerticalTabsLayout<Content: View>: View {
                 let handle = ColumnResizeHandle(color: Tellurion.line, width: $width,
                                                 range: VerticalTabs.widthRange, onTrailingEdge: left)
                 if !left { handle }
+                // Anything that still can't fit is cut on the side facing the terminal, so the
+                // brand and the New button stay put instead of sliding off the window's edge.
                 VerticalTabsSidebar(model: model, owner: controller, config: ghostty.config)
                     .id(design.revision)
-                    .frame(width: width)
+                    .frame(width: shownWidth, alignment: left ? .leading : .trailing)
+                    .clipped()
                     .environmentObject(overlay)
                     .background(
                         GeometryReader { geometry in
@@ -334,11 +342,15 @@ struct VerticalTabsSidebar: View {
                         .font(Tellurion.font(11.5))
                         .kerning(3.6)
                         .foregroundColor(Tellurion.gold)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                         .tellurionGlint()
                     Text("Α Ι · ΣΥΣΤΗΜΑ")
                         .font(Tellurion.font(9))
                         .kerning(2.4)
                         .foregroundColor(Tellurion.dim)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                 }
                 Spacer(minLength: 0)
             }

@@ -48,6 +48,11 @@ struct TerminalFrameOverlay: View {
 /// When a tab opens, the sigil assembles pixel by pixel over the terminal with the
 /// wordmark, then fades. About a second and a half; it never takes input.
 struct NewTabSplash: View {
+    /// UserDefaults key for whether the splash plays at all (Settings → Look).
+    static let enabledKey = "TellurionNewTabSplash"
+
+    @AppStorage(Self.enabledKey) private var enabled = false
+    @Environment(\.tellurionMotion) private var motion
     @State private var start = Date()
     @State private var visible = true
 
@@ -64,7 +69,8 @@ struct NewTabSplash: View {
     }()
 
     var body: some View {
-        if visible {
+        // Off in Settings, or "Status only" motion: no splash, and no timeline running.
+        if visible, enabled, motion {
             TimelineView(.animation(minimumInterval: 1.0 / 30)) { context in
                 // The timeline can tick a moment before `start` is reset on appear.
                 let t = max(0, context.date.timeIntervalSince(start))
