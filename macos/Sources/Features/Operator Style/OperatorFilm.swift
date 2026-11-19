@@ -316,22 +316,102 @@ struct BracketLights: NSViewRepresentable {
             fall.frame = bounds
             fall.sublayers?.forEach { $0.removeFromSuperlayer() }
             if state == .working && h > 20 && !MotionTest.off.contains("bracket") {
-                // Five pixels falling down the spine in steps, a lap every ~1.2 s or more.
-                let segment: CGFloat = 6
-                let lap = max(1.2, Double(h) / 110)
-                let steps = Int((h + segment * 5) / segment) + 1
-                for i in 0..<5 {
-                    let piece = CALayer()
-                    piece.anchorPoint = .zero
-                    piece.frame = CGRect(x: 0, y: -segment, width: t, height: segment - 1)
-                    piece.backgroundColor = NSColor(Operator.core).withAlphaComponent(1 - CGFloat(i) / 5).cgColor
-                    glow(piece, shadow, 0.5 * (1 - CGFloat(i) / 5), 3)
-                    fall.addSublayer(piece)
-                    let ys = (0..<steps).map { step -> NSValue in
-                        let y = CGFloat(step) * segment - CGFloat(i) * segment
-                        return NSValue(point: CGPoint(x: 0, y: y >= 0 && y < h ? y : -segment * 2))
+                let animStyle = AnimationStyle(rawValue: UserDefaults.standard.string(forKey: UserDefaults.animStyleKey) ?? "") ?? .original
+                switch animStyle {
+                case .original, .radar:
+                    if animStyle == .original {
+                        // Five pixels falling down the spine in steps, a lap every ~1.2 s or more.
+                        let segment: CGFloat = 6
+                        let lap = max(1.2, Double(h) / 110)
+                        let steps = Int((h + segment * 5) / segment) + 1
+                        for i in 0..<5 {
+                            let piece = CALayer()
+                            piece.anchorPoint = .zero
+                            piece.frame = CGRect(x: 0, y: -segment, width: t, height: segment - 1)
+                            piece.backgroundColor = NSColor(Operator.core).withAlphaComponent(1 - CGFloat(i) / 5).cgColor
+                            glow(piece, shadow, 0.5 * (1 - CGFloat(i) / 5), 3)
+                            fall.addSublayer(piece)
+                            let ys = (0..<steps).map { step -> NSValue in
+                                let y = CGFloat(step) * segment - CGFloat(i) * segment
+                                return NSValue(point: CGPoint(x: 0, y: y >= 0 && y < h ? y : -segment * 2))
+                            }
+                            piece.addLoop(discrete("position", ys), duration: lap, key: "fall")
+                        }
+                    } else {
+                        // Radar: single pixel laps the full bracket perimeter.
+                        let lap: Double = 1.4
+                        let perimeter: [CGPoint] = {
+                            var pts: [CGPoint] = []
+                            let steps = 20
+                            // top edge L→R, right edge T→B, bottom edge R→L, left edge B→T
+                            for i in 0..<steps {
+                                let f = CGFloat(i) / CGFloat(steps)
+                                switch i % (steps / 4) {
+                                case _ where i < steps / 4:
+                                    pts.append(CGPoint(x: f * 4 * bounds.width, y: 0))
+                                case _ where i < steps / 2:
+                                    pts.append(CGPoint(x: bounds.width, y: (f * 4 - 1) * h))
+                                case _ where i < 3 * steps / 4:
+                                    pts.append(CGPoint(x: (1 - (f * 4 - 2)) * bounds.width, y: h))
+                                default:
+                                    pts.append(CGPoint(x: 0, y: (1 - (f * 4 - 3)) * h))
+                                }
+                            }
+                            return pts
+                        }()
+                        let pixel = CALayer()
+                        pixel.frame = CGRect(x: 0, y: 0, width: t + 1, height: t + 1)
+                        pixel.backgroundColor = NSColor(Operator.core).cgColor
+                        glow(pixel, shadow, 0.8, 4)
+                        fall.addSublayer(pixel)
+                        pixel.addLoop(discrete("position", perimeter.map { NSValue(point: $0) }),
+                                      duration: lap, key: "fall")
                     }
-                    piece.addLoop(discrete("position", ys), duration: lap, key: "fall")
+
+                case .waveform:
+                    // Three pixels at fixed heights, blinking in phase-offset wave.
+                    let period = 0.9
+                    for i in 0..<3 {
+                        let dot = CALayer()
+                        let y = h * CGFloat(i + 1) / 4
+                        dot.frame = CGRect(x: 0, y: y, width: t, height: t)
+                        dot.backgroundColor = NSColor(Operator.core).withAlphaComponent(0.9).cgColor
+                        glow(dot, shadow, 0.5, 3)
+                        fall.addSublayer(dot)
+                        let anim = discrete("opacity", [1.0, 0.15, 0.15])
+                        anim.keyTimes = [0, 0.33, 0.66]
+                        dot.addLoop(anim, duration: period, key: "fall")
+                        // Phase offset by 1/3 cycle per dot.
+                        let phase = period * Double(i) / 3
+                        dot.timeOffset = phase.truncatingRemainder(dividingBy: period)
+                    }
+
+                case .comet:
+                    // Five pixels, faster lap (0.6 s), head brighter.
+                    let segment: CGFloat = 6
+                    let lap = 0.6
+                    let steps = Int((h + segment * 5) / segment) + 1
+                    for i in 0..<5 {
+                        let piece = CALayer()
+                        piece.anchorPoint = .zero
+                        piece.frame = CGRect(x: 0, y: -segment, width: t, height: segment - 1)
+                        let alpha = i == 0 ? 1.0 : (1 - CGFloat(i) / 5)
+                        piece.backgroundColor = NSColor(Operator.core).withAlphaComponent(alpha).cgColor
+                        glow(piece, shadow, i == 0 ? 0.9 : 0.4 * (1 - CGFloat(i) / 5), 3)
+                        fall.addSublayer(piece)
+                        let ys = (0..<steps).map { step -> NSValue in
+                            let y = CGFloat(step) * segment - CGFloat(i) * segment
+                            return NSValue(point: CGPoint(x: 0, y: y >= 0 && y < h ? y : -segment * 2))
+                        }
+                        piece.addLoop(discrete("position", ys), duration: lap, key: "fall")
+                    }
+
+                case .geometric:
+                    // Tick corners step between two sizes (subtle geometric pulse).
+                    let anim = CAKeyframeAnimation(keyPath: "opacity")
+                    anim.values = [1.0, 0.45]
+                    anim.calculationMode = .discrete
+                    ticks.addLoop(anim, duration: 1.6, key: "fall")
                 }
             }
             CATransaction.commit()

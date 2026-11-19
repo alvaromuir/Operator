@@ -121,7 +121,7 @@ struct DesignPreview: View {
 extension DesignStore {
     /// The terminal's colors right now, from the live config.
     var currentTerminalColors: TerminalColors {
-        (NSApp.delegate as? AppDelegate).flatMap { TerminalColors(config: $0.ghostty.config) } ?? .operator
+        (NSApp.delegate as? AppDelegate).flatMap { TerminalColors(config: $0.ghostty.config) } ?? .branded
     }
 }
 #endif

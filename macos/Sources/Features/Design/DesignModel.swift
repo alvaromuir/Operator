@@ -5,7 +5,7 @@ import SwiftUI
 
 // A design is everything about how Operator looks: the terminal's colors, the chrome
 // around it (sidebar, panels, tool windows), the font, the window, and the logo. It is
-// saved as JSON under ~/.operator and, for the terminal's part, written as a
+// saved as JSON under ~/.branded and, for the terminal's part, written as a
 // Ghostty config fragment that the main config includes.
 
 // MARK: - Colors
@@ -96,7 +96,7 @@ struct TerminalColors: Codable, Equatable {
     var palette: [DesignColor]
 
     /// Operator's own: ink, parchment text and warm ANSI colors around the gold and cyan.
-    static let operator = TerminalColors(
+    static let branded = TerminalColors(
         background: DesignColor(rgb: 0x0B0A09), foreground: DesignColor(rgb: 0xD8CFBF),
         cursor: DesignColor(rgb: 0xDEB86E), cursorText: DesignColor(rgb: 0x0B0A09),
         selectionBackground: DesignColor(rgb: 0x2E271D), selectionForeground: DesignColor(rgb: 0xF2EAD8),
@@ -282,7 +282,7 @@ struct ChromeColors: Codable, Equatable {
     var danger: DesignColor
 
     /// Operator as shipped: near-black, bronze hairlines, gold for what matters, cyan for the AI.
-    static let operator = ChromeColors(
+    static let branded = ChromeColors(
         ink: DesignColor(rgb: 0x0B0A09), panel: DesignColor(rgb: 0x100E0C), raised: DesignColor(rgb: 0x17140F),
         line: DesignColor(rgb: 0x2E271D), lineStrong: DesignColor(rgb: 0x4A3C28),
         bronze: DesignColor(rgb: 0x967446), gold: DesignColor(rgb: 0xDEB86E), core: DesignColor(rgb: 0x78DCEB),
@@ -445,43 +445,43 @@ struct DesignLogo: Codable, Equatable {
     var isEmpty: Bool { rows.allSatisfy { $0.allSatisfy { $0 == "." } } }
 
     /// The Operator sigil: a T with a glowing core on its stem, sealed in a hexagonal cell.
-    static let operator = DesignLogo(rows: [
-        "...............gg...............",
-        "..............bbbb..............",
-        "............bb....bb............",
-        "...........b........b...........",
-        ".........bb...dddd...bb.........",
-        "........b...dd....dd...b........",
-        "......bb..dd........dd..bb......",
-        "....bb..dd............dd..bb....",
-        "...g..dd..g..........g..dd..g...",
-        "...b.d....gggggggggggg....d.b...",
-        "...b.d....bbbbbbbbbbbb....d.b...",
-        "...b.d....g....bb....g....d.b...",
-        "...b.d.........bb.........d.b...",
-        "...b.d.........bb.........d.b...",
-        "...b.d.........cc.........d.b...",
-        "...b.d........cwwc........d.b...",
-        "...b.d........cwwc........d.b...",
-        "...b.d.........cc.........d.b...",
-        "...b.d.........bb.........d.b...",
-        "...b.d.........bb.........d.b...",
-        "...b.d.........bb.........d.b...",
-        "...b.d.........bb.........d.b...",
-        "...b.d.......gggggg.......d.b...",
-        "...g..d..................d..g...",
-        "....bb..dd............dd..bb....",
-        "......bb..dd........dd..bb......",
-        "........bb..dd....dd..bb........",
-        "..........bb..dddd..bb..........",
-        "............bb....bb............",
-        "..............bbbb..............",
-        "...............gg...............",
+    static let branded = DesignLogo(rows: [
+        "................................",
+        ".........bbbbbbbbbb.............",
+        ".......bb..........bb...........",
+        "......b............b............",
+        ".....b..............b...........",
+        ".....b..............b...........",
+        "....b................b..........",
+        "..bbbb................bbbb......",
+        "..b..gg...............gg..b.....",
+        "..b..gg...............gg..b.....",
+        "..b..gg...............gg..b.....",
+        "..b..gg...............gg..b.....",
+        "..b..gg...............gg..b.....",
+        "..bbbb................bbbb......",
+        "..b.............................",
+        "..b.............................",
+        "..b.............................",
+        "...b............................",
+        "....bgg.........................",
+        "....bgg.........................",
+        "....b...........................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
     ])
 
     /// Just the cell, for drawing your own mark inside.
     static var cell: DesignLogo {
-        var logo = operator
+        var logo = DesignLogo.branded
         for y in 8...23 { for x in 7...24 { logo.set(x, y, to: ".") } }
         return logo
     }
@@ -525,7 +525,7 @@ struct DesignLogo: Codable, Equatable {
     }
 
     static let starters: [(title: String, logo: DesignLogo)] = [
-        ("Operator", .operator), ("Empty cell", .cell), ("Prompt", .prompt), ("Bolt", .bolt), ("Blank", .blank),
+        ("Operator", .branded), ("Empty cell", .cell), ("Prompt", .prompt), ("Bolt", .bolt), ("Blank", .blank),
     ]
 }
 
@@ -537,21 +537,21 @@ struct OperatorDesign: Codable, Equatable, Identifiable {
     /// One line on its card: the vibe.
     var tagline: String = ""
     var terminal: TerminalColorSource = .mine
-    var chrome: ChromeSource = .fixed(.operator)
+    var chrome: ChromeSource = .fixed(.branded)
     var font = FontLook()
     /// Nil leaves opacity, padding and the cursor to the Ghostty config.
     var window: WindowLook?
-    var logo: DesignLogo = .operator
+    var logo: DesignLogo = .branded
     /// True for the designs Operator ships; false for the user's own.
     var builtIn = false
 
     /// What a fresh install looks like: Operator's chrome around whatever the Ghostty config says.
     static let standard = OperatorDesign(id: "operator", name: "Operator", tagline: "As shipped: ink, bronze and gold around your own terminal colors",
-                                          terminal: .mine, chrome: .fixed(.operator), builtIn: true)
+                                          terminal: .mine, chrome: .fixed(.branded), builtIn: true)
 
     /// Whether this design is the one Operator ships with, ignoring the name.
     var isStandardLook: Bool {
-        terminal == .mine && chrome == .fixed(.operator) && font == FontLook() && window == nil && logo == .operator
+        terminal == .mine && chrome == .fixed(.branded) && font == FontLook() && window == nil && logo == .branded
     }
 }
 #endif

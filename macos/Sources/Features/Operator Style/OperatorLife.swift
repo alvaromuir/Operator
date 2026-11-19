@@ -67,11 +67,13 @@ final class AgentPulse: ObservableObject {
 struct LivingSigil: View {
     var size: CGFloat = 26
     @ObservedObject private var pulse = AgentPulse.shared
+    @AppStorage(UserDefaults.animStyleKey) private var animStyleKey: String = AnimationStyle.original.rawValue
 
     @Environment(\.operatorMotion) private var motion
+    private var animStyle: AnimationStyle { AnimationStyle(rawValue: animStyleKey) ?? .original }
 
     var body: some View {
-        let animating = (pulse.working > 0 || pulse.waiting > 0) && motion
+        let animating = motion
         Group {
             if flaring(at: Date()) && motion {
                 // The 1.6 s finish flare: brief, so SwiftUI draws it.
@@ -82,7 +84,7 @@ struct LivingSigil: View {
             } else if animating {
                 // Working or waiting: one loop rendered once and played by Core Animation.
                 let frames = loopFrames
-                FilmStrip(key: "sigil|\(min(pulse.working, 6))|\(pulse.waiting > 0)|\(size)", frames: frames,
+                FilmStrip(key: "sigil|\(animStyleKey)|\(min(pulse.working, 6))|\(pulse.waiting > 0)|\(size)", frames: frames,
                           frameDuration: OperatorClock.beat, size: CGSize(width: size, height: size * 31 / 32)) { index in
                     let phase = Double(index) / Double(frames)
                     frame(glow: level(phase * Double(glowCycles(frames))), orbit: phase, waiting: (index / 4) % 2 == 0, flareAt: nil)
@@ -153,21 +155,123 @@ struct LivingSigil: View {
     }
 
     /// One pixel per working agent, circling the seal, each with a short fading trail.
+    /// When no agents are active, draws a single faint ghost orbiter so the animation
+    /// style is visible even at idle.
     private func orbiters(_ gc: GraphicsContext, _ canvas: CGSize, turns: Double) {
         let count = min(pulse.working, 6)
-        guard count > 0 else { return }
         let center = CGPoint(x: canvas.width / 2, y: canvas.height / 2)
         let radius = size * 0.6
         let pixel = max(2, size / 11)
-        for i in 0..<count {
+        let currentStyle = AnimationStyle(rawValue: UserDefaults.standard.string(forKey: UserDefaults.animStyleKey) ?? "") ?? .original
+
+        // Idle ghost: one faint orbiter so the selected animation style is visible at rest.
+        if count == 0 {
+            let angle = (turns * 2 * .pi / (2 * .pi / 32)).rounded(.down) * (2 * .pi / 32)
+            switch currentStyle {
+            case .original, .comet:
+                for trail in 0..<3 {
+                    let a = (((turns - Double(trail) * 0.2) * 2 * .pi) / (2 * .pi / 32)).rounded(.down) * (2 * .pi / 32)
+                    let x = center.x + CGFloat(cos(a)) * radius
+                    let y = center.y + CGFloat(sin(a)) * radius * 0.92
+                    gc.fill(Path(CGRect(x: (x - pixel / 2).rounded(), y: (y - pixel / 2).rounded(), width: pixel, height: pixel)),
+                            with: .color(Operator.core.opacity((0.22 - Double(trail) * 0.07))))
+                }
+            case .radar:
+                let endX = center.x + CGFloat(sin(angle)) * radius
+                let endY = center.y - CGFloat(cos(angle)) * radius
+                var linePath = Path()
+                linePath.move(to: center)
+                linePath.addLine(to: CGPoint(x: endX, y: endY))
+                gc.stroke(linePath, with: .color(Operator.core.opacity(0.2)), lineWidth: 1.5)
+            case .waveform:
+                let arcSpan = Double.pi * 1.2
+                let arcStart = -arcSpan / 2 - .pi / 2
+                for i in 0..<8 {
+                    let t = Double(i) / 7
+                    let baseAngle = arcStart + t * arcSpan
+                    let ripple = CGFloat(sin(t * .pi * 2 + turns * 2 * .pi)) * size * 0.08
+                    let x = center.x + CGFloat(cos(baseAngle)) * (radius * 0.85 + ripple)
+                    let y = center.y + CGFloat(sin(baseAngle)) * (radius * 0.85 + ripple) * 0.92
+                    gc.fill(Path(CGRect(x: (x - pixel / 2).rounded(), y: (y - pixel / 2).rounded(), width: pixel, height: pixel)),
+                            with: .color(Operator.core.opacity(0.15 + 0.1 * abs(sin(t * .pi + turns * .pi)))))
+                }
+            case .geometric:
+                let x = center.x + CGFloat(cos(angle)) * radius
+                let y = center.y + CGFloat(sin(angle)) * radius * 0.92
+                let d = pixel * 1.4
+                gc.fill(Path(CGRect(x: (x - d / 2).rounded(), y: (y - d / 2).rounded(), width: d, height: d)),
+                        with: .color(Operator.core.opacity(0.22)))
+            }
+            return
+        }
+
+        switch currentStyle {
+        case .original:
+            for i in 0..<count {
+                for trail in 0..<4 {
+                    let raw = turns * 2 * .pi + Double(i) * 2 * .pi / Double(count) - Double(trail) * 0.2
+                    let angle = (raw / (2 * .pi / 32)).rounded(.down) * (2 * .pi / 32)
+                    let x = center.x + CGFloat(cos(angle)) * radius
+                    let y = center.y + CGFloat(sin(angle)) * radius * 0.92
+                    gc.fill(Path(CGRect(x: (x - pixel / 2).rounded(), y: (y - pixel / 2).rounded(), width: pixel, height: pixel)),
+                            with: .color(Operator.core.opacity(1 - Double(trail) * 0.28)))
+                }
+            }
+
+        case .radar:
+            // A single sweep line from center outward, with 3 phosphor trail dots.
+            let angle = turns * 2 * .pi
+            let endX = center.x + CGFloat(sin(angle)) * radius
+            let endY = center.y - CGFloat(cos(angle)) * radius
+            var linePath = Path()
+            linePath.move(to: center)
+            linePath.addLine(to: CGPoint(x: endX, y: endY))
+            gc.stroke(linePath, with: .color(Operator.core), lineWidth: 1.5)
+            for trail in 1...3 {
+                let trailAngle = angle - Double(trail) * 0.3
+                let tx = center.x + CGFloat(sin(trailAngle)) * radius
+                let ty = center.y - CGFloat(cos(trailAngle)) * radius
+                gc.fill(Path(CGRect(x: (tx - pixel / 2).rounded(), y: (ty - pixel / 2).rounded(), width: pixel, height: pixel)),
+                        with: .color(Operator.core.opacity(0.6 / Double(trail))))
+            }
+
+        case .waveform:
+            // 8 dots along a small arc, vertically rippling by a sine function.
+            let arcRadius = radius * 0.85
+            let arcSpan = Double.pi * 1.2
+            let arcStart = -arcSpan / 2 - .pi / 2
+            for i in 0..<8 {
+                let t = Double(i) / 7
+                let baseAngle = arcStart + t * arcSpan
+                let ripple = CGFloat(sin(t * .pi * 2 + turns * 2 * .pi)) * size * 0.08
+                let x = center.x + CGFloat(cos(baseAngle)) * (arcRadius + ripple)
+                let y = center.y + CGFloat(sin(baseAngle)) * (arcRadius + ripple) * 0.92
+                let alpha = 0.4 + 0.6 * abs(sin(t * .pi + turns * .pi))
+                gc.fill(Path(CGRect(x: (x - pixel / 2).rounded(), y: (y - pixel / 2).rounded(), width: pixel, height: pixel)),
+                        with: .color(Operator.core.opacity(alpha)))
+            }
+
+        case .comet:
+            // Single bright comet head + 3 fading tail pixels, orbiting fast.
             for trail in 0..<4 {
-                // Snap the angle to 32 positions so it moves in pixel steps.
-                let raw = turns * 2 * .pi + Double(i) * 2 * .pi / Double(count) - Double(trail) * 0.2
+                let raw = turns * 2 * .pi - Double(trail) * 0.22
                 let angle = (raw / (2 * .pi / 32)).rounded(.down) * (2 * .pi / 32)
                 let x = center.x + CGFloat(cos(angle)) * radius
                 let y = center.y + CGFloat(sin(angle)) * radius * 0.92
+                let p = trail == 0 ? pixel * 1.3 : pixel
+                gc.fill(Path(CGRect(x: (x - p / 2).rounded(), y: (y - p / 2).rounded(), width: p, height: p)),
+                        with: .color(Operator.core.opacity(trail == 0 ? 1.0 : 1 - Double(trail) * 0.3)))
+            }
+
+        case .geometric:
+            // Triangle of 3 dots rotating in discrete 60° steps.
+            let stepAngle = floor(turns * 6) / 6 * 2 * .pi
+            for i in 0..<3 {
+                let angle = stepAngle + Double(i) * 2 * .pi / 3
+                let x = center.x + CGFloat(cos(angle)) * radius
+                let y = center.y + CGFloat(sin(angle)) * radius * 0.92
                 gc.fill(Path(CGRect(x: (x - pixel / 2).rounded(), y: (y - pixel / 2).rounded(), width: pixel, height: pixel)),
-                        with: .color(Operator.core.opacity(1 - Double(trail) * 0.28)))
+                        with: .color(Operator.core.opacity(0.9)))
             }
         }
     }
@@ -373,8 +477,10 @@ struct AgentAurora: View {
     @State private var mode: Mode = .idle
     @State private var finishedAt: Date?
     @State private var previous: Mode = .idle
+    @AppStorage(UserDefaults.animStyleKey) private var animStyleKey: String = AnimationStyle.original.rawValue
 
     @Environment(\.operatorMotion) private var motion
+    private var animStyle: AnimationStyle { AnimationStyle(rawValue: animStyleKey) ?? .original }
 
     var body: some View {
         let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
@@ -418,31 +524,94 @@ struct AgentAurora: View {
         guard w > 10, h > 10 else { return }
         let strength: Double = mode == .idle ? 0.2 : mode == .working ? 0.42 : 0.45
         let speed = mode == .idle ? 0.12 : 0.35
-        // Three curtains near the top, each a wavy band that fades out below.
-        for (i, color) in palette.enumerated() {
-            let base = h * (0.08 + Double(i) * 0.07)
-            let amplitude = h * (0.05 + Double(i) * 0.015)
-            let thickness = h * (0.22 + Double(i) * 0.05)
-            var top = Path()
-            let steps = 24
-            for s in 0...steps {
-                let x = w * CGFloat(s) / CGFloat(steps)
-                let y = base + amplitude * sin(Double(s) * 0.45 + t * speed * (1 + Double(i) * 0.3) + Double(i) * 1.7)
-                if s == 0 { top.move(to: CGPoint(x: x, y: y)) } else { top.addLine(to: CGPoint(x: x, y: y)) }
+        let currentStyle = AnimationStyle(rawValue: UserDefaults.standard.string(forKey: UserDefaults.animStyleKey) ?? "") ?? .original
+
+        switch currentStyle {
+        case .original:
+            for (i, color) in palette.enumerated() {
+                let base = h * (0.08 + Double(i) * 0.07)
+                let amplitude = h * (0.05 + Double(i) * 0.015)
+                let thickness = h * (0.22 + Double(i) * 0.05)
+                var top = Path()
+                let steps = 24
+                for s in 0...steps {
+                    let x = w * CGFloat(s) / CGFloat(steps)
+                    let y = base + amplitude * sin(Double(s) * 0.45 + t * speed * (1 + Double(i) * 0.3) + Double(i) * 1.7)
+                    if s == 0 { top.move(to: CGPoint(x: x, y: y)) } else { top.addLine(to: CGPoint(x: x, y: y)) }
+                }
+                var band = top
+                band.addLine(to: CGPoint(x: w, y: base + thickness))
+                band.addLine(to: CGPoint(x: 0, y: base + thickness))
+                band.closeSubpath()
+                gc.fill(band, with: .linearGradient(
+                    Gradient(colors: [color.opacity(strength), color.opacity(strength * 0.4), color.opacity(0)]),
+                    startPoint: CGPoint(x: 0, y: base - amplitude), endPoint: CGPoint(x: 0, y: base + thickness)))
             }
-            var band = top
-            band.addLine(to: CGPoint(x: w, y: base + thickness))
-            band.addLine(to: CGPoint(x: 0, y: base + thickness))
-            band.closeSubpath()
-            gc.fill(band, with: .linearGradient(
-                Gradient(colors: [color.opacity(strength), color.opacity(strength * 0.4), color.opacity(0)]),
-                startPoint: CGPoint(x: 0, y: base - amplitude), endPoint: CGPoint(x: 0, y: base + thickness)))
+            gc.fill(Path(CGRect(x: 0, y: h * 0.82, width: w, height: h * 0.18)), with: .linearGradient(
+                Gradient(colors: [palette[1].opacity(0), palette[1].opacity(strength * 0.5)]),
+                startPoint: CGPoint(x: 0, y: h * 0.82), endPoint: CGPoint(x: 0, y: h)))
+
+        case .radar:
+            // Flat horizontal grid + vertical scan bar sweeping left to right.
+            let gridColor = palette[0]
+            for i in 1...5 {
+                let y = h * Double(i) / 6 * 0.45
+                gc.fill(Path(CGRect(x: 0, y: y, width: w, height: 1)),
+                        with: .color(gridColor.opacity(strength * 0.5)))
+            }
+            let scanX = (t * speed * 80).truncatingRemainder(dividingBy: Double(w))
+            let scanW = w * 0.04
+            gc.fill(Path(CGRect(x: CGFloat(scanX) - scanW / 2, y: 0, width: scanW, height: h * 0.5)),
+                    with: .linearGradient(
+                        Gradient(colors: [gridColor.opacity(0), gridColor.opacity(strength * 0.8), gridColor.opacity(0)]),
+                        startPoint: CGPoint(x: CGFloat(scanX) - scanW / 2, y: 0),
+                        endPoint: CGPoint(x: CGFloat(scanX) + scanW / 2, y: 0)))
+
+        case .waveform:
+            // Vertical EQ bars driven by sine functions of time.
+            let barCount = 16
+            let barW = w / CGFloat(barCount)
+            for i in 0..<barCount {
+                let barHeight = h * 0.4 * abs(sin(Double(i) * 0.6 + t * speed * 3))
+                let x = CGFloat(i) * barW
+                let y = h * 0.4 - barHeight
+                let color = palette[i % palette.count]
+                gc.fill(Path(CGRect(x: x + 1, y: y, width: barW - 2, height: barHeight)),
+                        with: .linearGradient(
+                            Gradient(colors: [color.opacity(strength), color.opacity(0)]),
+                            startPoint: CGPoint(x: 0, y: y), endPoint: CGPoint(x: 0, y: y + barHeight)))
+            }
+
+        case .comet:
+            // Sparse falling streams of pixels down from the top.
+            let streamCount = 12
+            let streamSpeed = h * 0.4
+            for i in 0..<streamCount {
+                let x = w * CGFloat(i) / CGFloat(streamCount) + w / CGFloat(streamCount * 2)
+                let phase = Double(i * 7) * 0.37
+                let y = CGFloat((t * streamSpeed * 0.5 + phase * Double(h)).truncatingRemainder(dividingBy: Double(h)))
+                let dotH: CGFloat = 3
+                for trail in 0..<4 {
+                    let ty = y - CGFloat(trail) * (dotH + 2)
+                    if ty < 0 || ty > h { continue }
+                    gc.fill(Path(CGRect(x: x - 1, y: ty, width: 2, height: dotH)),
+                            with: .color(palette[0].opacity(strength * (1 - Double(trail) * 0.28))))
+                }
+            }
+
+        case .geometric:
+            // Two solid horizontal bands, no motion (opacity shifts when mode changes).
+            gc.fill(Path(CGRect(x: 0, y: 0, width: w, height: h * 0.18)),
+                    with: .linearGradient(
+                        Gradient(colors: [palette[0].opacity(strength * 0.8), palette[0].opacity(0)]),
+                        startPoint: CGPoint(x: 0, y: 0), endPoint: CGPoint(x: 0, y: h * 0.18)))
+            gc.fill(Path(CGRect(x: 0, y: h * 0.18, width: w, height: h * 0.17)),
+                    with: .linearGradient(
+                        Gradient(colors: [palette[2].opacity(strength * 0.5), palette[2].opacity(0)]),
+                        startPoint: CGPoint(x: 0, y: h * 0.18), endPoint: CGPoint(x: 0, y: h * 0.35)))
         }
-        // A faint glow rising from the bottom edge.
-        gc.fill(Path(CGRect(x: 0, y: h * 0.82, width: w, height: h * 0.18)), with: .linearGradient(
-            Gradient(colors: [palette[1].opacity(0), palette[1].opacity(strength * 0.5)]),
-            startPoint: CGPoint(x: 0, y: h * 0.82), endPoint: CGPoint(x: 0, y: h)))
-        // The gold sweep when an agent finishes.
+
+        // The gold sweep when an agent finishes (all styles).
         if let finishedAt {
             let age = date.timeIntervalSince(finishedAt)
             if age >= 0, age < 2.6 {
