@@ -346,7 +346,7 @@ private struct DesignEditor: View {
                     }, id: \.self) { name in
                         Button(name) { if let c = GhosttyThemes.colors(named: name) { draft.terminal = .custom(c) } }
                     }
-                    Button("Operator") { draft.terminal = .custom(.operator) }
+                    Button("Operator") { draft.terminal = .custom(.branded) }
                     Button("Mine") { draft.terminal = .custom(store.currentTerminalColors) }
                 }
                 .menuStyle(.borderlessButton).fixedSize()

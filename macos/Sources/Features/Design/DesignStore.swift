@@ -10,7 +10,7 @@ final class DesignStore: ObservableObject {
     static let shared = DesignStore()
 
     /// Posted on the main thread after the design changes and the chrome is resolved.
-    static let didChange = Notification.Name("com.alvaromuir.operator.designDidChange")
+    static let didChange = Notification.Name("com.alvaromuir.branded.designDidChange")
 
     @Published private(set) var design: OperatorDesign
     /// Bumped on every change; views keyed on it rebuild with the new colors.
@@ -19,13 +19,13 @@ final class DesignStore: ObservableObject {
     @Published private(set) var mine: [OperatorDesign] = []
 
     /// The chrome's colors, resolved. Read by `Operator` on every draw, so it's a plain value.
-    private(set) var chrome = ChromeColors.operator
-    private(set) var chromeColors = ResolvedChrome(ChromeColors.operator)
-    private(set) var logoRows = DesignLogo.operator.rows
-    private(set) var logoColors: [Character: Color] = DesignLogo.operator.colors(in: .operator)
+    private(set) var chrome = ChromeColors.branded
+    private(set) var chromeColors = ResolvedChrome(ChromeColors.branded)
+    private(set) var logoRows = DesignLogo.branded.rows
+    private(set) var logoColors: [Character: Color] = DesignLogo.branded.colors(in: .branded)
 
     /// The terminal's colors as the design resolves them (what the preview shows).
-    private(set) var terminalColors = TerminalColors.operator
+    private(set) var terminalColors = TerminalColors.branded
 
     private var pending: DispatchWorkItem?
     private var observers: [NSObjectProtocol] = []
@@ -36,7 +36,7 @@ final class DesignStore: ObservableObject {
     /// moves them, so a test copy never changes the maintainer's design.
     static var folder: URL {
         if let home = TestHooks.home {
-            return URL(fileURLWithPath: home).appendingPathComponent(".operator", isDirectory: true)
+            return URL(fileURLWithPath: home).appendingPathComponent(".branded", isDirectory: true)
         }
         return AgentTools.root
     }
@@ -105,8 +105,8 @@ final class DesignStore: ObservableObject {
         let before = (chrome, logoRows)
         let live = (NSApp.delegate as? AppDelegate).flatMap { TerminalColors(config: $0.ghostty.config) }
         switch design.terminal {
-        case .mine: terminalColors = live ?? .operator
-        case .theme(let name): terminalColors = GhosttyThemes.colors(named: name) ?? live ?? .operator
+        case .mine: terminalColors = live ?? .branded
+        case .theme(let name): terminalColors = GhosttyThemes.colors(named: name) ?? live ?? .branded
         case .custom(let colors): terminalColors = colors
         }
         switch design.chrome {
