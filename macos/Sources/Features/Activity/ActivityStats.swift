@@ -2,7 +2,7 @@
 import AppKit
 
 /// One agent session, summarized from its transcript on disk. Nothing is recorded by
-/// Tellurion itself; Claude Code (~/.claude/projects) and Codex (~/.codex/sessions)
+/// Operator itself; Claude Code (~/.claude/projects) and Codex (~/.codex/sessions)
 /// already keep everything needed.
 struct ActivitySession: Identifiable, Codable, Equatable {
     let id: String

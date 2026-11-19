@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Codex telemetry for Tellurion. Never decides PermissionRequest hooks.
+"""Codex telemetry for Operator. Never decides PermissionRequest hooks.
 
 Keep rich tool data in private local JSONL; OSC notifications carry only identity and
 status, safely below the terminal's 255-byte body limit. Claude's adapter is independent.
@@ -102,7 +102,7 @@ def record_event(payload, event, home):
     meta = transcript_metadata(transcript) if isinstance(transcript, str) else {}
     actual = identifier(meta.get("id")) or session
     child = identifier(payload.get("agent_id")) if event.startswith("subagent_") else None
-    directory = home / ".ghostty-extreme" / "codex-tracking"
+    directory = home / ".operator" / "codex-tracking"
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     os.chmod(directory, 0o700)
     record = {"event": event, "timestamp": time.time(), "session": actual,
@@ -144,7 +144,7 @@ def localhost_context(payload, event, home):
     if not isinstance(arguments, dict):
         return None
     command = arguments.get("command", arguments.get("cmd"))
-    launcher = home / ".ghostty-extreme" / "bin" / "localhost"
+    launcher = home / ".operator" / "bin" / "localhost"
     if not isinstance(command, str) or not launcher.is_file():
         return None
     try:
@@ -167,7 +167,7 @@ def localhost_context(payload, event, home):
     # rewrite, not a PermissionRequest: retain all tool sandbox/escalation arguments.
     return {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow",
         "updatedInput": updated, "additionalContext":
-        "The dev server command now opens a Tellurion localhost session: a separate "
+        "The dev server command now opens a Operator localhost session: a separate "
         "terminal tab that keeps running after you finish. The command prints the URL and "
         "log commands. Do not start another copy. The usual tool approval flow still applies."}}
 
@@ -198,7 +198,7 @@ def main():
         home = Path.home()
         status = record_event(payload, event, home)
         if status:
-            namespace = "ghostty-extreme" if os.environ.get("GHOSTTY_EXTREME_AGENT_EVENTS") == "1" else "ghostty-custom"
+            namespace = "operator" if os.environ.get("GHOSTTY_EXTREME_AGENT_EVENTS") == "1" else "ghostty-custom"
             # This launch's secret, so the app can tell real events from printed text.
             status["t"] = os.environ.get("GHOSTTY_EXTREME_EVENT_TOKEN", "")
             sequence = f"\x1b]777;notify;{namespace}://agent;{json.dumps(status, ensure_ascii=True, separators=(',', ':'))}\x07"

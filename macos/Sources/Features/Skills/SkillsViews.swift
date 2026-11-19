@@ -8,7 +8,7 @@ enum SkillsWindow {
     static let windowID = "skills"
 
     static func show(folder: String? = nil) {
-        guard TellurionSettings.isOn(.skills) else { return }
+        guard OperatorSettings.isOn(.skills) else { return }
         AgentToolWindows.show(id: windowID, title: "Skills", size: NSSize(width: 1040, height: 700)) {
             SkillsWindowView(project: folder)
         }
@@ -339,7 +339,7 @@ private struct SkillsWindowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center, spacing: 14) {
-                TellurionWindowTitle(icon: .skills, title: "Skills", subtitle: subtitle)
+                OperatorWindowTitle(icon: .skills, title: "Skills", subtitle: subtitle)
                 Spacer()
                 Picker("", selection: $model.tab) {
                     ForEach(SkillsModel.Tab.allCases, id: \.self) { tab in
@@ -351,7 +351,7 @@ private struct SkillsWindowView: View {
                 .labelsHidden()
             }
             .padding(.horizontal, 16).padding(.top, 30).padding(.bottom, 12)
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             switch model.tab {
             case .installed: InstalledPane(model: model)
             case .discover: DiscoverPane(model: model)
@@ -385,10 +385,10 @@ private struct InstalledPane: View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 list.frame(width: 330)
-                Rectangle().fill(Tellurion.line).frame(width: 1)
+                Rectangle().fill(Operator.line).frame(width: 1)
                 detail.frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             footer.padding(.horizontal, 16).padding(.vertical, 9)
         }
     }
@@ -398,10 +398,10 @@ private struct InstalledPane: View {
             HStack(spacing: 8) {
                 TextField("Search installed skills", text: $model.search)
                     .textFieldStyle(.roundedBorder)
-                    .font(Tellurion.font(12))
+                    .font(Operator.font(12))
                 Toggle("Updates", isOn: $model.onlyUpdates)
                     .toggleStyle(.button)
-                    .font(Tellurion.font(11))
+                    .font(Operator.font(11))
                     .help("Only skills with an update")
             }
             .padding(10)
@@ -414,7 +414,7 @@ private struct InstalledPane: View {
                     }
                     if model.scanned, SkillGroup.allCases.allSatisfy({ model.skills(in: $0).isEmpty }) {
                         Text(model.onlyUpdates ? "Everything's up to date." : "No skills match.")
-                            .font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
+                            .font(Operator.font(11)).foregroundColor(Operator.dim)
                             .padding(.horizontal, 6)
                     }
                 }
@@ -425,7 +425,7 @@ private struct InstalledPane: View {
             }
             }
         }
-        .background(Tellurion.panel)
+        .background(Operator.panel)
     }
 
     private func section(_ group: SkillGroup, _ skills: [InstalledSkill]) -> some View {
@@ -438,14 +438,14 @@ private struct InstalledPane: View {
             Button {
                 if self.folded.contains(group) { self.folded.remove(group) } else { self.folded.insert(group) }
             } label: {
-                TellurionSectionLabel(group.title) {
+                OperatorSectionLabel(group.title) {
                     HStack(spacing: 6) {
                         if updates > 0 {
-                            Text("\(updates) new").font(Tellurion.font(10, weight: .semibold)).foregroundColor(Tellurion.gold)
+                            Text("\(updates) new").font(Operator.font(10, weight: .semibold)).foregroundColor(Operator.gold)
                         }
-                        Text("\(skills.count)").font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                        Text("\(skills.count)").font(Operator.font(10)).foregroundColor(Operator.dim)
                         Image(systemName: folded ? "chevron.right" : "chevron.down")
-                            .font(.system(size: 8, weight: .bold)).foregroundColor(Tellurion.dim)
+                            .font(.system(size: 8, weight: .bold)).foregroundColor(Operator.dim)
                     }
                 }
                 .contentShape(Rectangle())
@@ -474,8 +474,8 @@ private struct InstalledPane: View {
                 Image(systemName: open ? "chevron.down" : "chevron.right").font(.system(size: 8, weight: .bold))
                 Text(open ? "Hide the \(builtIn.count) that come with \(owner)" : "\(builtIn.count) more come with \(owner)")
             }
-            .font(Tellurion.font(10.5))
-            .foregroundColor(Tellurion.dim)
+            .font(Operator.font(10.5))
+            .foregroundColor(Operator.dim)
             .padding(.horizontal, 8).padding(.vertical, 4)
             .contentShape(Rectangle())
         }
@@ -487,23 +487,23 @@ private struct InstalledPane: View {
         return Button { model.select(skill) } label: {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(skill.name).font(Tellurion.font(12, weight: .semibold))
-                        .foregroundColor(selected ? Tellurion.gold : Tellurion.text).lineLimit(1)
+                    Text(skill.name).font(Operator.font(12, weight: .semibold))
+                        .foregroundColor(selected ? Operator.gold : Operator.text).lineLimit(1)
                     if skill.project {
-                        Text("project").font(Tellurion.font(9.5)).foregroundColor(Tellurion.muted)
+                        Text("project").font(Operator.font(9.5)).foregroundColor(Operator.muted)
                             .padding(.horizontal, 5).padding(.vertical, 1)
-                            .background(Capsule().fill(Tellurion.raised))
+                            .background(Capsule().fill(Operator.raised))
                     }
                     Spacer(minLength: 4)
                     StatusMark(status: model.statuses[skill.id] ?? .unknown)
                 }
                 if !skill.summary.isEmpty {
-                    Text(skill.summary).font(Tellurion.font(10.5)).foregroundColor(Tellurion.muted).lineLimit(2)
+                    Text(skill.summary).font(Operator.font(10.5)).foregroundColor(Operator.muted).lineLimit(2)
                 }
             }
             .padding(.horizontal, 8).padding(.vertical, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(selected ? Tellurion.raised : .clear))
+            .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(selected ? Operator.raised : .clear))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -517,9 +517,9 @@ private struct InstalledPane: View {
             let status = model.statuses[skill.id] ?? .unknown
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(skill.name).font(Tellurion.font(17, weight: .semibold)).foregroundColor(Tellurion.text)
+                    Text(skill.name).font(Operator.font(17, weight: .semibold)).foregroundColor(Operator.text)
                     if !skill.summary.isEmpty {
-                        Text(skill.summary).font(Tellurion.font(11.5)).foregroundColor(Tellurion.muted)
+                        Text(skill.summary).font(Operator.font(11.5)).foregroundColor(Operator.muted)
                             .fixedSize(horizontal: false, vertical: true)
                             .lineLimit(4)
                     }
@@ -530,21 +530,21 @@ private struct InstalledPane: View {
                 statusLine(skill, status)
                 VStack(alignment: .leading, spacing: 3) {
                     Text((skill.folder as NSString).abbreviatingWithTildeInPath)
-                        .font(Tellurion.mono(10.5)).foregroundColor(Tellurion.dim)
+                        .font(Operator.mono(10.5)).foregroundColor(Operator.dim)
                         .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                     Text("Read by " + ([skill.group] + skill.alsoIn).map(\.readBy).joined(separator: "; "))
-                        .font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim).lineLimit(2)
+                        .font(Operator.font(10.5)).foregroundColor(Operator.dim).lineLimit(2)
                 }
                 ScrollView {
                     Text(model.preview.isEmpty ? "This SKILL.md has no instructions." : model.preview)
-                        .font(Tellurion.mono(11.5))
-                        .foregroundColor(Tellurion.text.opacity(0.9))
+                        .font(Operator.mono(11.5))
+                        .foregroundColor(Operator.text.opacity(0.9))
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(10)
                 }
-                .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Tellurion.panel))
-                .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Tellurion.line, lineWidth: 1))
+                .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Operator.panel))
+                .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Operator.line, lineWidth: 1))
                 HStack(spacing: 8) {
                     Button("Show in Finder") {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: skill.skillFile)])
@@ -554,7 +554,7 @@ private struct InstalledPane: View {
                     Spacer()
                     if status == .available || (skill.root != nil && skill.source != nil), SkillInventory.updateCommand(skill) != nil {
                         Button("Update") { model.update(skill) }
-                            .buttonStyle(TellurionButtonStyle(prominent: true))
+                            .buttonStyle(OperatorButtonStyle(prominent: true))
                             .help(SkillInventory.updateCommand(skill) ?? "")
                     } else if case .plugin = skill.origin {
                         Button("Update Plugin") { model.update(skill) }
@@ -568,7 +568,7 @@ private struct InstalledPane: View {
             .padding(16)
         } else {
             Text(model.scanned ? "No skills installed yet. Find some in Discover." : "Looking…")
-                .font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                .font(Operator.font(12)).foregroundColor(Operator.muted)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
@@ -598,23 +598,23 @@ private struct InstalledPane: View {
 
     private func chip(_ text: String) -> some View {
         Text(text)
-            .font(Tellurion.font(10.5))
-            .foregroundColor(Tellurion.text.opacity(0.85))
+            .font(Operator.font(10.5))
+            .foregroundColor(Operator.text.opacity(0.85))
             .lineLimit(1)
             .padding(.horizontal, 8).padding(.vertical, 3)
-            .background(Capsule().fill(Tellurion.raised))
-            .overlay(Capsule().strokeBorder(Tellurion.line, lineWidth: 1))
+            .background(Capsule().fill(Operator.raised))
+            .overlay(Capsule().strokeBorder(Operator.line, lineWidth: 1))
     }
 
     @ViewBuilder
     private func statusLine(_ skill: InstalledSkill, _ status: SkillUpdateStatus) -> some View {
         HStack(spacing: 6) {
             StatusMark(status: status)
-            Text(Self.describe(status)).font(Tellurion.font(11.5)).foregroundColor(Tellurion.muted)
+            Text(Self.describe(status)).font(Operator.font(11.5)).foregroundColor(Operator.muted)
             if status == .untracked {
                 Button("Find on skills.sh") { model.findSource(skill) }
                     .buttonStyle(.link)
-                    .font(Tellurion.font(11.5))
+                    .font(Operator.font(11.5))
                     .help("Reinstalling it from skills.sh lets the app check it for updates")
             }
         }
@@ -643,12 +643,12 @@ private struct InstalledPane: View {
                 .disabled(model.checking)
             if model.registryUpdates > 1 {
                 Button("Update All (\(model.registryUpdates))") { model.updateAll() }
-                    .buttonStyle(TellurionButtonStyle(prominent: true))
+                    .buttonStyle(OperatorButtonStyle(prominent: true))
                     .help(SkillInventory.updateAllCommand)
             }
         }
-        .font(Tellurion.font(10.5))
-        .foregroundColor(Tellurion.muted)
+        .font(Operator.font(10.5))
+        .foregroundColor(Operator.muted)
     }
 }
 
@@ -660,11 +660,11 @@ private struct StatusMark: View {
         switch status {
         case .checking: PixelSpinner(pixel: 3)
         case .available:
-            Text("UPDATE").font(Tellurion.font(9, weight: .bold)).kerning(0.6).foregroundColor(Tellurion.ink)
+            Text("UPDATE").font(Operator.font(9, weight: .bold)).kerning(0.6).foregroundColor(Operator.ink)
                 .padding(.horizontal, 5).padding(.vertical, 1.5)
-                .background(Capsule().fill(Tellurion.gold))
-        case .current: Image(systemName: "checkmark").font(.system(size: 9, weight: .bold)).foregroundColor(Tellurion.live)
-        case .failed: Image(systemName: "exclamationmark.triangle").font(.system(size: 9)).foregroundColor(Tellurion.warn)
+                .background(Capsule().fill(Operator.gold))
+        case .current: Image(systemName: "checkmark").font(.system(size: 9, weight: .bold)).foregroundColor(Operator.live)
+        case .failed: Image(systemName: "exclamationmark.triangle").font(.system(size: 9)).foregroundColor(Operator.warn)
         case .unknown, .managed, .untracked: EmptyView()
         }
     }
@@ -679,17 +679,17 @@ private struct DiscoverPane: View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 list.frame(width: 380)
-                Rectangle().fill(Tellurion.line).frame(width: 1)
+                Rectangle().fill(Operator.line).frame(width: 1)
                 detail.frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             HStack(spacing: 6) {
                 Text("From skills.sh, the open directory that npx skills installs from. Skills are other people's code and instructions: read them before you trust them.")
                     .lineLimit(2)
                 Spacer()
                 Link("skills.sh ↗", destination: URL(string: "https://skills.sh")!)
             }
-            .font(Tellurion.font(10.5)).foregroundColor(Tellurion.muted)
+            .font(Operator.font(10.5)).foregroundColor(Operator.muted)
             .padding(.horizontal, 16).padding(.vertical, 9)
         }
     }
@@ -700,7 +700,7 @@ private struct DiscoverPane: View {
         VStack(alignment: .leading, spacing: 8) {
             TextField("Search skills.sh", text: $model.query)
                 .textFieldStyle(.roundedBorder)
-                .font(Tellurion.font(12))
+                .font(Operator.font(12))
                 .onChange(of: model.query) { _ in model.queryChanged() }
                 .onSubmit { model.runSearch() }
             HStack(spacing: 8) {
@@ -712,19 +712,19 @@ private struct DiscoverPane: View {
                 .disabled(searchingText)
                 Toggle("Official", isOn: $model.showOfficial)
                     .toggleStyle(.checkbox)
-                    .font(Tellurion.font(11))
+                    .font(Operator.font(11))
                     .help("Also show skills from the companies behind the tools (Anthropic, Vercel, Cloudflare…)")
             }
             Text(searchingText ? "Results for “\(model.query.trimmingCharacters(in: .whitespaces))”" : model.board.detail)
-                .font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim)
+                .font(Operator.font(10.5)).foregroundColor(Operator.dim)
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
                     if model.loadingList || model.searching {
                         HStack(spacing: 8) { PixelSpinner(pixel: 3); Text("Loading…") }
-                            .font(Tellurion.font(11)).foregroundColor(Tellurion.muted).padding(8)
+                            .font(Operator.font(11)).foregroundColor(Operator.muted).padding(8)
                     } else if let error = model.listError {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(error).font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                            Text(error).font(Operator.font(11)).foregroundColor(Operator.muted)
                                 .fixedSize(horizontal: false, vertical: true)
                             if !searchingText { Button("Try Again") { model.loadBoard(force: true) } }
                         }
@@ -735,14 +735,14 @@ private struct DiscoverPane: View {
                         }
                         if model.hiddenOfficial > 0 {
                             Text("\(model.hiddenOfficial) official \(model.hiddenOfficial == 1 ? "skill" : "skills") hidden")
-                                .font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim).padding(8)
+                                .font(Operator.font(10.5)).foregroundColor(Operator.dim).padding(8)
                         }
                     }
                 }
             }
         }
         .padding(10)
-        .background(Tellurion.panel)
+        .background(Operator.panel)
     }
 
     private func row(_ skill: ListedSkill, rank: Int?) -> some View {
@@ -750,30 +750,30 @@ private struct DiscoverPane: View {
         return Button { model.picked = skill } label: {
             HStack(spacing: 8) {
                 if let rank {
-                    Text("\(rank)").font(Tellurion.mono(10.5)).foregroundColor(Tellurion.dim).frame(width: 26, alignment: .trailing)
+                    Text("\(rank)").font(Operator.mono(10.5)).foregroundColor(Operator.dim).frame(width: 26, alignment: .trailing)
                 }
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 5) {
-                        Text(skill.name).font(Tellurion.font(12, weight: .semibold))
-                            .foregroundColor(selected ? Tellurion.gold : Tellurion.text).lineLimit(1)
+                        Text(skill.name).font(Operator.font(12, weight: .semibold))
+                            .foregroundColor(selected ? Operator.gold : Operator.text).lineLimit(1)
                         if model.installedCopy(of: skill) != nil {
-                            Image(systemName: "checkmark.circle.fill").font(.system(size: 9.5)).foregroundColor(Tellurion.live)
+                            Image(systemName: "checkmark.circle.fill").font(.system(size: 9.5)).foregroundColor(Operator.live)
                                 .help("Installed")
                         }
                     }
-                    Text(skill.source).font(Tellurion.font(10.5)).foregroundColor(Tellurion.muted).lineLimit(1)
+                    Text(skill.source).font(Operator.font(10.5)).foregroundColor(Operator.muted).lineLimit(1)
                 }
                 Spacer(minLength: 4)
                 VStack(alignment: .trailing, spacing: 1) {
                     if let change = skill.change, !searchingText, model.board == .hot {
-                        Text("+\(Self.count(change))").font(Tellurion.mono(11)).foregroundColor(Tellurion.live)
+                        Text("+\(Self.count(change))").font(Operator.mono(11)).foregroundColor(Operator.live)
                     }
-                    Text(Self.count(skill.installs)).font(Tellurion.mono(11)).foregroundColor(Tellurion.text.opacity(0.75))
+                    Text(Self.count(skill.installs)).font(Operator.mono(11)).foregroundColor(Operator.text.opacity(0.75))
                 }
             }
             .padding(.horizontal, 6).padding(.vertical, 5)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(selected ? Tellurion.raised : .clear))
+            .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(selected ? Operator.raised : .clear))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -797,34 +797,34 @@ private struct DiscoverPane: View {
                 VStack(alignment: .leading, spacing: 14) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 8) {
-                            Text(skill.name).font(Tellurion.font(18, weight: .semibold)).foregroundColor(Tellurion.text)
+                            Text(skill.name).font(Operator.font(18, weight: .semibold)).foregroundColor(Operator.text)
                             if skill.official || model.installedCopy(of: skill) != nil {
                                 Text(model.installedCopy(of: skill) != nil ? "INSTALLED" : "OFFICIAL")
-                                    .font(Tellurion.font(9, weight: .bold)).kerning(0.6)
-                                    .foregroundColor(model.installedCopy(of: skill) != nil ? Tellurion.live : Tellurion.muted)
+                                    .font(Operator.font(9, weight: .bold)).kerning(0.6)
+                                    .foregroundColor(model.installedCopy(of: skill) != nil ? Operator.live : Operator.muted)
                                     .padding(.horizontal, 6).padding(.vertical, 2)
-                                    .overlay(Capsule().strokeBorder(Tellurion.line, lineWidth: 1))
+                                    .overlay(Capsule().strokeBorder(Operator.line, lineWidth: 1))
                             }
                         }
                         HStack(spacing: 10) {
-                            Text(skill.source).font(Tellurion.font(11.5)).foregroundColor(Tellurion.muted)
-                            if let repo = skill.repo { Link(SkillInventory.isGitHub(skill.source) ? "GitHub ↗" : "Website ↗", destination: repo).font(Tellurion.font(11.5)) }
-                            if let page = skill.page { Link("skills.sh ↗", destination: page).font(Tellurion.font(11.5)) }
+                            Text(skill.source).font(Operator.font(11.5)).foregroundColor(Operator.muted)
+                            if let repo = skill.repo { Link(SkillInventory.isGitHub(skill.source) ? "GitHub ↗" : "Website ↗", destination: repo).font(Operator.font(11.5)) }
+                            if let page = skill.page { Link("skills.sh ↗", destination: page).font(Operator.font(11.5)) }
                         }
                     }
                     Group {
                         if let summary = model.summary {
-                            Text(summary).foregroundColor(Tellurion.text.opacity(0.9))
+                            Text(summary).foregroundColor(Operator.text.opacity(0.9))
                         } else {
                             Text(model.summaryLoaded ? "No description published for it." : "Loading description…")
-                                .foregroundColor(Tellurion.dim)
+                                .foregroundColor(Operator.dim)
                         }
                     }
-                    .font(Tellurion.font(12.5))
+                    .font(Operator.font(12.5))
                     .fixedSize(horizontal: false, vertical: true)
                     if let other = model.sameName(as: skill) {
                         Text("You have a skill called “\(other.name)” with no recorded source (\((other.folder as NSString).abbreviatingWithTildeInPath)). Installing this one makes it trackable.")
-                            .font(Tellurion.font(11.5)).foregroundColor(Tellurion.muted)
+                            .font(Operator.font(11.5)).foregroundColor(Operator.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     stats(skill)
@@ -836,7 +836,7 @@ private struct DiscoverPane: View {
             }
         } else {
             Text(model.loadingList ? "Loading…" : "Pick a skill to see what it does.")
-                .font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                .font(Operator.font(12)).foregroundColor(Operator.muted)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
@@ -850,7 +850,7 @@ private struct DiscoverPane: View {
             if let weeks = skill.weeklyInstalls, weeks.count > 1 {
                 VStack(alignment: .leading, spacing: 3) {
                     Sparkline(values: weeks).frame(width: 120, height: 26)
-                    Text("last 8 weeks").font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                    Text("last 8 weeks").font(Operator.font(10)).foregroundColor(Operator.dim)
                 }
             }
         }
@@ -858,31 +858,31 @@ private struct DiscoverPane: View {
 
     private func stat(_ value: String, _ label: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(value).font(Tellurion.mono(18)).foregroundColor(Tellurion.text)
-            Text(label).font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+            Text(value).font(Operator.mono(18)).foregroundColor(Operator.text)
+            Text(label).font(Operator.font(10)).foregroundColor(Operator.dim)
         }
     }
 
     @ViewBuilder
     private var audits: some View {
         VStack(alignment: .leading, spacing: 6) {
-            TellurionSectionLabel("Security reviews")
+            OperatorSectionLabel("Security reviews")
             if let audits = model.audits {
                 if audits.isEmpty {
-                    Text("Nobody has reviewed this skill yet.").font(Tellurion.font(11.5)).foregroundColor(Tellurion.muted)
+                    Text("Nobody has reviewed this skill yet.").font(Operator.font(11.5)).foregroundColor(Operator.muted)
                 }
                 ForEach(audits) { audit in
                     HStack(alignment: .top, spacing: 8) {
                         Text(audit.status.uppercased())
-                            .font(Tellurion.font(9, weight: .bold)).kerning(0.6)
+                            .font(Operator.font(9, weight: .bold)).kerning(0.6)
                             .foregroundColor(Self.color(audit.status))
                             .frame(width: 40, alignment: .leading)
                             .padding(.top, 1)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(audit.provider + (audit.risk.map { " · \($0.lowercased()) risk" } ?? ""))
-                                .font(Tellurion.font(11.5, weight: .semibold)).foregroundColor(Tellurion.text)
+                                .font(Operator.font(11.5, weight: .semibold)).foregroundColor(Operator.text)
                             if !audit.summary.isEmpty {
-                                Text(audit.summary).font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                                Text(audit.summary).font(Operator.font(11)).foregroundColor(Operator.muted)
                                     .lineLimit(4).fixedSize(horizontal: false, vertical: true)
                             }
                         }
@@ -890,35 +890,35 @@ private struct DiscoverPane: View {
                 }
             } else {
                 HStack(spacing: 8) { PixelSpinner(pixel: 3); Text("Loading…") }
-                    .font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                    .font(Operator.font(11)).foregroundColor(Operator.muted)
             }
         }
     }
 
     private static func color(_ status: String) -> Color {
         switch status {
-        case "pass": return Tellurion.live
-        case "warn": return Tellurion.warn
-        default: return Tellurion.danger
+        case "pass": return Operator.live
+        case "warn": return Operator.warn
+        default: return Operator.danger
         }
     }
 
     private func installBox(_ skill: ListedSkill) -> some View {
         let warned = model.audits?.contains { $0.status != "pass" } == true
         return VStack(alignment: .leading, spacing: 10) {
-            TellurionSectionLabel("Install")
+            OperatorSectionLabel("Install")
             HStack(spacing: 14) {
-                Text("For").font(Tellurion.font(11.5)).foregroundColor(Tellurion.muted)
+                Text("For").font(Operator.font(11.5)).foregroundColor(Operator.muted)
                 ForEach(SkillAgent.allCases) { agent in
                     Toggle(agent.title, isOn: Binding(
                         get: { model.agents.contains(agent) },
                         set: { on in if on { model.agents.insert(agent) } else { model.agents.remove(agent) } }))
                         .toggleStyle(.checkbox)
-                        .font(Tellurion.font(11.5))
+                        .font(Operator.font(11.5))
                 }
             }
             HStack(spacing: 10) {
-                Text("In").font(Tellurion.font(11.5)).foregroundColor(Tellurion.muted)
+                Text("In").font(Operator.font(11.5)).foregroundColor(Operator.muted)
                 Picker("", selection: $model.inProject) {
                     Text("All projects").tag(false)
                     if let project = model.project {
@@ -929,23 +929,23 @@ private struct DiscoverPane: View {
                 .fixedSize()
             }
             Text(model.installCommand(skill))
-                .font(Tellurion.mono(11))
-                .foregroundColor(Tellurion.text.opacity(0.85))
+                .font(Operator.mono(11))
+                .foregroundColor(Operator.text.opacity(0.85))
                 .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Tellurion.panel))
-                .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(Tellurion.line, lineWidth: 1))
+                .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Operator.panel))
+                .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(Operator.line, lineWidth: 1))
             HStack(spacing: 8) {
                 if warned {
-                    Image(systemName: "exclamationmark.triangle").foregroundColor(Tellurion.warn)
+                    Image(systemName: "exclamationmark.triangle").foregroundColor(Operator.warn)
                     Text("A review flagged this skill. Read it before installing.")
-                        .font(Tellurion.font(11)).foregroundColor(Tellurion.warn)
+                        .font(Operator.font(11)).foregroundColor(Operator.warn)
                 }
                 Spacer()
                 Button(model.installedCopy(of: skill) != nil ? "Install Again" : "Install") { model.install(skill) }
-                    .buttonStyle(TellurionButtonStyle(prominent: !warned))
+                    .buttonStyle(OperatorButtonStyle(prominent: !warned))
                     .disabled(model.agents.isEmpty)
                     .help("Runs this command in a new tab")
             }
@@ -967,7 +967,7 @@ private struct Sparkline: View {
                     if i == 0 { path.move(to: point) } else { path.addLine(to: point) }
                 }
             }
-            .stroke(Tellurion.gold, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+            .stroke(Operator.gold, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
         }
     }
 }

@@ -9,7 +9,7 @@ struct LocalModel: Identifiable, Equatable {
         case ollama = "Ollama", lmStudio = "LM Studio", llamaCpp = "llama.cpp", mlx = "MLX", apple = "Apple"
         case venice = "Venice"
 
-        /// How Tellurion's local chat reaches it (`tellurion local --provider …`).
+        /// How Operator's local chat reaches it (`operator local --provider …`).
         var provider: String {
             switch self {
             case .ollama: return "ollama"
@@ -84,7 +84,7 @@ final class LocalModelsModel: ObservableObject {
 
     /// Lists the models once when a view first shows them. No polling: the list is checked
     /// again only when something can have changed it (a download or removal here, a local
-    /// chat starting or ending, or coming back to Tellurion from another app).
+    /// chat starting or ending, or coming back to Operator from another app).
     func watch(_ on: Bool) {
         watchers = max(0, watchers + (on ? 1 : -1))
         if on && watchers == 1 { start() } else if watchers == 0 { stop() }
@@ -129,7 +129,7 @@ final class LocalModelsModel: ObservableObject {
     /// Memory taken by loaded models, in bytes.
     var loadedMemory: Int64 { models.filter(\.loaded).compactMap(\.memory).reduce(0, +) }
 
-    /// One check now, and another each time Tellurion becomes the active app (a model
+    /// One check now, and another each time Operator becomes the active app (a model
     /// downloaded or removed in a terminal or Ollama's own app shows up then).
     func start() {
         load()

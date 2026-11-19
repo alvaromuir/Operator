@@ -1941,7 +1941,7 @@ pub const CAPI = struct {
         return readTextLocked(surface, core_sel, result);
     }
 
-    /// Tellurion: the most recent command line and its output, found through
+    /// Operator: the most recent command line and its output, found through
     /// the shell integration's semantic prompt marks. `output` is left empty when
     /// the command printed nothing. Returns false when no command has run yet (or
     /// the shell doesn't report prompts).
@@ -1996,7 +1996,7 @@ pub const CAPI = struct {
         return true;
     }
 
-    /// Tellurion: finds the lowest viewport row whose first non-blank character is
+    /// Operator: finds the lowest viewport row whose first non-blank character is
     /// `prompt` and reports the text after it: 0 = no such row, 1 = empty or all faint (an
     /// agent's greyed-out placeholder or suggestion), 2 = some normal text (typed by the
     /// user). Braille cells (Codex's animated logo) are ignored.
@@ -2027,7 +2027,7 @@ pub const CAPI = struct {
         return 0;
     }
 
-    /// Tellurion: a snapshot of the active screen for mirroring it elsewhere (the
+    /// Operator: a snapshot of the active screen for mirroring it elsewhere (the
     /// phone): every row of the active area as VT (text with its colors and styles, rows
     /// separated by \r\n, trailing blank rows left out), the grid size, and the cursor.
     const Mirror = extern struct {
@@ -2086,13 +2086,13 @@ pub const CAPI = struct {
         return (@as(u32, c.r) << 16) | (@as(u32, c.g) << 8) | c.b;
     }
 
-    /// Tellurion: frees a snapshot from ghostty_surface_read_mirror.
+    /// Operator: frees a snapshot from ghostty_surface_read_mirror.
     export fn ghostty_surface_free_mirror(result: *Mirror) void {
         if (result.text) |ptr| global.alloc().free(ptr[0..result.text_len :0]);
         result.text = null;
     }
 
-    /// Tellurion: frees text from ghostty_surface_read_last_command.
+    /// Operator: frees text from ghostty_surface_read_last_command.
     export fn ghostty_surface_free_last_command(command_text: *Text, output_text: *Text) void {
         command_text.deinit();
         output_text.deinit();

@@ -265,7 +265,7 @@ final class VisualFixSession: NSObject, ObservableObject {
         let here = [controller.focusedSurface].compactMap { $0 } + Array(controller.surfaceTree)
         let elsewhere = TerminalWindows.all.filter { $0 !== controller }.flatMap { Array($0.surfaceTree) }
         let agents = (here + elsewhere).filter(hasAgent)
-        // Without a known project (an app started outside Tellurion), use this tab's agent.
+        // Without a known project (an app started outside Operator), use this tab's agent.
         guard let root = projectRoot.map(Self.canonical) else { return here.first(where: hasAgent) }
         return agents.first { surface in
             guard let pwd = surface.pwd.map(Self.canonical) else { return false }
@@ -546,7 +546,7 @@ final class VisualFixPanel: ObservableObject {
 
     /// Opens the panel in `controller`'s tab, on `url` or the best running app.
     func show(from controller: BaseTerminalController?, url: URL? = nil) {
-        guard TellurionSettings.isOn(.visualFix) else { return }
+        guard OperatorSettings.isOn(.visualFix) else { return }
         guard let picked = controller ?? Self.frontController else { return }
         let controller = Self.panelTab(for: picked)
         let session = session(for: controller)
@@ -571,7 +571,7 @@ final class VisualFixPanel: ObservableObject {
     }
 
     func toggle(_ controller: BaseTerminalController?) {
-        guard TellurionSettings.isOn(.visualFix) || controller.map(isVisible) == true else { return }
+        guard OperatorSettings.isOn(.visualFix) || controller.map(isVisible) == true else { return }
         guard let controller = controller ?? Self.frontController else { return }
         if isVisible(controller) { hide(controller) } else { show(from: controller) }
     }

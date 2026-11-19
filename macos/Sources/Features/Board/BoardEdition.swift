@@ -1,10 +1,10 @@
 #if os(macOS)
 import AppKit
 
-/// How Tellurion shows terminals: classic windows with tabs and splits, or boards, where every
+/// How Operator shows terminals: classic windows with tabs and splits, or boards, where every
 /// terminal is a tile on a canvas you pan and zoom. Chosen in the welcome window or Settings;
 /// it decides what a new window is. Either way the other kind can still be opened.
-enum TellurionEdition: String, CaseIterable, Identifiable {
+enum OperatorEdition: String, CaseIterable, Identifiable {
     case classic
     case board
 
@@ -26,8 +26,8 @@ enum TellurionEdition: String, CaseIterable, Identifiable {
         }
     }
 
-    static var current: TellurionEdition {
-        TellurionEdition(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .classic
+    static var current: OperatorEdition {
+        OperatorEdition(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .classic
     }
 
     /// Whether the edition has been picked (a fresh install hasn't).
@@ -36,10 +36,10 @@ enum TellurionEdition: String, CaseIterable, Identifiable {
     /// Switches editions. Picking Board brings a board to the front (opening one if none is),
     /// and offers to move the terminals of open classic windows onto it. Picking Classic offers
     /// to move the boards' tiles into windows, and closes the boards.
-    static func set(_ edition: TellurionEdition) {
+    static func set(_ edition: OperatorEdition) {
         let changed = edition != current || !chosen
         UserDefaults.standard.set(edition.rawValue, forKey: key)
-        if changed { TellurionSettings.shared.objectWillChange.send() }
+        if changed { OperatorSettings.shared.objectWillChange.send() }
         guard let ghostty = (NSApp.delegate as? AppDelegate)?.ghostty else { return }
         switch edition {
         case .board: Board.activate(ghostty)
@@ -286,32 +286,32 @@ import SwiftUI
 
 /// Classic or Board, as two cards. Used by the welcome window and Settings.
 struct EditionPicker: View {
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
 
     var body: some View {
-        let current = TellurionEdition.current
+        let current = OperatorEdition.current
         HStack(spacing: 10) {
-            ForEach(TellurionEdition.allCases) { edition in
-                Button { TellurionEdition.set(edition) } label: {
+            ForEach(OperatorEdition.allCases) { edition in
+                Button { OperatorEdition.set(edition) } label: {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(spacing: 7) {
                             Image(systemName: edition == .board ? "square.grid.3x3.square" : "sidebar.left")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(edition == current ? Tellurion.gold : Tellurion.muted)
-                            Text(edition.title).font(Tellurion.font(12.5, weight: .semibold)).foregroundColor(Tellurion.text)
+                                .foregroundColor(edition == current ? Operator.gold : Operator.muted)
+                            Text(edition.title).font(Operator.font(12.5, weight: .semibold)).foregroundColor(Operator.text)
                             Spacer(minLength: 0)
                             if edition == current {
-                                Image(systemName: "checkmark.circle.fill").foregroundColor(Tellurion.gold)
+                                Image(systemName: "checkmark.circle.fill").foregroundColor(Operator.gold)
                             }
                         }
-                        Text(edition.detail).font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                        Text(edition.detail).font(Operator.font(11)).foregroundColor(Operator.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(11)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(edition == current ? Tellurion.raised : Tellurion.panel))
+                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(edition == current ? Operator.raised : Operator.panel))
                     .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(edition == current ? Tellurion.gold.opacity(0.7) : Tellurion.line))
+                        .strokeBorder(edition == current ? Operator.gold.opacity(0.7) : Operator.line))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

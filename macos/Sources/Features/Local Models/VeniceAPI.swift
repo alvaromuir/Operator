@@ -1,6 +1,6 @@
 import Foundation
 
-/// The parts of Venice's API Tellurion uses, as plain functions: what a key and a model's name
+/// The parts of Venice's API Operator uses, as plain functions: what a key and a model's name
 /// look like, reading its model list, what the local proxy lets through and what it changes.
 enum VeniceAPI {
     static let base = URL(string: "https://api.venice.ai")!
@@ -66,7 +66,7 @@ enum VeniceAPI {
         return try? JSONSerialization.data(withJSONObject: request, options: [.sortedKeys, .withoutEscapingSlashes])
     }
 
-    static let secretPlaceholder = "[secret removed by Tellurion]"
+    static let secretPlaceholder = "[secret removed by Operator]"
 
     /// Only formats that can't be mistaken for code, since a changed line can stop an edit applying.
     private static let secretPatterns: [NSRegularExpression] = [

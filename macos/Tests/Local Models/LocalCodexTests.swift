@@ -4,16 +4,16 @@ import Testing
 
 /// A pane on a model on this Mac stays there: what's typed into it, and how its sessions come back.
 struct LocalCodexTests {
-    @Test func startingCodexInALocalPaneGoesThroughTellurion() {
+    @Test func startingCodexInALocalPaneGoesThroughOperator() {
         var config = Ghostty.SurfaceConfiguration()
         config.environmentVariables = LocalCodex.environment(model: "qwen3:4b", provider: "ollama")
         config.initialInput = " codex resume abc\n"
         VeniceCodex.adapt(&config)
         #expect(config.initialInput?.hasPrefix(" ") == true)
         #expect(config.initialInput?.hasSuffix(" local codex resume abc\n") == true)
-        #expect(config.environmentVariables["TELLURION_CODEX_BACKEND"] == "local")
-        #expect(config.environmentVariables["TELLURION_LOCAL_MODEL"] == "qwen3:4b")
-        #expect(config.environmentVariables["TELLURION_LOCAL_PROVIDER"] == "ollama")
+        #expect(config.environmentVariables["OPERATOR_CODEX_BACKEND"] == "local")
+        #expect(config.environmentVariables["OPERATOR_LOCAL_MODEL"] == "qwen3:4b")
+        #expect(config.environmentVariables["OPERATOR_LOCAL_PROVIDER"] == "ollama")
     }
 
     @Test func otherCommandsInALocalPaneAreLeftAlone() {
@@ -36,7 +36,7 @@ struct LocalCodexTests {
 
     @Test func aSessionResumesOnItsModelAndHost() {
         let line = LocalCodex.resumeLine("s1", provider: "lmstudio", model: "qwen3:4b")
-        #expect(line.hasPrefix(" TELLURION_LOCAL_PROVIDER=lmstudio TELLURION_LOCAL_MODEL="))
+        #expect(line.hasPrefix(" OPERATOR_LOCAL_PROVIDER=lmstudio OPERATOR_LOCAL_MODEL="))
         #expect(line.contains("qwen3:4b"))
         #expect(line.hasSuffix(" local codex resume s1\n"))
         #expect(LocalCodex.resumeLine("s1", provider: nil, model: nil).hasSuffix(" local codex resume s1\n"))

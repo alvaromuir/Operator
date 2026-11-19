@@ -315,7 +315,7 @@ pub fn init(b: *std.Build, appVersion: []const u8, libVersion: []const u8) !Conf
         };
         if (vsn.tag) |tag| {
             // Tip releases behave just like any other pre-release so we skip.
-            // Tellurion: so do the fork's own release tags (e.g. extreme-1.0.0),
+            // Operator: so do the fork's own release tags (e.g. extreme-1.0.0),
             // which don't follow Ghostty's vX.Y.Z scheme.
             if (!std.mem.eql(u8, tag, "tip") and std.mem.startsWith(u8, tag, "v")) {
                 const expected = b.fmt("v{d}.{d}.{d}", .{

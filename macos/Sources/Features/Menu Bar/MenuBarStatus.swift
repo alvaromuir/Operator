@@ -1,7 +1,7 @@
 #if os(macOS)
 import AppKit
 
-/// Tellurion in the menu bar: a symbol that fills while agents work, with a count when some
+/// Operator in the menu bar: a symbol that fills while agents work, with a count when some
 /// need you. Its menu lists the agents (those waiting first; choose one to go to it), your
 /// boards, and new boards, sketches and agents. Off with the Menu bar feature.
 final class MenuBarStatus: NSObject, NSMenuDelegate {
@@ -18,18 +18,18 @@ final class MenuBarStatus: NSObject, NSMenuDelegate {
         for name in [VerticalTabsAgents.didChange, AgentAlerts.waitingCountDidChange, NSWindow.willCloseNotification] {
             observers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in self?.queueRefresh() })
         }
-        observers.append(center.addObserver(forName: TellurionSettings.featuresDidChange, object: nil, queue: .main) { [weak self] _ in
+        observers.append(center.addObserver(forName: OperatorSettings.featuresDidChange, object: nil, queue: .main) { [weak self] _ in
             self?.apply()
         })
         apply()
     }
 
     private func apply() {
-        if TellurionSettings.isOn(.menuBar) {
+        if OperatorSettings.isOn(.menuBar) {
             if item == nil {
                 let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
                 item.behavior = .removalAllowed
-                item.autosaveName = "com.steventsvik.ghostty-extreme.menu-bar"
+                item.autosaveName = "com.alvaromuir.operator.menu-bar"
                 let menu = NSMenu()
                 menu.delegate = self
                 item.menu = menu
@@ -70,13 +70,13 @@ final class MenuBarStatus: NSObject, NSMenuDelegate {
         let waiting = all.filter { AgentAlerts.isWaiting($0.info.activity) }.count
         let working = all.contains { $0.info.activity == .working }
         let symbol = waiting > 0 ? "exclamationmark.bubble.fill" : working ? "rectangle.3.group.fill" : "rectangle.3.group"
-        let image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Tellurion")
+        let image = NSImage(systemSymbolName: symbol, accessibilityDescription: "Operator")
         image?.isTemplate = true
         button.image = image
         button.imagePosition = .imageLeading
         button.title = waiting > 0 ? " \(waiting)" : ""
         let summary = waiting > 0 ? "\(waiting) \(waiting == 1 ? "agent needs" : "agents need") you"
-            : working ? "Agents are working" : "Tellurion"
+            : working ? "Agents are working" : "Operator"
         button.toolTip = summary
         button.setAccessibilityLabel(summary)
     }
@@ -130,7 +130,7 @@ final class MenuBarStatus: NSObject, NSMenuDelegate {
         menu.addItem(.separator())
         menu.addItem(ClosureMenuItem("Settings…", image: nil) {
             NSApp.activate(ignoringOtherApps: true)
-            TellurionSettingsWindow.show()
+            OperatorSettingsWindow.show()
         })
     }
 

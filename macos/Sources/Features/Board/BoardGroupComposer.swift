@@ -32,20 +32,20 @@ struct BoardGroupComposer: View {
         VStack(alignment: .leading, spacing: 12) {
             nameField
             roleChips
-            Divider().overlay(Tellurion.line)
+            Divider().overlay(Operator.line)
             if let installed {
                 slotGrid(installed)
                 fillAll(installed)
             } else {
-                Text("Looking for agents…").font(Tellurion.font(11.5)).foregroundColor(Tellurion.dim).frame(height: 120)
+                Text("Looking for agents…").font(Operator.font(11.5)).foregroundColor(Operator.dim).frame(height: 120)
             }
-            Divider().overlay(Tellurion.line)
+            Divider().overlay(Operator.line)
             options
             footer
         }
         .padding(14)
         .frame(width: 400)
-        .background(Tellurion.panel)
+        .background(Operator.panel)
         .onAppear(perform: load)
     }
 
@@ -56,11 +56,11 @@ struct BoardGroupComposer: View {
             Circle().fill(color).frame(width: 8, height: 8)
             TextField("Group name", text: $name)
                 .textFieldStyle(.plain)
-                .font(Tellurion.font(14, weight: .semibold))
-                .foregroundColor(Tellurion.text)
+                .font(Operator.font(14, weight: .semibold))
+                .foregroundColor(Operator.text)
         }
         .padding(.horizontal, 10).frame(height: 32)
-        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Tellurion.raised))
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Operator.raised))
     }
 
     private var roleChips: some View {
@@ -79,12 +79,12 @@ struct BoardGroupComposer: View {
                         } label: {
                             HStack(spacing: 5) {
                                 Circle().fill(Color(nsColor: option.nsColor)).frame(width: 6, height: 6)
-                                Text(option.title).font(Tellurion.font(11, weight: on ? .semibold : .regular))
+                                Text(option.title).font(Operator.font(11, weight: on ? .semibold : .regular))
                             }
-                            .foregroundColor(on ? Tellurion.text : Tellurion.muted)
+                            .foregroundColor(on ? Operator.text : Operator.muted)
                             .padding(.horizontal, 8).padding(.vertical, 4)
                             .background(Capsule().fill(on ? Color(nsColor: option.nsColor).opacity(0.18) : .clear))
-                            .overlay(Capsule().strokeBorder(on ? Color(nsColor: option.nsColor).opacity(0.6) : Tellurion.line, lineWidth: 1))
+                            .overlay(Capsule().strokeBorder(on ? Color(nsColor: option.nsColor).opacity(0.6) : Operator.line, lineWidth: 1))
                         }
                         .buttonStyle(.plain)
                     }
@@ -106,13 +106,13 @@ struct BoardGroupComposer: View {
                     VStack(spacing: 5) {
                         Group {
                             if let agent {
-                                VerticalTabAgentLogo(kind: agent.kind, tint: Tellurion.text)
+                                VerticalTabAgentLogo(kind: agent.kind, tint: Operator.text)
                             } else {
-                                Image(systemName: "terminal").font(.system(size: 13)).foregroundColor(Tellurion.muted)
+                                Image(systemName: "terminal").font(.system(size: 13)).foregroundColor(Operator.muted)
                             }
                         }
                         .frame(width: 18, height: 18)
-                        Text(agent?.kind.displayName ?? "Shell").font(Tellurion.font(10.5)).foregroundColor(Tellurion.muted).lineLimit(1)
+                        Text(agent?.kind.displayName ?? "Shell").font(Operator.font(10.5)).foregroundColor(Operator.muted).lineLimit(1)
                     }
                     .frame(maxWidth: .infinity).frame(height: 56)
                     .background(RoundedRectangle(cornerRadius: 9, style: .continuous)
@@ -135,7 +135,7 @@ struct BoardGroupComposer: View {
     private func fillAll(_ installed: [BoardAgent]) -> some View {
         // Wraps: with many agents installed, one row would be wider than the composer.
         HStack(alignment: .top, spacing: 6) {
-            Text("Fill all").font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim).frame(height: 24)
+            Text("Fill all").font(Operator.font(10.5)).foregroundColor(Operator.dim).frame(height: 24)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 24, maximum: 24), spacing: 6)], alignment: .leading, spacing: 6) {
                 fillButtons(installed)
             }
@@ -147,16 +147,16 @@ struct BoardGroupComposer: View {
         Group {
             ForEach(installed) { agent in
                 Button { slots = slots.map { _ in Slot(agent: agent.binary) } } label: {
-                    VerticalTabAgentLogo(kind: agent.kind, tint: Tellurion.text).frame(width: 14, height: 14)
+                    VerticalTabAgentLogo(kind: agent.kind, tint: Operator.text).frame(width: 14, height: 14)
                         .frame(width: 24, height: 24)
-                        .background(Circle().fill(Tellurion.raised))
+                        .background(Circle().fill(Operator.raised))
                 }
                 .buttonStyle(.plain)
                 .help("Make every slot \(agent.kind.displayName)")
             }
             Button { slots = slots.map { _ in Slot(agent: "shell") } } label: {
-                Image(systemName: "terminal").font(.system(size: 10)).foregroundColor(Tellurion.muted)
-                    .frame(width: 24, height: 24).background(Circle().fill(Tellurion.raised))
+                Image(systemName: "terminal").font(.system(size: 10)).foregroundColor(Operator.muted)
+                    .frame(width: 24, height: 24).background(Circle().fill(Operator.raised))
             }
             .buttonStyle(.plain)
             .help("Make every slot a plain terminal")
@@ -166,24 +166,24 @@ struct BoardGroupComposer: View {
     private var options: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                Image(systemName: "folder").font(.system(size: 10.5)).foregroundColor(Tellurion.dim)
+                Image(systemName: "folder").font(.system(size: 10.5)).foregroundColor(Operator.dim)
                 Text(folder.isEmpty ? "Board's folder" : (folder as NSString).abbreviatingWithTildeInPath)
-                    .font(Tellurion.mono(11)).foregroundColor(Tellurion.muted).lineLimit(1).truncationMode(.middle)
+                    .font(Operator.mono(11)).foregroundColor(Operator.muted).lineLimit(1).truncationMode(.middle)
                 Spacer()
                 Button("Choose…", action: chooseFolder).controlSize(.small)
             }
             TextField("First task for every agent (optional)", text: $task, axis: .vertical)
                 .textFieldStyle(.plain)
-                .font(Tellurion.font(12))
+                .font(Operator.font(12))
                 .lineLimit(1...3)
                 .padding(8)
-                .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Tellurion.raised))
+                .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Operator.raised))
             Toggle(isOn: $skip) {
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Skip permission prompts").font(Tellurion.font(11.5, weight: .medium)).foregroundColor(skip ? .red : Tellurion.text)
+                    Text("Skip permission prompts").font(Operator.font(11.5, weight: .medium)).foregroundColor(skip ? .red : Operator.text)
                     if skip {
                         Text("Agents will run commands and change files without asking. Only in folders you trust.")
-                            .font(Tellurion.font(10.5)).foregroundColor(.red.opacity(0.85))
+                            .font(Operator.font(10.5)).foregroundColor(.red.opacity(0.85))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -197,19 +197,19 @@ struct BoardGroupComposer: View {
         HStack(spacing: 8) {
             HStack(spacing: 0) {
                 stepperButton("minus", enabled: slots.count > 1) { slots.removeLast() }
-                Text("\(slots.count)").font(Tellurion.mono(12)).foregroundColor(Tellurion.text).frame(width: 26)
+                Text("\(slots.count)").font(Operator.mono(12)).foregroundColor(Operator.text).frame(width: 26)
                 stepperButton("plus", enabled: slots.count < Self.limit) {
                     slots.append(Slot(agent: slots.last?.agent ?? "claude"))
                 }
             }
-            .background(Capsule().fill(Tellurion.raised))
+            .background(Capsule().fill(Operator.raised))
             Button("Save as Preset…", action: savePreset).buttonStyle(.plain)
-                .font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                .font(Operator.font(11)).foregroundColor(Operator.muted)
             Spacer()
             Button("Cancel", action: done).keyboardShortcut(.cancelAction).buttonStyle(.plain)
-                .font(Tellurion.font(11.5)).foregroundColor(Tellurion.muted)
+                .font(Operator.font(11.5)).foregroundColor(Operator.muted)
             Button(action: spawn) {
-                Text("Spawn \(slots.count)").font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.ink)
+                Text("Spawn \(slots.count)").font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.ink)
                     .padding(.horizontal, 14).padding(.vertical, 6)
                     .background(Capsule().fill(color))
             }
@@ -222,7 +222,7 @@ struct BoardGroupComposer: View {
     private func stepperButton(_ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol).font(.system(size: 10, weight: .bold))
-                .foregroundColor(enabled ? Tellurion.text : Tellurion.dim)
+                .foregroundColor(enabled ? Operator.text : Operator.dim)
                 .frame(width: 26, height: 26).contentShape(Rectangle())
         }
         .buttonStyle(.plain)

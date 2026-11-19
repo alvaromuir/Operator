@@ -70,7 +70,7 @@ final class PortsMonitor: ObservableObject {
     private var timer: Timer?
     private var scanning = false
     private var cancellables: Set<AnyCancellable> = []
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.ports", qos: .utility)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.ports", qos: .utility)
     /// What doesn't change for a process, keyed by pid and start time.
     private struct Detail {
         let rootPID: Int32
@@ -107,7 +107,7 @@ final class PortsMonitor: ObservableObject {
     }
 
     private func updateTimer(scanNow: Bool) {
-        let wanted = watchers > 0 && NSApp.isActive && TellurionSettings.isOn(.ports)
+        let wanted = watchers > 0 && NSApp.isActive && OperatorSettings.isOn(.ports)
         if wanted, timer == nil {
             let timer = Timer(timeInterval: Self.interval, repeats: true) { [weak self] _ in self?.refresh() }
             timer.tolerance = 1
@@ -224,7 +224,7 @@ final class PortsMonitor: ObservableObject {
     /// Called with a failed command's output. "Port 3000 is in use" and friends raise a
     /// notice in the sidebar naming what holds the port.
     func commandFailed(_ command: String, output: String) {
-        guard TellurionSettings.isOn(.ports),
+        guard OperatorSettings.isOn(.ports),
               let port = Self.conflictPort(in: output) ?? Self.conflictPort(command: command, output: output) else { return }
         conflict = Conflict(port: port, command: command, at: Date())
         refresh()

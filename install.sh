@@ -1,7 +1,7 @@
 #!/bin/bash
-# Installs or updates Tellurion (formerly GhosttyEXTREME) from the latest release on GitHub:
+# Installs or updates Operator (formerly Operator) from the latest release on GitHub:
 #
-#   curl -fsSL https://raw.githubusercontent.com/steventsvik/Tellurion/custom/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/alvaromuir/Operator/custom/install.sh | bash
 #
 # Downloads the app, checks it against the release's SHA-256 checksum, and puts it in
 # /Applications (keeping the old copy until the new one is in place). Downloaded this way,
@@ -10,14 +10,14 @@
 
 set -euo pipefail
 
-REPO=steventsvik/Tellurion
+REPO=alvaromuir/Operator
 DIR=${GHOSTTY_EXTREME_INSTALL_TO:-/Applications}
-DEST=$DIR/Tellurion.app
+DEST=$DIR/Operator.app
 # The app's name before the rebrand; an existing copy is replaced, not kept beside it.
-OLD=$DIR/GhosttyEXTREME.app
+OLD=$DIR/Operator.app
 
 say() { printf '%s\n' "$*"; }
-die() { printf 'Tellurion: %s\n' "$*" >&2; exit 1; }
+die() { printf 'Operator: %s\n' "$*" >&2; exit 1; }
 
 [ "$(uname -s)" = Darwin ] || die "this is a macOS app."
 [ "$(uname -m)" = arm64 ] || die "only Apple silicon Macs are supported for now (https://github.com/$REPO/issues/7)."
@@ -30,7 +30,7 @@ for running in "$DEST" "$OLD"; do
   fi
 done
 
-work=$(mktemp -d /tmp/ghostty-extreme-install.XXXXXX)
+work=$(mktemp -d /tmp/operator-install.XXXXXX)
 trap 'rm -rf "$work"' EXIT
 
 say "Finding the latest release…"
@@ -52,7 +52,7 @@ while name=$(json "assets.$i.name"); do
 done
 [ -n "$zip_url" ] || die "release $tag has no app download."
 
-say "Downloading Tellurion ${version}…"
+say "Downloading Operator ${version}…"
 curl -fL --progress-bar "$zip_url" -o "$work/$zip_name" || die "download failed."
 
 # The checksum comes from the release's SHA256SUMS file, or its notes for older releases.
@@ -68,10 +68,10 @@ actual=$(shasum -a 256 "$work/$zip_name" | awk '{print $1}')
 say "Checksum verified."
 
 ditto -x -k "$work/$zip_name" "$work/unpacked" || die "couldn't unpack the download."
-# Releases before the rebrand contain GhosttyEXTREME.app.
-app="$work/unpacked/Tellurion.app"
-[ -d "$app" ] || app="$work/unpacked/GhosttyEXTREME.app"
-[ -d "$app" ] || die "the download doesn't contain Tellurion.app."
+# Releases before the rebrand contain Operator.app.
+app="$work/unpacked/Operator.app"
+[ -d "$app" ] || app="$work/unpacked/Operator.app"
+[ -d "$app" ] || die "the download doesn't contain Operator.app."
 xattr -dr com.apple.quarantine "$app" 2>/dev/null || true
 
 # Swap in the new copy; put the old one back if that fails.
@@ -92,7 +92,7 @@ if [ "$previous" = "$DEST" ] && [ -d "$OLD" ]; then
   rm -rf "$OLD"
 fi
 
-say "Installed Tellurion ${version} in /Applications."
+say "Installed Operator ${version} in /Applications."
 say "Opening it: the welcome window connects Claude Code and Codex. Later versions arrive"
-say "through Tellurion > Check for Updates…"
+say "through Operator > Check for Updates…"
 [ -n "${GHOSTTY_EXTREME_INSTALL_TO:-}" ] || open "$DEST"

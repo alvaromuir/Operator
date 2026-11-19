@@ -1,7 +1,7 @@
 import AppKit
 import System
 
-/// The icon style for the app. Tellurion ships one icon: Ghostty's alternate icons and
+/// The icon style for the app. Operator ships one icon: Ghostty's alternate icons and
 /// its colorized ghost are Ghostty's artwork, so those settings fall back to it. A custom
 /// icon file (`macos-icon = custom`) still works.
 enum AppIcon: Equatable, Codable, Sendable {

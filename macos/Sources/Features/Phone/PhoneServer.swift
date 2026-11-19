@@ -20,7 +20,7 @@ final class PhoneServer: ObservableObject {
     static let enabledKey = "PhoneAccessEnabled"
     /// The local port `tailscale serve` forwards to.
     static let localPort: UInt16 = 47_811
-    /// Test copies can talk to it from this Mac without Tailscale (TELLURION_PHONE_DEV=1).
+    /// Test copies can talk to it from this Mac without Tailscale (OPERATOR_PHONE_DEV=1).
     /// Always false in a release: the switch only exists in builds with the test hooks.
     static let devMode = TestHooks.phoneDev
 
@@ -66,19 +66,19 @@ final class PhoneServer: ObservableObject {
 
     /// Starts the server at launch if the user left phone access on.
     func startIfEnabled() {
-        guard TellurionSettings.isOn(.phone) else { return }
+        guard OperatorSettings.isOn(.phone) else { return }
         // A test copy in dev mode serves on this Mac only, without touching Tailscale.
         if Self.devMode {
             start()
             servePort = Int(Self.localPort)
-            // Tests pair without the window: TELLURION_PHONE_DEV_CODE is the pairing code.
+            // Tests pair without the window: OPERATOR_PHONE_DEV_CODE is the pairing code.
             if let code = TestHooks.phonePairingCode {
                 PhoneDevices.shared.useTestPairingCode(code)
             }
             return
         }
-        // Test copies only: TELLURION_PHONE_TEST=on|off presses Turn on / Turn off at launch.
-        if Bundle.main.bundleIdentifier == "com.steventsvik.ghostty-extreme.test",
+        // Test copies only: OPERATOR_PHONE_TEST=on|off presses Turn on / Turn off at launch.
+        if Bundle.main.bundleIdentifier == "com.alvaromuir.operator.test",
            let test = TestHooks.phoneSwitch {
             if test == "on" { turnOn() } else if test == "off" { turnOff() }
             return
@@ -160,7 +160,7 @@ final class PhoneServer: ObservableObject {
 
     private func handle(_ request: PhoneHTTPServer.Request) -> PhoneHTTPServer.Response {
         guard caller(request) != nil else {
-            return .text("This Tellurion only answers its owner's Tailscale devices.", status: 403)
+            return .text("This Operator only answers its owner's Tailscale devices.", status: 403)
         }
         switch (request.method, request.path) {
         case ("POST", "/api/pair"):

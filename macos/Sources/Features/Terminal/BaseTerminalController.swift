@@ -791,7 +791,7 @@ class BaseTerminalController: NSWindowController,
         }
     }
 
-    /// Tellurion: puts this window in front (a board takes the front board's place instead).
+    /// Operator: puts this window in front (a board takes the front board's place instead).
     func bringForward() {
         window?.makeKeyAndOrderFront(nil)
     }

@@ -6,7 +6,7 @@ import SwiftUI
 
 /// A dev server running in its own tab, so it keeps running after the agent (or tab) that
 /// started it is gone. Agents' dev-server commands are redirected here by the hooks
-/// (`~/.ghostty-extreme/bin/localhost`); servers can also be started from the sidebar or
+/// (`~/.operator/bin/localhost`); servers can also be started from the sidebar or
 /// moved here from wherever they were running.
 struct LocalhostSession: Identifiable, Equatable {
     enum State: Equatable {
@@ -47,7 +47,7 @@ struct LocalhostSession: Identifiable, Equatable {
 }
 
 /// A listening dev server that isn't in a localhost session (started in a normal tab, by an
-/// agent that isn't hooked up, or outside Tellurion).
+/// agent that isn't hooked up, or outside Operator).
 struct LocalhostOtherServer: Identifiable, Equatable {
     let pid: Int32
     /// The process to restart when moving it into a session (e.g. `npm run dev`, not the
@@ -212,7 +212,7 @@ final class LocalhostSessions: ObservableObject {
 
     static let shared = LocalhostSessions()
 
-    static let eventTitle = "ghostty-extreme://localhost"
+    static let eventTitle = "operator://localhost"
     static let windowID = "localhost-manager"
 
     @Published private(set) var sessions: [LocalhostSession] = []
@@ -225,7 +225,7 @@ final class LocalhostSessions: ObservableObject {
     private var tabs: [String: Weak<Ghostty.SurfaceView>] = [:]
     private var timer: Timer?
     private var polling = false
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.localhost", qos: .utility)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.localhost", qos: .utility)
     private var toastDismiss: DispatchWorkItem?
     /// Polls in a row that a live session wasn't listening, by id.
     private var quietPolls: [String: Int] = [:]
@@ -297,7 +297,7 @@ final class LocalhostSessions: ObservableObject {
         let code: Int32?
     }
 
-    /// Handles `ghostty-extreme://localhost` events: `open`/`stop`/`restart` from the
+    /// Handles `operator://localhost` events: `open`/`stop`/`restart` from the
     /// `localhost` command (usually run by an agent), `running`/`exited`/`close`/`detached`
     /// from a session's runner.
     func handle(body: String, from surface: Ghostty.SurfaceView) {
@@ -433,7 +433,7 @@ final class LocalhostSessions: ObservableObject {
         guard FileManager.default.isExecutableFile(atPath: Self.runner) else {
             let alert = NSAlert()
             alert.messageText = "Localhost sessions aren't installed"
-            alert.informativeText = "Run agent-hooks/install.sh from the Tellurion repository, then try again."
+            alert.informativeText = "Run agent-hooks/install.sh from the Operator repository, then try again."
             alert.runModal()
             return
         }
@@ -817,10 +817,10 @@ extension LocalhostSession {
 
     var statusColor: Color {
         switch state {
-        case .starting: return isQuiet ? Tellurion.danger : Tellurion.warn
-        case .live: return Tellurion.live
-        case .stopped(let code): return Self.isCleanExit(code) ? Tellurion.muted : Tellurion.danger
-        case .detached: return Tellurion.muted
+        case .starting: return isQuiet ? Operator.danger : Operator.warn
+        case .live: return Operator.live
+        case .stopped(let code): return Self.isCleanExit(code) ? Operator.muted : Operator.danger
+        case .detached: return Operator.muted
         }
     }
 }

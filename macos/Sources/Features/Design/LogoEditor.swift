@@ -20,22 +20,22 @@ struct LogoEditorView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                TellurionWindowTitle(icon: .design, title: "Draw your logo",
+                OperatorWindowTitle(icon: .design, title: "Draw your logo",
                                    subtitle: "Click or drag to paint. Pixels are roles, so the logo follows the design's colors.")
                 Spacer()
             }
             .padding(.horizontal, 20).padding(.top, 20).padding(.bottom, 14)
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             HStack(alignment: .top, spacing: 20) {
                 canvas
                 VStack(alignment: .leading, spacing: 14) {
-                    TellurionSectionLabel("Paint")
+                    OperatorSectionLabel("Paint")
                     roles
                     HStack(spacing: 8) {
                         toggleButton("Eraser", on: erasing, icon: "eraser") { erasing.toggle() }
                         toggleButton("Mirror", on: mirror, icon: "arrow.left.and.right.righttriangle.left.righttriangle.right") { mirror.toggle() }
                     }
-                    TellurionSectionLabel("Edit")
+                    OperatorSectionLabel("Edit")
                     HStack(spacing: 8) {
                         Button("Undo") { if let last = undo.popLast() { logo.rows = last } }.disabled(undo.isEmpty)
                         Button("Clear") { push(); logo.rows = DesignLogo.blank.rows }.disabled(logo.isEmpty)
@@ -46,7 +46,7 @@ struct LogoEditorView: View {
                         }
                         .menuStyle(.borderlessButton).fixedSize()
                     }
-                    TellurionSectionLabel("Preview")
+                    OperatorSectionLabel("Preview")
                     HStack(alignment: .bottom, spacing: 14) {
                         ForEach([16, 32, 64] as [CGFloat], id: \.self) { size in
                             PixelBitmap(rows: logo.rows, colors: logo.colors(in: chrome), pixel: size / CGFloat(DesignLogo.size))
@@ -60,7 +60,7 @@ struct LogoEditorView: View {
                     Spacer(minLength: 0)
                     HStack {
                         Spacer()
-                        Button("Done", action: done).buttonStyle(TellurionButtonStyle(prominent: true)).keyboardShortcut(.defaultAction)
+                        Button("Done", action: done).buttonStyle(OperatorButtonStyle(prominent: true)).keyboardShortcut(.defaultAction)
                     }
                 }
                 .frame(width: 300)
@@ -68,7 +68,7 @@ struct LogoEditorView: View {
             .padding(20)
         }
         .frame(width: side + 300 + 60, height: side + 200)  // the controls column is taller than the canvas
-        .tellurionWindow()
+        .operatorWindow()
     }
 
     private var canvas: some View {
@@ -117,13 +117,13 @@ struct LogoEditorView: View {
                     HStack(spacing: 8) {
                         RoundedRectangle(cornerRadius: 4, style: .continuous).fill(candidate.color(in: chrome).color)
                             .frame(width: 18, height: 18)
-                            .overlay(RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(Tellurion.line, lineWidth: 1))
-                        Text(candidate.title).font(Tellurion.font(11.5)).foregroundColor(selected ? Tellurion.gold : Tellurion.text)
+                            .overlay(RoundedRectangle(cornerRadius: 4, style: .continuous).strokeBorder(Operator.line, lineWidth: 1))
+                        Text(candidate.title).font(Operator.font(11.5)).foregroundColor(selected ? Operator.gold : Operator.text)
                         Spacer(minLength: 0)
                     }
                     .padding(.horizontal, 8).padding(.vertical, 5)
-                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(selected ? Tellurion.raised : Tellurion.panel))
-                    .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(selected ? Tellurion.gold.opacity(0.6) : Tellurion.line, lineWidth: 1))
+                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(selected ? Operator.raised : Operator.panel))
+                    .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(selected ? Operator.gold.opacity(0.6) : Operator.line, lineWidth: 1))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -133,11 +133,11 @@ struct LogoEditorView: View {
 
     private func toggleButton(_ title: String, on: Bool, icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Label(title, systemImage: icon).font(Tellurion.font(11.5))
-                .foregroundColor(on ? Tellurion.gold : Tellurion.text)
+            Label(title, systemImage: icon).font(Operator.font(11.5))
+                .foregroundColor(on ? Operator.gold : Operator.text)
                 .padding(.horizontal, 10).padding(.vertical, 6)
-                .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(on ? Tellurion.raised : Tellurion.panel))
-                .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(on ? Tellurion.gold.opacity(0.6) : Tellurion.line, lineWidth: 1))
+                .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(on ? Operator.raised : Operator.panel))
+                .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(on ? Operator.gold.opacity(0.6) : Operator.line, lineWidth: 1))
         }
         .buttonStyle(.plain)
     }

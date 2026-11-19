@@ -1,12 +1,12 @@
 import SwiftUI
 
-/// Tellurion's About window: what it is in one line, what it does in six, then the version
+/// Operator's About window: what it is in one line, what it does in six, then the version
 /// and where to go next.
 struct AboutView: View {
     @Environment(\.openURL) var openURL
 
-    private let githubURL = URL(string: "https://github.com/steventsvik/Tellurion")
-    private let websiteURL = URL(string: "https://steventsvik.github.io/Tellurion/")
+    private let githubURL = URL(string: "https://github.com/alvaromuir/Operator")
+    private let websiteURL = URL(string: "https://alvaromuir.github.io/Operator/")
 
     /// Read the commit from the bundle.
     private var build: String? { Bundle.main.infoDictionary?["CFBundleVersion"] as? String }
@@ -98,19 +98,19 @@ struct AboutView: View {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
                 .frame(width: 96, height: 96)
-                .shadow(color: Tellurion.core.opacity(0.25), radius: 18)
-                .accessibilityLabel("Tellurion")
-            Text("TELLURION")
-                .font(Tellurion.font(13, weight: .semibold))
+                .shadow(color: Operator.core.opacity(0.25), radius: 18)
+                .accessibilityLabel("Operator")
+            Text("OPERATOR")
+                .font(Operator.font(13, weight: .semibold))
                 .kerning(5)
-                .foregroundColor(Tellurion.gold)
+                .foregroundColor(Operator.gold)
             Text("Mission control for your AI coding agents.")
                 .font(.system(size: 22, weight: .bold))
-                .foregroundColor(Tellurion.text)
+                .foregroundColor(Operator.text)
                 .multilineTextAlignment(.center)
             Text("Run as many agents as you like and see everything they do, live.\nOne terminal, every agent, nothing hidden.")
-                .font(Tellurion.font(12.5))
-                .foregroundColor(Tellurion.muted)
+                .font(Operator.font(12.5))
+                .foregroundColor(Operator.muted)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -123,13 +123,13 @@ struct AboutView: View {
         VStack(spacing: 14) {
             HStack(spacing: 8) {
                 if let url = whatsNewURL {
-                    Button("What's new") { openURL(url) }.buttonStyle(TellurionButtonStyle(prominent: true))
+                    Button("What's new") { openURL(url) }.buttonStyle(OperatorButtonStyle(prominent: true))
                 }
                 if let url = websiteURL {
-                    Button("Website") { openURL(url) }.buttonStyle(TellurionButtonStyle())
+                    Button("Website") { openURL(url) }.buttonStyle(OperatorButtonStyle())
                 }
                 if let url = githubURL {
-                    Button("GitHub") { openURL(url) }.buttonStyle(TellurionButtonStyle())
+                    Button("GitHub") { openURL(url) }.buttonStyle(OperatorButtonStyle())
                 }
             }
             versionLine
@@ -137,8 +137,8 @@ struct AboutView: View {
                 Text("Built on Ghostty by Mitchell Hashimoto and its contributors.")
                 if let copyright { Text(copyright) }
             }
-            .font(Tellurion.font(10.5))
-            .foregroundColor(Tellurion.dim)
+            .font(Operator.font(10.5))
+            .foregroundColor(Operator.dim)
             .multilineTextAlignment(.center)
             .textSelection(.enabled)
         }
@@ -151,20 +151,20 @@ struct AboutView: View {
             if let build, build != version { Text("·"); Text("build \(build)") }
             if let commit, !commit.isEmpty, let url = githubURL?.appendingPathComponent("commits/\(commit)") {
                 Text("·")
-                Link(destination: url) { Text(String(commit.prefix(9))).font(Tellurion.mono(10.5)) }
+                Link(destination: url) { Text(String(commit.prefix(9))).font(Operator.mono(10.5)) }
             }
         }
-        .font(Tellurion.font(11))
-        .foregroundColor(Tellurion.muted)
+        .font(Operator.font(11))
+        .foregroundColor(Operator.muted)
         .textSelection(.enabled)
     }
 
     private var background: some View {
         ZStack {
-            Tellurion.ink
+            Operator.ink
             // A soft glow behind the icon, in the core's cyan.
-            RadialGradient(colors: [Tellurion.core.opacity(0.10), .clear], center: .top, startRadius: 10, endRadius: 320)
-            LinearGradient(colors: [.clear, Tellurion.gold.opacity(0.05)], startPoint: .top, endPoint: .bottom)
+            RadialGradient(colors: [Operator.core.opacity(0.10), .clear], center: .top, startRadius: 10, endRadius: 320)
+            LinearGradient(colors: [.clear, Operator.gold.opacity(0.05)], startPoint: .top, endPoint: .bottom)
         }
         .ignoresSafeArea()
     }
@@ -177,17 +177,17 @@ struct AboutView: View {
             HStack(alignment: .top, spacing: 11) {
                 Image(systemName: highlight.symbol)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Tellurion.gold)
+                    .foregroundColor(Operator.gold)
                     .frame(width: 30, height: 30)
-                    .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Tellurion.ink))
-                    .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Tellurion.line, lineWidth: 1))
+                    .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Operator.ink))
+                    .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Operator.line, lineWidth: 1))
                 VStack(alignment: .leading, spacing: 3) {
                     Text(highlight.title)
-                        .font(Tellurion.font(12.5, weight: .semibold))
-                        .foregroundColor(Tellurion.text)
+                        .font(Operator.font(12.5, weight: .semibold))
+                        .foregroundColor(Operator.text)
                     Text(highlight.detail)
-                        .font(Tellurion.font(11))
-                        .foregroundColor(Tellurion.muted)
+                        .font(Operator.font(11))
+                        .foregroundColor(Operator.muted)
                         .lineSpacing(1.5)
                         .lineLimit(3)
                 }
@@ -196,8 +196,8 @@ struct AboutView: View {
             .padding(12)
             // One height for every card, so the grid lines up.
             .frame(maxWidth: .infinity, minHeight: 88, maxHeight: 88, alignment: .topLeading)
-            .background(shape.fill(Tellurion.panel))
-            .overlay(shape.strokeBorder(Tellurion.line, lineWidth: 1))
+            .background(shape.fill(Operator.panel))
+            .overlay(shape.strokeBorder(Operator.line, lineWidth: 1))
         }
     }
 }

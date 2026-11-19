@@ -2,20 +2,20 @@
 import AppKit
 import SwiftUI
 
-/// Tellurion's own settings: which features are on, how much the chrome moves, the
+/// Operator's own settings: which features are on, how much the chrome moves, the
 /// sidebar, and agent setup. Ghostty's settings stay in its config file (⌘,).
-enum TellurionSettingsWindow {
+enum OperatorSettingsWindow {
     static let windowID = "extreme-settings"
 
     static func show() {
-        AgentToolWindows.show(id: windowID, title: "Tellurion Settings", size: NSSize(width: 620, height: 720)) {
-            TellurionSettingsView()
+        AgentToolWindows.show(id: windowID, title: "Operator Settings", size: NSSize(width: 620, height: 720)) {
+            OperatorSettingsView()
         }
     }
 }
 
-private struct TellurionSettingsView: View {
-    @ObservedObject private var settings = TellurionSettings.shared
+private struct OperatorSettingsView: View {
+    @ObservedObject private var settings = OperatorSettings.shared
     @ObservedObject private var setup = SetupChecks.shared
     @AppStorage(AgentAurora.enabledKey) private var aurora = false
     @AppStorage(NewTabSplash.enabledKey) private var splash = false
@@ -25,32 +25,32 @@ private struct TellurionSettingsView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                TellurionWindowTitle(icon: nil, title: "Settings", subtitle: "Tellurion's features and look", sigil: true)
+                OperatorWindowTitle(icon: nil, title: "Settings", subtitle: "Operator's features and look", sigil: true)
                 Spacer()
             }
             .padding(.horizontal, 16).padding(.top, 30).padding(.bottom, 12)
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     VStack(alignment: .leading, spacing: 10) {
-                        TellurionSectionLabel("Edition")
+                        OperatorSectionLabel("Edition")
                         EditionPicker()
                         Text("Decides what a new window is. Switching to Board opens a board; your open windows stay.")
-                            .font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                            .font(Operator.font(11)).foregroundColor(Operator.muted)
                     }
                     VStack(alignment: .leading, spacing: 10) {
-                        TellurionSectionLabel("Features")
+                        OperatorSectionLabel("Features")
                         FeaturePresetPicker()
                         FeatureToggleList()
                     }
                     VStack(alignment: .leading, spacing: 10) {
-                        TellurionSectionLabel("Look")
+                        OperatorSectionLabel("Look")
                         settingRow("Design", designDetail) {
                             Button("Open Design…") { DesignWindow.show() }
                         }
                         settingRow("Animation", "Status only keeps spinners and status lights, and stops the decoration") {
                             Picker("", selection: Binding(get: { settings.motion }, set: { settings.motion = $0 })) {
-                                ForEach(TellurionMotionLevel.allCases) { Text($0.title).tag($0) }
+                                ForEach(OperatorMotionLevel.allCases) { Text($0.title).tag($0) }
                             }
                             .pickerStyle(.segmented)
                             .frame(width: 200)
@@ -71,7 +71,7 @@ private struct TellurionSettingsView: View {
                         }
                     }
                     VStack(alignment: .leading, spacing: 10) {
-                        TellurionSectionLabel("Agents")
+                        OperatorSectionLabel("Agents")
                         settingRow(agentTitle, "Hooks that let Claude Code and Codex report their status") {
                             HStack(spacing: 8) {
                                 Button("Check Setup…") { SetupCheckWindow.show() }
@@ -80,7 +80,7 @@ private struct TellurionSettingsView: View {
                         }
                     }
                     VStack(alignment: .leading, spacing: 10) {
-                        TellurionSectionLabel("Shortcuts")
+                        OperatorSectionLabel("Shortcuts")
                         settingRow("Every shortcut", "Hold ⌃⌘ for a moment, or press ⌃⌘/") {
                             Button("Show") { ShortcutSheet.shared.show(sticky: true) }
                         }
@@ -89,13 +89,13 @@ private struct TellurionSettingsView: View {
                 .padding(16)
             }
         }
-        .tellurionWindow()
+        .operatorWindow()
         .onAppear { setup.refreshIfStale(60) }
     }
 
     private var designDetail: String {
         let name = DesignStore.shared.design.name
-        return DesignStore.shared.design.isStandardLook ? "Tellurion as shipped; templates, your own colors, font, window and logo"
+        return DesignStore.shared.design.isStandardLook ? "Operator as shipped; templates, your own colors, font, window and logo"
             : "\(name): terminal colors, chrome, font, window and logo"
     }
 
@@ -110,37 +110,37 @@ private struct TellurionSettingsView: View {
     private func settingRow<Control: View>(_ title: String, _ detail: String, @ViewBuilder control: () -> Control) -> some View {
         HStack(alignment: .center, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(Tellurion.font(12.5, weight: .semibold)).foregroundColor(Tellurion.text)
-                Text(detail).font(Tellurion.font(11, weight: .regular)).foregroundColor(Tellurion.muted)
+                Text(title).font(Operator.font(12.5, weight: .semibold)).foregroundColor(Operator.text)
+                Text(detail).font(Operator.font(11, weight: .regular)).foregroundColor(Operator.muted)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 12)
             control()
         }
         .padding(10)
-        .tellurionPanel()
+        .operatorPanel()
     }
 }
 
 /// Everything / Agent essentials / Just the sidebar.
 struct FeaturePresetPicker: View {
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
 
     var body: some View {
         HStack(spacing: 8) {
-            ForEach(TellurionPreset.allCases) { preset in
+            ForEach(OperatorPreset.allCases) { preset in
                 let selected = settings.preset == preset
                 Button { settings.apply(preset) } label: {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(preset.title).font(Tellurion.font(12, weight: .semibold))
-                            .foregroundColor(selected ? Tellurion.gold : Tellurion.text)
-                        Text(preset.detail).font(Tellurion.font(10.5, weight: .regular)).foregroundColor(Tellurion.muted)
+                        Text(preset.title).font(Operator.font(12, weight: .semibold))
+                            .foregroundColor(selected ? Operator.gold : Operator.text)
+                        Text(preset.detail).font(Operator.font(10.5, weight: .regular)).foregroundColor(Operator.muted)
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.leading)
                     }
                     .frame(maxWidth: .infinity, minHeight: 52, alignment: .topLeading)
                     .padding(10)
-                    .tellurionPanel(active: selected)
+                    .operatorPanel(active: selected)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -151,21 +151,21 @@ struct FeaturePresetPicker: View {
 
 /// A switch per feature, with what it does and its shortcut.
 struct FeatureToggleList: View {
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
 
     var body: some View {
         VStack(spacing: 0) {
-            ForEach(Array(TellurionFeature.allCases.enumerated()), id: \.element) { index, feature in
-                if index > 0 { Rectangle().fill(Tellurion.line.opacity(0.6)).frame(height: 1) }
+            ForEach(Array(OperatorFeature.allCases.enumerated()), id: \.element) { index, feature in
+                if index > 0 { Rectangle().fill(Operator.line.opacity(0.6)).frame(height: 1) }
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 8) {
-                            Text(feature.title).font(Tellurion.font(12.5, weight: .semibold)).foregroundColor(Tellurion.text)
+                            Text(feature.title).font(Operator.font(12.5, weight: .semibold)).foregroundColor(Operator.text)
                             if let key = feature.shortcut {
-                                Text("⌃⌘\(key)").font(Tellurion.mono(10.5)).foregroundColor(Tellurion.dim)
+                                Text("⌃⌘\(key)").font(Operator.mono(10.5)).foregroundColor(Operator.dim)
                             }
                         }
-                        Text(feature.detail).font(Tellurion.font(11, weight: .regular)).foregroundColor(Tellurion.muted)
+                        Text(feature.detail).font(Operator.font(11, weight: .regular)).foregroundColor(Operator.muted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 12)
@@ -178,17 +178,17 @@ struct FeatureToggleList: View {
                 .padding(.vertical, 8)
             }
         }
-        .tellurionPanel()
+        .operatorPanel()
     }
 }
 
-/// Takes Tellurion's hooks back out of the agents' configs and ~/.zshrc.
+/// Takes Operator's hooks back out of the agents' configs and ~/.zshrc.
 enum HookRemoval {
     static func confirm() {
         let alert = NSAlert()
-        alert.messageText = "Remove Tellurion's agent hooks?"
+        alert.messageText = "Remove Operator's agent hooks?"
         alert.informativeText = """
-        This takes Tellurion's entries out of ~/.claude/settings.json, ~/.codex/hooks.json, the \
+        This takes Operator's entries out of ~/.claude/settings.json, ~/.codex/hooks.json, the \
         other agents' hook files and ~/.zshrc (each is backed up first). Your other hooks stay. The sidebar will no longer show \
         what agents are doing until you set it up again.
         """

@@ -1,9 +1,9 @@
 #!/bin/bash
-# Runs a Tellurion localhost session's server in its tab: shows what it is, keeps a
+# Runs a Operator localhost session's server in its tab: shows what it is, keeps a
 # log the agent can read, and offers restart when the server stops. The app opens this
 # (see `localhost start`); it reports the server starting and stopping with OSC 777.
 
-dir="$HOME/.ghostty-extreme/localhost"
+dir="$HOME/.operator/localhost"
 id="${1:-}"
 req="$dir/$id.json"
 [ -f "$req" ] || { echo "No such localhost session: $id"; exit 1; }
@@ -14,7 +14,7 @@ log=$(jq -r '.log // empty' "$req")
 : "${log:=$dir/$id.log}"
 
 # Every event carries this launch's secret, so the app can tell real events from printed text.
-osc() { printf '\e]777;notify;ghostty-extreme://localhost;{"t":"%s",%s\a' "${GHOSTTY_EXTREME_EVENT_TOKEN:-}" "${1#\{}"; }
+osc() { printf '\e]777;notify;operator://localhost;{"t":"%s",%s\a' "${GHOSTTY_EXTREME_EVENT_TOKEN:-}" "${1#\{}"; }
 
 cd "$cwd" 2>/dev/null || { echo "Folder not found: $cwd"; osc "{\"event\":\"exited\",\"id\":\"$id\",\"code\":127}"; exit 1; }
 # Ctrl-C stops the server, not this loop.

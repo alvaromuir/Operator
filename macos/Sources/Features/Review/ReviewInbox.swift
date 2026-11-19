@@ -131,7 +131,7 @@ final class ReviewInbox: ObservableObject {
     private var finishedWhileStarting: [ObjectIdentifier: (VerticalTabAgentKind, String?)] = [:]
     private var lastActivity: [ObjectIdentifier: VerticalTabAgentActivity] = [:]
     private var cancellables: Set<AnyCancellable> = []
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.review", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.review", qos: .userInitiated)
 
     private init() {
         NotificationCenter.default.publisher(for: VerticalTabsAgents.didChange)
@@ -171,7 +171,7 @@ final class ReviewInbox: ObservableObject {
         let info = VerticalTabsAgents.shared.info(for: surface)
         let previous = lastActivity[key]
         lastActivity[key] = info?.activity
-        guard let info, info.kind != .hermes, TellurionSettings.isOn(.review) else { return }
+        guard let info, info.kind != .hermes, OperatorSettings.isOn(.review) else { return }
 
         switch info.activity {
         case .working, .needsPermission:
@@ -419,7 +419,7 @@ final class ReviewInbox: ObservableObject {
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             let realIndex = indexPath.hasPrefix("/") ? indexPath : (root as NSString).appendingPathComponent(indexPath)
             let path = FileManager.default.temporaryDirectory
-                .appendingPathComponent("ghostty-extreme-review-\(UUID().uuidString).index").path
+                .appendingPathComponent("operator-review-\(UUID().uuidString).index").path
             // Starting from the real index keeps git's stat cache, so only changed files are hashed.
             if FileManager.default.fileExists(atPath: realIndex) {
                 try? FileManager.default.copyItem(atPath: realIndex, toPath: path)
@@ -461,7 +461,7 @@ final class ReviewInbox: ObservableObject {
     ]
 
     /// A private repository that snapshots `folder` without touching it, kept under
-    /// ~/.ghostty-extreme/review-shadows. nil for folders too broad or too big to snapshot.
+    /// ~/.operator/review-shadows. nil for folders too broad or too big to snapshot.
     static func shadowRepo(for folder: String) -> String? {
         let folder = (folder as NSString).standardizingPath
         let home = NSHomeDirectory()
@@ -472,7 +472,7 @@ final class ReviewInbox: ObservableObject {
         var hash: UInt64 = 0xcbf29ce484222325
         for byte in folder.utf8 { hash = (hash ^ UInt64(byte)) &* 0x100000001b3 }
         let name = (folder as NSString).lastPathComponent.filter { $0.isLetter || $0.isNumber || $0 == "-" }
-        let dir = home + "/.ghostty-extreme/review-shadows/\(name)-\(String(hash, radix: 16)).git"
+        let dir = home + "/.operator/review-shadows/\(name)-\(String(hash, radix: 16)).git"
         if !FileManager.default.fileExists(atPath: dir + "/HEAD") {
             try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
             guard AgentTools.git(["init", "--bare", "-q", dir], in: home).ok else { return nil }

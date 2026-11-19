@@ -22,7 +22,7 @@ class AppDelegate: NSObject,
     @IBOutlet private var menuServices: NSMenu?
     @IBOutlet private var menuCheckForUpdates: NSMenuItem?
     @IBOutlet private var menuOpenConfig: NSMenuItem?
-    /// Tellurion's Settings item; it takes the `open_config` shortcut (⌘,) when present.
+    /// Operator's Settings item; it takes the `open_config` shortcut (⌘,) when present.
     private weak var menuExtremeSettings: NSMenuItem?
     @IBOutlet private var menuReloadConfig: NSMenuItem?
     @IBOutlet private var menuSecureInput: NSMenuItem?
@@ -223,9 +223,9 @@ class AppDelegate: NSObject,
         // Store our start time
         applicationLaunchTime = ProcessInfo.processInfo.systemUptime
 
-        // Tellurion: phone access, if the user left it on (it doesn't need a window).
+        // Operator: phone access, if the user left it on (it doesn't need a window).
         PhoneServer.shared.startIfEnabled()
-        // Tellurion: agents' status in the menu bar, if it's on.
+        // Operator: agents' status in the menu bar, if it's on.
         MenuBarStatus.shared.start()
 
         // Check if secure input was enabled when we last quit.
@@ -238,7 +238,7 @@ class AppDelegate: NSObject,
 
         // Start our update checker.
         updateController.startUpdater()
-        TellurionUpdates.shared.start(updateController)
+        OperatorUpdates.shared.start(updateController)
 
         // After an update's restart, reopen the agents and servers that were running.
         // Before anything is resumed, so agents on Venice find it.
@@ -394,7 +394,7 @@ class AppDelegate: NSObject,
             // is possible to have other windows in a few scenarios:
             //   - if we're opening a URL since `application(_:openFile:)` is called before this.
             //   - if we're restoring from persisted state
-            if TellurionEdition.current == .board {
+            if OperatorEdition.current == .board {
                 // Boards reopen themselves; restored classic windows stay as they were.
                 if BoardController.all.isEmpty && derivedConfig.initialWindow {
                     undoManager.disableUndoRegistration()
@@ -446,9 +446,9 @@ class AppDelegate: NSObject,
 
         // We have some visible window. Show an app-wide modal to confirm quitting.
         let alert = NSAlert()
-        alert.messageText = "Quit Tellurion?"
+        alert.messageText = "Quit Operator?"
         alert.informativeText = "All terminal sessions will be terminated."
-        alert.addButton(withTitle: "Close Tellurion")
+        alert.addButton(withTitle: "Close Operator")
         alert.addButton(withTitle: "Cancel")
         alert.alertStyle = .warning
         switch alert.runModal() {
@@ -465,7 +465,7 @@ class AppDelegate: NSObject,
         // so remove them all now. In the future we may want to be
         // more selective and only remove surface-targeted notifications.
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
-        // Tellurion: a copy updated from GhosttyEXTREME takes the new name.
+        // Operator: a copy updated from Operator takes the new name.
         RenameAfterRebrand.renameIfNeeded()
     }
 
@@ -511,7 +511,7 @@ class AppDelegate: NSObject,
         }
 
         // No visible windows, open a new one.
-        if TellurionEdition.current == .board {
+        if OperatorEdition.current == .board {
             Board.openAtLaunch(ghostty)
         } else {
             _ = TerminalController.newWindow(ghostty)
@@ -570,7 +570,7 @@ class AppDelegate: NSObject,
                 Self.logger.warning("refusing to execute file with control characters path=\(filename.debugDescription, privacy: .public)")
                 let alert = NSAlert()
                 alert.messageText = "Cannot Execute File"
-                alert.informativeText = "This file's path contains hidden control characters, which could make Tellurion run a different command than the one shown."
+                alert.informativeText = "This file's path contains hidden control characters, which could make Operator run a different command than the one shown."
                 alert.addButton(withTitle: "OK")
                 alert.alertStyle = .warning
                 alert.runModal()
@@ -599,7 +599,7 @@ class AppDelegate: NSObject,
             // may want to show this as a sheet on the focused window (especially if we're
             // opening a tab). I'm not sure.
             let alert = NSAlert()
-            alert.messageText = "Allow Tellurion to execute \"\(filename)\"?"
+            alert.messageText = "Allow Operator to execute \"\(filename)\"?"
             alert.addButton(withTitle: "Allow")
             alert.addButton(withTitle: "Cancel")
             alert.alertStyle = .warning
@@ -831,7 +831,7 @@ class AppDelegate: NSObject,
     @objc private func ghosttyNewWindow(_ notification: Notification) {
         let configAny = notification.userInfo?[Ghostty.Notification.NewSurfaceConfigKey]
         let config = configAny as? Ghostty.SurfaceConfiguration
-        if TellurionEdition.current == .board {
+        if OperatorEdition.current == .board {
             Board.newBoard(ghostty, folder: config?.workingDirectory)
             return
         }
@@ -856,7 +856,7 @@ class AppDelegate: NSObject,
         let bellCount = NSApp.windows
             .compactMap { $0.windowController as? BaseTerminalController }
             .reduce(0) { $0 + ($1.bell ? 1 : 0) }
-        // Tellurion: coding agents waiting for permission or an answer count too.
+        // Operator: coding agents waiting for permission or an answer count too.
         let count = (ghostty.config.bellFeatures.contains(.attention) ? bellCount : 0) + AgentAlerts.shared.waitingCount
         let label = count > 0 ? (count > 99 ? "99+" : String(count)) : nil
         NSApp.dockTile.badgeLabel = label
@@ -881,7 +881,7 @@ class AppDelegate: NSObject,
         // explicitly false (NO), auto-updates are disabled. Otherwise, we use the behavior
         // defined by our "auto-update" configuration (if set) or fall back to Sparkle
         // user-based defaults.
-        // Tellurion: only release builds (stamped by release.sh) check by themselves. A
+        // Operator: only release builds (stamped by release.sh) check by themselves. A
         // local build is version 0.1, so every release looks like an update to it.
         // Local builds are kept from checking in UpdateDriver (`mayPerform`) rather than here:
         // the setting below is saved, and local builds share the release's bundle id, so
@@ -973,7 +973,7 @@ class AppDelegate: NSObject,
         Task.detached {
             await self.appIconUpdater.update(icon: AppIcon(config: config))
         }
-        // Tellurion: with the default icon, show the bundle's own icon
+        // Operator: with the default icon, show the bundle's own icon
         // file while running, rather than a possibly stale cached copy.
         if case .official = config.macosIcon,
            let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleIconFile") as? String,
@@ -1071,7 +1071,7 @@ class AppDelegate: NSObject,
 
     // MARK: - IB Actions
 
-    /// Gives the `open_config` shortcut to Tellurion's Settings item.
+    /// Gives the `open_config` shortcut to Operator's Settings item.
     func adoptSettingsMenuItem(_ item: NSMenuItem) {
         menuExtremeSettings = item
         // Menus are only ever set up on the main thread.
@@ -1092,7 +1092,7 @@ class AppDelegate: NSObject,
     }
 
     @IBAction func newWindow(_ sender: Any?) {
-        if TellurionEdition.current == .board {
+        if OperatorEdition.current == .board {
             Board.newBoard(ghostty)
             return
         }
@@ -1294,7 +1294,7 @@ extension AppDelegate {
 
         syncMenuShortcut(config, action: "check_for_updates", menuItem: self.menuCheckForUpdates)
         if let settings = menuExtremeSettings {
-            // ⌘, opens Tellurion's settings; "Edit Config File…" keeps no shortcut.
+            // ⌘, opens Operator's settings; "Edit Config File…" keeps no shortcut.
             syncMenuShortcut(config, action: "open_config", menuItem: settings)
             menuOpenConfig?.keyEquivalent = ""
             menuOpenConfig?.keyEquivalentModifierMask = []
@@ -1480,7 +1480,7 @@ extension AppDelegate {
         if controllersNeedConfirmation.count == 1 {
             Task {
                 let response = await controllersNeedConfirmation[0].confirmCloseAsync(
-                    messageText: "Quit Tellurion?",
+                    messageText: "Quit Operator?",
                     informativeText: "The terminal still has a running process. If you quit, the process will be killed.",
                     confirmButtonTitle: "Terminate",
                 )
@@ -1514,7 +1514,7 @@ extension AppDelegate {
         Task {
             for controller in controllers {
                 let response = await controller.confirmCloseAsync(
-                    messageText: "Quit Tellurion?",
+                    messageText: "Quit Operator?",
                     informativeText: "The terminal still has a running process. If you quit, the process will be killed.",
                     confirmButtonTitle: "Terminate",
                 )

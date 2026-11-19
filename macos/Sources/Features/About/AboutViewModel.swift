@@ -6,7 +6,7 @@ class AboutViewModel: ObservableObject {
 
     private var timerCancellable: AnyCancellable?
 
-    // Tellurion has one icon, so there's nothing to cycle through.
+    // Operator has one icon, so there's nothing to cycle through.
     private let icons: [Ghostty.MacOSIcon] = [.official]
 
     func startCyclingIcons() {

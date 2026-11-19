@@ -6,7 +6,7 @@ import SwiftUI
 /// and the instruction files they load, with editing and deleting.
 enum MemoryWindow {
     static func show(folder: String?) {
-        guard TellurionSettings.isOn(.memory) else { return }
+        guard OperatorSettings.isOn(.memory) else { return }
         let folder = folder ?? NSHomeDirectory()
         // Fresh for this folder, never one left open for another project.
         AgentToolWindows.close(id: "memory")
@@ -99,7 +99,7 @@ final class MemoryWindowModel: ObservableObject {
 
 private struct MemoryWindowView: View {
     @StateObject private var model: MemoryWindowModel
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
 
     init(folder: String) {
         _model = StateObject(wrappedValue: MemoryWindowModel(folder: folder))
@@ -108,19 +108,19 @@ private struct MemoryWindowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center) {
-                TellurionWindowTitle(icon: .memory, title: "Project Memory", subtitle: subtitle)
+                OperatorWindowTitle(icon: .memory, title: "Project Memory", subtitle: subtitle)
                 Spacer()
                 Button("Reload") { model.reload() }
                     .help("Read the files again")
             }
             .padding(.horizontal, 16).padding(.top, 30).padding(.bottom, 12)
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             HStack(spacing: 0) {
                 list.frame(width: 300)
-                Rectangle().fill(Tellurion.line).frame(width: 1)
+                Rectangle().fill(Operator.line).frame(width: 1)
                 detail.frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             footer.padding(.horizontal, 16).padding(.vertical, 9)
         }
         // A fixed preferred size: otherwise the window grows to fit long notes.
@@ -143,7 +143,7 @@ private struct MemoryWindowView: View {
         VStack(spacing: 0) {
             TextField("Search", text: $model.search)
                 .textFieldStyle(.roundedBorder)
-                .font(Tellurion.font(12))
+                .font(Operator.font(12))
                 .padding(10)
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
@@ -154,19 +154,19 @@ private struct MemoryWindowView: View {
                 .padding(.horizontal, 10).padding(.bottom, 12)
             }
         }
-        .background(Tellurion.panel)
+        .background(Operator.panel)
     }
 
     @ViewBuilder
     private func section(_ source: ProjectMemory.Note.Source) -> some View {
         let notes = model.notes(from: source)
         VStack(alignment: .leading, spacing: 4) {
-            TellurionSectionLabel(source.title) {
-                Text("\(notes.count)").font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+            OperatorSectionLabel(source.title) {
+                Text("\(notes.count)").font(Operator.font(10)).foregroundColor(Operator.dim)
             }
             if notes.isEmpty {
                 Text(emptyText(source))
-                    .font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
+                    .font(Operator.font(11)).foregroundColor(Operator.dim)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 6).padding(.vertical, 2)
             }
@@ -191,23 +191,23 @@ private struct MemoryWindowView: View {
         } label: {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(note.title).font(Tellurion.font(12, weight: .semibold))
-                        .foregroundColor(selected ? Tellurion.gold : Tellurion.text).lineLimit(1)
+                    Text(note.title).font(Operator.font(12, weight: .semibold))
+                        .foregroundColor(selected ? Operator.gold : Operator.text).lineLimit(1)
                     Spacer(minLength: 4)
                     if note.source == .claude {
-                        Text(note.kind).font(Tellurion.font(9.5)).foregroundColor(Tellurion.muted)
+                        Text(note.kind).font(Operator.font(9.5)).foregroundColor(Operator.muted)
                             .padding(.horizontal, 5).padding(.vertical, 1)
-                            .background(Capsule().fill(Tellurion.raised))
+                            .background(Capsule().fill(Operator.raised))
                     }
                 }
-                Text(note.summary).font(Tellurion.font(10.5)).foregroundColor(Tellurion.muted).lineLimit(2)
+                Text(note.summary).font(Operator.font(10.5)).foregroundColor(Operator.muted).lineLimit(2)
                 if let modified = note.modified, note.source != .codex {
-                    Text(Self.age(modified)).font(Tellurion.font(9.5)).foregroundColor(Tellurion.dim)
+                    Text(Self.age(modified)).font(Operator.font(9.5)).foregroundColor(Operator.dim)
                 }
             }
             .padding(.horizontal, 8).padding(.vertical, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(selected ? Tellurion.raised : .clear))
+            .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(selected ? Operator.raised : .clear))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -230,15 +230,15 @@ private struct MemoryWindowView: View {
         if let note = model.selected {
             VStack(alignment: .leading, spacing: 10) {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(note.title).font(Tellurion.font(15, weight: .semibold)).foregroundColor(Tellurion.text)
+                    Text(note.title).font(Operator.font(15, weight: .semibold)).foregroundColor(Operator.text)
                         .lineLimit(2)
-                    Text(location(note)).font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim)
+                    Text(location(note)).font(Operator.font(10.5)).foregroundColor(Operator.dim)
                         .lineLimit(1).truncationMode(.middle)
                         .textSelection(.enabled)
                 }
                 if note.source == .codex {
                     Text("Codex keeps this in its own memory file and rewrites it after sessions, so it's read-only here. To change it, tell Codex.")
-                        .font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                        .font(Operator.font(11)).foregroundColor(Operator.muted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Group {
@@ -255,12 +255,12 @@ private struct MemoryWindowView: View {
                     }
                 }
                 .font(.system(size: 12, design: .monospaced))
-                .foregroundColor(Tellurion.text)
+                .foregroundColor(Operator.text)
                 .padding(6)
-                .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Tellurion.panel))
-                .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Tellurion.line, lineWidth: 1))
+                .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Operator.panel))
+                .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Operator.line, lineWidth: 1))
                 if let error = model.error {
-                    Text(error).font(Tellurion.font(11)).foregroundColor(Tellurion.danger)
+                    Text(error).font(Operator.font(11)).foregroundColor(Operator.danger)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 HStack(spacing: 8) {
@@ -276,7 +276,7 @@ private struct MemoryWindowView: View {
                         Button("Revert") { model.select(note) }
                             .disabled(!model.hasChanges)
                         Button("Save") { model.save() }
-                            .buttonStyle(TellurionButtonStyle(prominent: true))
+                            .buttonStyle(OperatorButtonStyle(prominent: true))
                             .keyboardShortcut("s", modifiers: .command)
                             .disabled(!model.hasChanges)
                     }
@@ -286,7 +286,7 @@ private struct MemoryWindowView: View {
         } else {
             VStack(spacing: 8) {
                 Text(model.project == nil ? "Reading…" : "Nothing remembered for this project yet.")
-                    .font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                    .font(Operator.font(12)).foregroundColor(Operator.muted)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -318,8 +318,8 @@ private struct MemoryWindowView: View {
                 settings.set(.sharedMemory, on: !settings.isOn(.sharedMemory))
             }
         }
-        .font(Tellurion.font(10.5))
-        .foregroundColor(Tellurion.muted)
+        .font(Operator.font(10.5))
+        .foregroundColor(Operator.muted)
     }
 }
 #endif

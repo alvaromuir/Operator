@@ -3,12 +3,12 @@ import Cocoa
 
 extension UpdateDriver: SPUUpdaterDelegate {
     func feedURLString(for updater: SPUUpdater) -> String? {
-        // Tellurion: its own feed, published with every release and signed with its own
+        // Operator: its own feed, published with every release and signed with its own
         // key (SUPublicEDKey). Ghostty's feeds would offer official Ghostty, which would replace
         // this app. There's one channel; the `auto-update-channel` setting doesn't apply.
-        // Test-only: `TELLURION_TEST_FEED=<url>` points a test copy at a local feed.
+        // Test-only: `OPERATOR_TEST_FEED=<url>` points a test copy at a local feed.
         TestHooks.updateFeed
-            ?? "https://github.com/steventsvik/Tellurion/releases/latest/download/appcast.xml"
+            ?? "https://github.com/alvaromuir/Operator/releases/latest/download/appcast.xml"
     }
 
     /// Called when an update is scheduled to install silently,
@@ -33,13 +33,13 @@ extension UpdateDriver: SPUUpdaterDelegate {
     func updater(_ updater: SPUUpdater, mayPerform updateCheck: SPUUpdateCheck) throws {
         let isRelease = Bundle.main.infoDictionary?["GhosttyExtremeRelease"] as? Bool == true
         if !isRelease && updateCheck == .updatesInBackground {
-            throw NSError(domain: "Tellurion", code: 1,
+            throw NSError(domain: "Operator", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "Local builds don't check for updates by themselves."])
         }
     }
 
     func updater(_ updater: SPUUpdater, willInstallUpdate item: SUAppcastItem) {
-        // Tellurion: the installer writes to this app's path, so don't rename it on quit.
+        // Operator: the installer writes to this app's path, so don't rename it on quit.
         RenameAfterRebrand.updatePending = true
     }
 
@@ -50,7 +50,7 @@ extension UpdateDriver: SPUUpdaterDelegate {
         // we relaunch it uses it.
         NSApp.invalidateRestorableState()
         for window in NSApp.windows { window.invalidateRestorableState() }
-        // Tellurion: keep the windows for this quit and remember what's running in them.
+        // Operator: keep the windows for this quit and remember what's running in them.
         ResumeAfterUpdate.prepare()
     }
 }

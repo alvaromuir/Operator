@@ -127,7 +127,7 @@ struct TerminalView<ViewModel: TerminalViewModel>: View {
 
 private struct CornerOverlay: View {
     let showUpdate: Bool
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
 
     var body: some View {
         let phone = settings.isOn(.phone)
@@ -161,11 +161,11 @@ struct DebugBuildWarningView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundColor(.yellow)
 
-            Text("You're running a debug build of Tellurion! Performance will be degraded.")
+            Text("You're running a debug build of Operator! Performance will be degraded.")
                 .padding(.all, 8)
                 .popover(isPresented: $isPopover, arrowEdge: .bottom) {
                     Text("""
-                    Debug builds of Tellurion are very slow and you may experience
+                    Debug builds of Operator are very slow and you may experience
                     performance problems. Debug builds are only recommended during
                     development.
                     """)
@@ -178,7 +178,7 @@ struct DebugBuildWarningView: View {
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Debug build warning")
-        .accessibilityValue("Debug builds of Tellurion are very slow and you may experience performance problems. Debug builds are only recommended during development.")
+        .accessibilityValue("Debug builds of Operator are very slow and you may experience performance problems. Debug builds are only recommended during development.")
         .accessibilityAddTraits(.isStaticText)
         .onTapGesture {
             isPopover = true

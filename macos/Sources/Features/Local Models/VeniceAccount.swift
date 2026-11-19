@@ -8,7 +8,7 @@ import Security
 enum VeniceKeychain {
     private static var query: [String: Any] {
         [kSecClass as String: kSecClassGenericPassword,
-         kSecAttrService as String: (Bundle.main.bundleIdentifier ?? "com.steventsvik.ghostty-extreme") + ".venice",
+         kSecAttrService as String: (Bundle.main.bundleIdentifier ?? "com.alvaromuir.operator") + ".venice",
          kSecAttrAccount as String: "api-key"]
     }
 
@@ -31,7 +31,7 @@ enum VeniceKeychain {
         SecItemDelete(query as CFDictionary)
         var item = query
         item[kSecValueData as String] = Data(key.utf8)
-        item[kSecAttrLabel as String] = "Tellurion: Venice API key"
+        item[kSecAttrLabel as String] = "Operator: Venice API key"
         return SecItemAdd(item as CFDictionary, nil) == errSecSuccess
     }
 
@@ -39,7 +39,7 @@ enum VeniceKeychain {
 }
 
 /// What a Codex session on Venice may use beyond coding tools. Both are off unless chosen, and
-/// each is a file `tellurion venice codex` looks for, so every way of starting a session agrees.
+/// each is a file `operator venice codex` looks for, so every way of starting a session agrees.
 enum VeniceCodexOption: String {
     case memory = "use-codex-memory"
     case computerUse = "allow-computer-use"
@@ -89,7 +89,7 @@ final class VeniceAccount: ObservableObject {
     nonisolated static var base: URL { TestHooks.veniceServer.flatMap(URL.init(string:)) ?? VeniceAPI.base }
 
     nonisolated static var proxyInfoFile: URL {
-        URL(fileURLWithPath: HookInstaller.home + "/.ghostty-extreme/venice-proxy.json")
+        URL(fileURLWithPath: HookInstaller.home + "/.operator/venice-proxy.json")
     }
 
     private let proxy = VeniceProxy(upstream: VeniceAccount.base, infoFile: VeniceAccount.proxyInfoFile) { VeniceKeychain.read() }
@@ -253,7 +253,7 @@ final class VeniceAccount: ObservableObject {
         alert.messageText = "Venice runs on its servers, not on this Mac"
         alert.informativeText = """
         • Your prompts go to Venice, and so does what an agent reads while it works: your code, and the output of commands it runs.
-        • For models marked Private, Venice and its partners say nothing is stored. Tellurion can't verify that.
+        • For models marked Private, Venice and its partners say nothing is stored. Operator can't verify that.
         • It's billed to your Venice account. Your Claude or ChatGPT subscription isn't used.
 
         • Your Codex memory, computer use and secret files like .env stay out of reach unless you turn them on in Local models. It can still read your other files.
@@ -281,12 +281,12 @@ final class VeniceAccount: ObservableObject {
 }
 
 /// Starting Codex on Venice: the variables a pane carries, and the lines typed into it. Typed lines
-/// name `tellurion venice codex` outright, so they work whatever the shell; in zsh a plain `codex`
-/// in such a pane goes the same way (see ghostty-extreme.zsh).
+/// name `operator venice codex` outright, so they work whatever the shell; in zsh a plain `codex`
+/// in such a pane goes the same way (see operator.zsh).
 enum VeniceCodex {
-    static let backendVariable = "TELLURION_CODEX_BACKEND"
-    static let modelVariable = "TELLURION_VENICE_MODEL"
-    /// What `tellurion venice codex` names the provider, which Codex records in each session.
+    static let backendVariable = "OPERATOR_CODEX_BACKEND"
+    static let modelVariable = "OPERATOR_VENICE_MODEL"
+    /// What `operator venice codex` names the provider, which Codex records in each session.
     static let provider = "venice"
 
     /// Resumes a session (its id already quoted) on Venice.
@@ -321,7 +321,7 @@ enum VeniceCodex {
         return panel.runModal() == .OK ? panel.url?.path : nil
     }
 
-    private static var cli: String { AgentTools.shellQuote(HookInstaller.binFolder.appendingPathComponent("tellurion").path) }
+    private static var cli: String { AgentTools.shellQuote(HookInstaller.binFolder.appendingPathComponent("operator").path) }
 
     /// The command, with Codex's own arguments after it: "resume <id>".
     static func command(_ arguments: String = "") -> String {
@@ -329,7 +329,7 @@ enum VeniceCodex {
     }
 
     /// A line typed into a new pane on Venice (or, with `command`, on a model on this Mac):
-    /// anything that starts plain Codex goes through Tellurion instead, whichever shell it lands in.
+    /// anything that starts plain Codex goes through Operator instead, whichever shell it lands in.
     static func adapted(_ line: String, command: (String) -> String = VeniceCodex.command) -> String {
         let trimmed = line.drop { $0 == " " }
         guard trimmed == "codex\n" || trimmed.hasPrefix("codex ") else { return line }

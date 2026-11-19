@@ -22,7 +22,7 @@ extension Ghostty {
         /// Syncs a single menu shortcut for the given action. The action string is the same
         /// action string used for the Ghostty configuration.
         ///
-        /// Tellurion: `fallback` is the shortcut the item keeps when the config binds nothing to
+        /// Operator: `fallback` is the shortcut the item keeps when the config binds nothing to
         /// the action (Copy and Paste, so ⌘C and ⌘V reach text fields).
         func syncMenuShortcut(_ config: Ghostty.Config, action: String?, menuItem: NSMenuItem?,
                               fallback: KeyboardShortcut? = nil) {

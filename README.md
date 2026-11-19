@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/readme/banner.png" alt="Tellurion: the macOS terminal built for coding agents" width="100%">
+  <img src="images/readme/banner.png" alt="Operator: the macOS terminal built for coding agents" width="100%">
 </p>
 
 <p align="center">
@@ -8,19 +8,19 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/steventsvik/Tellurion/releases/latest"><img alt="Latest release" src="https://raw.githubusercontent.com/steventsvik/Tellurion/badges/release.svg"></a>
-  <a href="https://github.com/steventsvik/Tellurion/stargazers"><img alt="GitHub stars" src="https://raw.githubusercontent.com/steventsvik/Tellurion/badges/stars.svg"></a>
-  <a href="https://github.com/steventsvik/Tellurion/releases"><img alt="Total downloads" src="https://raw.githubusercontent.com/steventsvik/Tellurion/badges/downloads.svg"></a>
-  <img alt="macOS 13+" src="https://raw.githubusercontent.com/steventsvik/Tellurion/badges/macos.svg">
-  <img alt="Apple silicon" src="https://raw.githubusercontent.com/steventsvik/Tellurion/badges/arm64.svg">
-  <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://raw.githubusercontent.com/steventsvik/Tellurion/badges/license.svg"></a>
-  <a href="https://ghostty.org"><img alt="Based on Ghostty" src="https://raw.githubusercontent.com/steventsvik/Tellurion/badges/ghostty.svg"></a>
-  <a href="https://github.com/steventsvik/Tellurion/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/steventsvik/Tellurion/actions/workflows/ci.yml/badge.svg?branch=dev"></a>
+  <a href="https://github.com/alvaromuir/Operator/releases/latest"><img alt="Latest release" src="https://raw.githubusercontent.com/alvaromuir/Operator/badges/release.svg"></a>
+  <a href="https://github.com/alvaromuir/Operator/stargazers"><img alt="GitHub stars" src="https://raw.githubusercontent.com/alvaromuir/Operator/badges/stars.svg"></a>
+  <a href="https://github.com/alvaromuir/Operator/releases"><img alt="Total downloads" src="https://raw.githubusercontent.com/alvaromuir/Operator/badges/downloads.svg"></a>
+  <img alt="macOS 13+" src="https://raw.githubusercontent.com/alvaromuir/Operator/badges/macos.svg">
+  <img alt="Apple silicon" src="https://raw.githubusercontent.com/alvaromuir/Operator/badges/arm64.svg">
+  <a href="LICENSE"><img alt="License: AGPL-3.0" src="https://raw.githubusercontent.com/alvaromuir/Operator/badges/license.svg"></a>
+  <a href="https://ghostty.org"><img alt="Based on Ghostty" src="https://raw.githubusercontent.com/alvaromuir/Operator/badges/ghostty.svg"></a>
+  <a href="https://github.com/alvaromuir/Operator/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/alvaromuir/Operator/actions/workflows/ci.yml/badge.svg?branch=dev"></a>
 </p>
 
 <p align="center">
-  <b><a href="https://github.com/steventsvik/Tellurion/releases/latest">Download</a></b> ·
-  <b><a href="https://steventsvik.github.io/Tellurion/">Website</a></b> ·
+  <b><a href="https://github.com/alvaromuir/Operator/releases/latest">Download</a></b> ·
+  <b><a href="https://alvaromuir.github.io/Operator/">Website</a></b> ·
   <a href="#boards">Boards</a> ·
   <a href="#watch-your-agents-work-live">Live agents</a> ·
   <a href="#features">Features</a> ·
@@ -36,7 +36,7 @@
 
 <p align="center"><sub>Real app, real agents, demo projects. The full tour, as a GIF. <a href="images/readme/demo.mp4">Watch it in higher quality</a>.</sub></p>
 
-**Tellurion is a macOS terminal for developers who run several AI coding agents,
+**Operator is a macOS terminal for developers who run several AI coding agents,
 like Claude Code, Codex, Gemini CLI and Copilot CLI, across several projects at once.** It's a fork of
 [Ghostty](https://ghostty.org), the fast native terminal, that shows what every agent is
 doing, live: the code it's writing as it writes it, where it is in your project, what part
@@ -49,14 +49,14 @@ on your own Mac.
 Everything Ghostty does still works, and your Ghostty config works as-is. This fork tracks
 official Ghostty releases and adds its features on top.
 
-> **Tellurion was called GhosttyEXTREME.** Same app, same features; if you have
-> GhosttyEXTREME installed, Check for Updates… brings you to Tellurion.
+> **Operator was called Operator.** Same app, same features; if you have
+> Operator installed, Check for Updates… brings you to Operator.
 
 > [!NOTE]
 > Unofficial fork. Not affiliated with or endorsed by the Ghostty project.
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/steventsvik/Tellurion/custom/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/alvaromuir/Operator/custom/install.sh | bash
 ```
 
 <sub>Apple silicon, macOS 13 or newer. Free and open source (AGPL-3.0). No account, no telemetry.</sub>
@@ -66,11 +66,11 @@ curl -fsSL https://raw.githubusercontent.com/steventsvik/Tellurion/custom/instal
 ## Boards
 
 New in 1.8: put your terminals on a board instead of in tabs. Pick **Board** when you first
-open Tellurion, or any time in **Settings → Edition**. Classic stays the default, and nothing
+open Operator, or any time in **Settings → Edition**. Classic stays the default, and nothing
 changes unless you switch.
 
 <p align="center">
-  <a href="images/readme/boards.mp4"><img src="images/readme/boards.gif" alt="A 54-second tour of Tellurion Boards: a board of twelve agent tiles in four projects, flying in to a tile and back out, answering a Claude Code permission prompt from the list, spawning a team from a preset, wiring agents to an orchestrator card, the Mission Map, a web tile, the Agent Map and a kanban card moving to Done" width="100%"></a>
+  <a href="images/readme/boards.mp4"><img src="images/readme/boards.gif" alt="A 54-second tour of Operator Boards: a board of twelve agent tiles in four projects, flying in to a tile and back out, answering a Claude Code permission prompt from the list, spawning a team from a preset, wiring agents to an orchestrator card, the Mission Map, a web tile, the Agent Map and a kanban card moving to Done" width="100%"></a>
 </p>
 
 <p align="center"><sub>Real app, demo projects. Claude Code and Codex are real; most of the background tiles are stand-ins. <a href="images/readme/boards.mp4">Watch it in higher quality</a>.</sub></p>
@@ -83,7 +83,7 @@ changes unless you switch.
 - **Pan and zoom:** pinch, or hold ⌘ and scroll, to zoom; drag empty space to move around.
   ⌥⌘9 shows everything, ⌥⌘0 goes back to actual size, and double-clicking a title bar flies
   to that tile. Zooming never resizes a terminal, so agents aren't interrupted.
-- **Switching moves your terminals:** pick Board with classic windows open and Tellurion
+- **Switching moves your terminals:** pick Board with classic windows open and Operator
   offers to move them. Every tab and split becomes a tile, grouped by project, with agents
   still running. **Keep Windows** leaves them where they are.
 - **Tiles in one project share a color,** with a tinted area labelled with its name.
@@ -91,7 +91,7 @@ changes unless you switch.
 - **Tools at the edges:** Select, Agent, Group, Terminal, Text, Pen, Eraser, Web and Image on
   the left, each with a single key; Layers, Tasks, files and changes, and review loops on the
   right. Right-click empty board for a ring of quick actions.
-- **Saved as you go:** tiles, where you were looking and the window come back when Tellurion
+- **Saved as you go:** tiles, where you were looking and the window come back when Operator
   starts, and Claude Code and Codex pick up their last conversation. The **Boards** list in
   the sidebar switches between boards; the one you leave keeps running.
 
@@ -188,7 +188,7 @@ A browser on the board, next to the agents building the page: tabs, back and for
 address bar that also searches, and a start page listing the localhost servers running now.
 Size it to a real screen (24", 27" or 32" 4K) or a phone (iPhone SE to Galaxy S8+) and the
 page lays out at that size; **{}** opens Web Inspector. Web tiles keep their cookies and
-storage apart, get no bridge into Tellurion, and refuse downloads.
+storage apart, get no bridge into Operator, and refuse downloads.
 
 ### Notes, checklists and kanban
 
@@ -212,14 +212,14 @@ In Progress and Done, with due dates and priorities.
   fully editable.
 - **Documents:** a project overview, onboarding guide, architecture, API reference or
   security overview, written from the project. It only reads the project; documents stay in
-  Tellurion's folder, not your repo, and export as Markdown or PDF.
+  Operator's folder, not your repo, and export as Markdown or PDF.
 - **Draw on the board itself** with the pen, in 8 colors and 5 widths, and name areas with
   big labels.
 
 ### Accounts, projects and more
 
 - **Accounts:** use more than one Claude Code or Codex sign-in, choose which one new tiles
-  use, and restart a tile's agent on another. Tellurion only points the agent at each
+  use, and restart a tile's agent on another. Operator only points the agent at each
   account's folder and never reads sign-in details.
 - **Projects and Home:** a board's top bar shows its project, the project's other boards as
   tabs (with how many agents need you on each) and when your usage limit resets. **Home**
@@ -229,7 +229,7 @@ In Progress and Done, with due dates and priorities.
 - **Media tiles:** drop video or music on the board to play it in a tile. They pause when the
   window is hidden.
 - **Shortcuts, Spotlight and Siri:** Open Board, New Board, Launch Agents on a Board, New
-  Sketch and Arrange Board by Project. "Launch agents in Tellurion" works from Siri.
+  Sketch and Arrange Board by Project. "Launch agents in Operator" works from Siri.
 - **Settings → Features** switches off Web tiles, drawing, Documents, Diagrams, Accounts,
   Mission Map and Media tiles; a feature that's off leaves the palettes and menus.
 
@@ -240,10 +240,10 @@ The full list is in the [1.8.0 notes](CHANGELOG.md#180).
 ## Watch your agents work, live
 
 Run Claude Code, Codex, Gemini CLI, Copilot CLI or another agent in a tab, the way you
-already do. Tellurion follows each one as it works.
+already do. Operator follows each one as it works.
 
 <p align="center">
-  <img src="images/readme/main-window.png" alt="Tellurion with a live Claude Code agent: the agent sidebar, the terminal, the code editor typing in the agent's edit, and the code map tracing its path" width="100%">
+  <img src="images/readme/main-window.png" alt="Operator with a live Claude Code agent: the agent sidebar, the terminal, the code editor typing in the agent's edit, and the code map tracing its path" width="100%">
 </p>
 
 | As the agent… | …you see |
@@ -587,7 +587,7 @@ Chat with a model that runs on your Mac: nothing leaves it, and it works offline
   marks these panes **Local**, and their sessions come back on the same model after an update.
   **Search the web** is a separate switch for them, off by default: the one thing that would leave
   your Mac.
-- **From a terminal:** `tellurion local <model>`, and `tellurion local codex [-m <model>]
+- **From a terminal:** `operator local <model>`, and `operator local codex [-m <model>]
   [--provider ollama|lmstudio]`.
 
 **Abliterated models on Venice, with Codex's tools.** Connect a [Venice](https://venice.ai/)
@@ -597,14 +597,14 @@ whether it can call tools. **Open in Codex** runs Codex on that model with your 
 `AGENTS.md`, skills, MCP servers, hooks and sessions all stay as they are, and its sandbox and
 approvals still apply, since commands run on your Mac. **Chat** opens a plain chat. On a board, a
 Venice model is an account in Accounts, so its tiles stay on it through restarts. It's billed to
-your Venice account, not your ChatGPT plan. From a terminal, while Tellurion is running:
-`tellurion venice codex [options]` and `tellurion local --provider venice <model>`.
+your Venice account, not your ChatGPT plan. From a terminal, while Operator is running:
+`operator venice codex [options]` and `operator local --provider venice <model>`.
 
 What's different from a model on your Mac: your prompts, and what an agent reads while it works
 (your code, and the output of its commands), go to Venice's servers. For models marked Private,
 Venice and its partners say nothing is stored, which can't be verified from here. Models marked
 Anonymized hide who you are, but their own provider sees what's sent and may store it, and
-Tellurion warns each time you pick one. Compared with Codex on its own models: Venice serves
+Operator warns each time you pick one. Compared with Codex on its own models: Venice serves
 other models through a translation layer that drops reasoning between turns, so they think again
 each turn, and its web search only works on some of them.
 
@@ -761,21 +761,21 @@ current project's own.
 ### Setup, settings and updates
 
 <p align="center">
-  <img src="images/readme/shortcuts.png" alt="The shortcut overlay: every Tellurion and Ghostty shortcut" width="60%">
+  <img src="images/readme/shortcuts.png" alt="The shortcut overlay: every Operator and Ghostty shortcut" width="60%">
 </p>
 
 - **Welcome window:** on first launch it finds Claude Code, Codex and the tools the hooks
   need, connects your agents in one click (backing up each file it changes), lets you pick
   features, and runs a live test.
-- **Check Setup** (Tellurion menu or ⌘P) checks the hooks, each agent's config, jq,
+- **Check Setup** (Operator menu or ⌘P) checks the hooks, each agent's config, jq,
   the shell integration and notifications, with a fix button on each problem, and offers
   **Connect** for Copilot CLI, Droid, Gemini CLI, Antigravity, Kiro, Cursor CLI and OpenCode
   when it finds them.
-  `tellurion doctor` runs the same checks in a terminal.
+  `operator doctor` runs the same checks in a terminal.
 - **Settings** (⌘,) turns each feature on or off. A feature that's off has no menu item,
   shortcut, button or palette entry, and does no background work.
 - **Every shortcut:** hold ⌃⌘ for a moment to see them all over the window.
-- **Menu bar:** a Tellurion item shows a count when agents need you, in either edition, and
+- **Menu bar:** a Operator item shows a count when agents need you, in either edition, and
   lists every agent (waiting ones first), your boards, New Sketch, Launch Agents and New
   Board. Turn it off in Settings.
 - **Updates** appear as a card at the top of the sidebar, checked shortly after launch and
@@ -792,10 +792,10 @@ or **Mirrored**; **Reset** goes back to Classic.
 ### Design
 
 <p align="center">
-  <img src="images/readme/design-templates.png" alt="The Design window: twenty template cards, each a small Tellurion window in that design's colors, with Tellurion marked in use" width="100%">
+  <img src="images/readme/design-templates.png" alt="The Design window: twenty template cards, each a small Operator window in that design's colors, with Operator marked in use" width="100%">
 </p>
 
-Tellurion ships in ink and bronze around whatever terminal colors you already use. **Design**
+Operator ships in ink and bronze around whatever terminal colors you already use. **Design**
 (Tools → Design, or "Design…" in the command palette) changes that, live.
 
 - **Twenty templates,** each a vibe: Catppuccin Mocha and Latte, Dracula, Nord, Gruvbox dark
@@ -809,14 +809,14 @@ Tellurion ships in ink and bronze around whatever terminal colors you already us
   window's opacity, blur and padding, and the cursor's shape and blink.
 - **Draw your own logo:** a 32×32 pixel editor with mirror painting, undo and starting
   shapes. Pixels are color roles, so the logo recolors with the design. It replaces the T in
-  the new-tab splash and the tool windows, and can be the Dock icon while Tellurion runs.
-- **Save it** under Templates → Yours. **Reset** returns to Tellurion as shipped.
+  the new-tab splash and the tool windows, and can be the Dock icon while Operator runs.
+- **Save it** under Templates → Yours. **Reset** returns to Operator as shipped.
 - Your Ghostty config stays yours. The terminal's part of a design goes into
-  `tellurion-design.ghostty` beside it, included by one `config-file` line; delete that line
+  `operator-design.ghostty` beside it, included by one `config-file` line; delete that line
   to stop using it.
 
 <p align="center">
-  <img src="images/readme/design-looks.png" alt="Four Tellurion windows in four templates: Catppuccin Mocha, Gruvbox, Nord and Rosé Pine Dawn" width="100%">
+  <img src="images/readme/design-looks.png" alt="Four Operator windows in four templates: Catppuccin Mocha, Gruvbox, Nord and Rosé Pine Dawn" width="100%">
 </p>
 
 <p align="center">
@@ -824,7 +824,7 @@ Tellurion ships in ink and bronze around whatever terminal colors you already us
 </p>
 
 <p align="center">
-  <img src="images/readme/design-logo.png" alt="The logo editor: a 32 by 32 pixel canvas with the Tellurion mark, color roles to paint with, mirror and eraser, and previews at three sizes plus the Dock icon" width="100%">
+  <img src="images/readme/design-logo.png" alt="The logo editor: a 32 by 32 pixel canvas with the Operator mark, color roles to paint with, mirror and eraser, and previews at three sizes plus the Dock icon" width="100%">
 </p>
 
 ### Everything Ghostty already does
@@ -838,7 +838,7 @@ ligatures, shell integration, AppleScript and Shortcuts. Your Ghostty config wor
 
 All of the sidebar's animations run in Core Animation, so the app does almost no work per
 frame. Anything you can't see pauses: background tabs, hidden and minimized windows. With
-six agents working at once, Tellurion uses about **1–3% CPU** (measured on an
+six agents working at once, Operator uses about **1–3% CPU** (measured on an
 Apple silicon MacBook).
 
 ## Security and privacy
@@ -853,7 +853,7 @@ Apple silicon MacBook).
   token made each launch, which only passes on model requests and the model list. It leaves out
   the folder paths and install id Codex attaches to each request's metadata; the working folder
   Codex tells its model about is still part of the prompt. A program running as you could read that
-  token and use your account while Tellurion runs, but it can't learn the key or reach anything
+  token and use your account while Operator runs, but it can't learn the key or reach anything
   else the key can do. Disconnect removes the key and stops the server.
 - **Only your own hooks can talk to it.** Agent status arrives as terminal escape
   sequences, which any printed text could imitate. Each launch creates a secret that only
@@ -867,30 +867,30 @@ Apple silicon MacBook).
   to your local dev server.
 
 <details>
-<summary><b>Every file Tellurion writes outside itself, and how to undo each</b></summary>
+<summary><b>Every file Operator writes outside itself, and how to undo each</b></summary>
 
 <br>
 
 Nothing below happens on its own: each file is only touched when you click the button that
 names it (the welcome window's **Set up**, **Check Setup → Connect**, Tools → Design).
 Before a file you already had is rewritten, a copy is made beside it as
-`<name>.ghostty-extreme-backup-<date>`, a new one every time, so the previous version is
+`<name>.operator-backup-<date>`, a new one every time, so the previous version is
 always one rename away.
 
 | What | Where | Undo |
 |---|---|---|
-| Tellurion's own folder: the hooks and the `localhost` and `tellurion` commands (`agent-hooks/`, `bin/`), boards, sketches, documents, designs, presets, localhost session records, review snapshots, Codex tracking, the board agent's images and the feature flags the hooks read | `~/.ghostty-extreme/` | Remove the hooks first (Settings → Agents → **Remove…**, so no agent still points at them), then delete the folder |
-| Venice, once connected: the API key in your login keychain, and in Tellurion's folder the server's address and token (`venice-proxy.json`, owner-only) and Codex's list of Venice models (`venice/`). Codex's own files aren't changed | Keychain, `~/.ghostty-extreme/` | **Disconnect** in Tools → Local models removes the key and the address; `venice/` can be deleted |
+| Operator's own folder: the hooks and the `localhost` and `operator` commands (`agent-hooks/`, `bin/`), boards, sketches, documents, designs, presets, localhost session records, review snapshots, Codex tracking, the board agent's images and the feature flags the hooks read | `~/.operator/` | Remove the hooks first (Settings → Agents → **Remove…**, so no agent still points at them), then delete the folder |
+| Venice, once connected: the API key in your login keychain, and in Operator's folder the server's address and token (`venice-proxy.json`, owner-only) and Codex's list of Venice models (`venice/`). Codex's own files aren't changed | Keychain, `~/.operator/` | **Disconnect** in Tools → Local models removes the key and the address; `venice/` can be deleted |
 | Claude Code hooks: entries whose command ends in `agent-hook.sh claude <event>` | `~/.claude/settings.json` | Settings → Agents → **Remove…** takes out only those entries. Or delete them yourself, or put a backup back |
 | Codex hooks: entries whose command ends in `agent-hook.sh codex <event>` | `~/.codex/hooks.json` | Same |
 | Shell integration: a comment and a `source` line at the end | `~/.zshrc` | **Remove…** deletes those two lines, even if you re-spaced them, and tells you if it finds a line it didn't write. Or delete them yourself |
-| Other agents, each connected from **Check Setup → Connect**: Copilot CLI `~/.copilot/hooks/ghostty-extreme.json`, Kiro `~/.kiro/hooks/ghostty-extreme.json`, Goose `~/.agents/plugins/tellurion/hooks/hooks.json`, OpenCode `~/.config/opencode/plugins/ghostty-extreme.js` and Amp `~/.config/amp/plugins/tellurion.ts` are files of Tellurion's own; Droid `~/.factory/settings.json` (or `hooks.json`), Gemini CLI `~/.gemini/settings.json`, Antigravity `~/.gemini/config/hooks.json`, Cursor CLI `~/.cursor/hooks.json`, Qwen Code `~/.qwen/settings.json`, Kimi Code `~/.kimi-code/config.toml` and Mistral Vibe `~/.vibe/hooks.toml` get entries running `agent-event.py` | the agent's own settings | **Check Setup → Disconnect** (or **Remove…** for all at once) deletes the files that are Tellurion's and takes only its entries out of the shared ones |
-| Design: the look you build in Tools → Design, as a Ghostty config fragment plus a marker comment and a `config-file = ?tellurion-design.ghostty` line in your Ghostty config | `tellurion-design.ghostty` next to your Ghostty config (`~/.config/ghostty/` or `~/Library/Application Support/com.mitchellh.ghostty/`) | Delete the two lines from your config and the fragment file |
+| Other agents, each connected from **Check Setup → Connect**: Copilot CLI `~/.copilot/hooks/operator.json`, Kiro `~/.kiro/hooks/operator.json`, Goose `~/.agents/plugins/operator/hooks/hooks.json`, OpenCode `~/.config/opencode/plugins/operator.js` and Amp `~/.config/amp/plugins/operator.ts` are files of Operator's own; Droid `~/.factory/settings.json` (or `hooks.json`), Gemini CLI `~/.gemini/settings.json`, Antigravity `~/.gemini/config/hooks.json`, Cursor CLI `~/.cursor/hooks.json`, Qwen Code `~/.qwen/settings.json`, Kimi Code `~/.kimi-code/config.toml` and Mistral Vibe `~/.vibe/hooks.toml` get entries running `agent-event.py` | the agent's own settings | **Check Setup → Disconnect** (or **Remove…** for all at once) deletes the files that are Operator's and takes only its entries out of the shared ones |
+| Design: the look you build in Tools → Design, as a Ghostty config fragment plus a marker comment and a `config-file = ?operator-design.ghostty` line in your Ghostty config | `operator-design.ghostty` next to your Ghostty config (`~/.config/ghostty/` or `~/Library/Application Support/com.mitchellh.ghostty/`) | Delete the two lines from your config and the fragment file |
 | Claude Code's memory notes, only when you edit or delete a note in the Memory view | `~/.claude/projects/<project>/memory/` | They're Claude Code's own files; edit them back or delete them |
-| Preferences, paired phones, Docker session files, Supabase probe caches, and the web tiles' cookies and cache | `~/Library/Preferences/com.steventsvik.ghostty-extreme.plist`, `~/Library/Application Support/GhosttyEXTREME/`, `~/Library/WebKit/com.steventsvik.ghostty-extreme/` | `defaults delete com.steventsvik.ghostty-extreme` and delete the folders |
+| Preferences, paired phones, Docker session files, Supabase probe caches, and the web tiles' cookies and cache | `~/Library/Preferences/com.alvaromuir.operator.plist`, `~/Library/Application Support/Operator/`, `~/Library/WebKit/com.alvaromuir.operator/` | `defaults delete com.alvaromuir.operator` and delete the folders |
 
 Everything else the app reads (agents' session logs, your Ghostty config, git repositories)
-is read only. The `ghostty-extreme` names are from the app's earlier name and stay so that
+is read only. The `operator` names are from the app's earlier name and stay so that
 existing setups keep working.
 
 </details>
@@ -899,10 +899,10 @@ existing setups keep working.
 
 ## How it compares
 
-Tellurion is for watching and steering the CLI agents you already use. If you want a
+Operator is for watching and steering the CLI agents you already use. If you want a
 terminal or editor with its own built-in AI, Warp or Zed may suit you better.
 
-| | Tellurion | [Ghostty](https://ghostty.org) | [cmux](https://github.com/manaflow-ai/cmux) | [Warp](https://www.warp.dev) | [Zed](https://zed.dev) |
+| | Operator | [Ghostty](https://ghostty.org) | [cmux](https://github.com/manaflow-ai/cmux) | [Warp](https://www.warp.dev) | [Zed](https://zed.dev) |
 |---|---|---|---|---|---|
 | **What it is** | Ghostty fork for running coding agents | Fast native terminal | Ghostty-based terminal for agents | Terminal with built-in agents | Code editor with an agent panel |
 | **Runs Claude Code, Codex & co. unchanged** | ✓ | ✓ | ✓ | ✓ | ✓ in its terminal; also via ACP |
@@ -919,7 +919,7 @@ terminal or editor with its own built-in AI, Warp or Zed may suit you better.
 **Where others are ahead:** Warp and Zed run on Linux and Windows and come with their own
 AI. cmux has SSH workspaces and a browser your agents can control, and its sidebar also
 shows PR status and listening ports. Ghostty is the lean original that all of this is built
-on. Tellurion is macOS-only, Apple silicon only, and maintained by one person.
+on. Operator is macOS-only, Apple silicon only, and maintained by one person.
 
 <sub>Compared from each project's public docs on October 7, 2026. Corrections welcome.</sub>
 
@@ -930,16 +930,16 @@ on. Tellurion is macOS-only, Apple silicon only, and maintained by one person.
 Apple silicon Macs, macOS 13 or newer. In Terminal:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/steventsvik/Tellurion/custom/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/alvaromuir/Operator/custom/install.sh | bash
 ```
 
-It downloads the [latest release](https://github.com/steventsvik/Tellurion/releases/latest),
-checks it against the release's SHA-256 checksums and puts **Tellurion.app** in
+It downloads the [latest release](https://github.com/alvaromuir/Operator/releases/latest),
+checks it against the release's SHA-256 checksums and puts **Operator.app** in
 `/Applications`. Then it opens: the welcome window connects Claude Code and Codex in one
 click and runs a live test.
 
-**Updates** arrive in the app: Tellurion checks for new releases and installs them when
-you say so (Tellurion → Check for Updates…). They're signed, and the app only accepts
+**Updates** arrive in the app: Operator checks for new releases and installs them when
+you say so (Operator → Check for Updates…). They're signed, and the app only accepts
 updates signed by this project.
 
 <details>
@@ -947,9 +947,9 @@ updates signed by this project.
 
 <br>
 
-Download `Tellurion-<version>-macos-arm64.zip` from the
-[latest release](https://github.com/steventsvik/Tellurion/releases/latest), unzip it and
-move **Tellurion.app** to `/Applications`. It's signed with a Developer ID and notarized by
+Download `Operator-<version>-macos-arm64.zip` from the
+[latest release](https://github.com/alvaromuir/Operator/releases/latest), unzip it and
+move **Operator.app** to `/Applications`. It's signed with a Developer ID and notarized by
 Apple, so it opens like any other download.
 
 </details>
@@ -963,7 +963,7 @@ Hold ⌃⌘ for a moment to see them all over the window.
 | Shortcut | |
 |---|---|
 | ⌘P | Command palette: agents waiting on you, new sessions, every tool |
-| ⌘, | Settings (Ghostty's config file is under Tellurion → Edit Config File…) |
+| ⌘, | Settings (Ghostty's config file is under Operator → Edit Config File…) |
 | ⌃⌘S | Show or hide the sidebar |
 | ⌃⌘M | Mission Control |
 | ⌃⌘E | Code editor |
@@ -1002,26 +1002,26 @@ On a board:
 The welcome window and **Check Setup** do all of this for you. The steps below are what
 they do.
 
-Tellurion sets `GHOSTTY_EXTREME_AGENT_EVENTS=1` in its terminals. The hook
+Operator sets `GHOSTTY_EXTREME_AGENT_EVENTS=1` in its terminals. The hook
 scripts in `agent-hooks/` do nothing anywhere else.
 
 ```sh
 ./agent-hooks/install.sh
 ```
 
-This copies the hooks to `~/.ghostty-extreme/agent-hooks/` and the `localhost` command
-to `~/.ghostty-extreme/bin/`. Point your agents there rather than at the repo: macOS
+This copies the hooks to `~/.operator/agent-hooks/` and the `localhost` command
+to `~/.operator/bin/`. Point your agents there rather than at the repo: macOS
 privacy protection can block terminal processes from reading `~/Desktop` or
 `~/Documents`, which silently breaks the hooks.
 
 **Shell detection.** Add this to `~/.zshrc`:
 
 ```sh
-[[ -n "$GHOSTTY_EXTREME_AGENT_EVENTS" ]] && source ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh
+[[ -n "$GHOSTTY_EXTREME_AGENT_EVENTS" ]] && source ~/.operator/agent-hooks/operator.zsh
 ```
 
 **Claude Code.** In `~/.claude/settings.json`, run
-`~/.ghostty-extreme/agent-hooks/agent-hook.sh claude <event>` for these hooks:
+`~/.operator/agent-hooks/agent-hook.sh claude <event>` for these hooks:
 
 | Hook | Event |
 |---|---|
@@ -1036,7 +1036,7 @@ privacy protection can block terminal processes from reading `~/Desktop` or
 | `PreToolUse` (matcher `Bash`) | `pre_tool_use` (moves dev servers into localhost sessions) |
 
 ```json
-{ "type": "command", "command": "~/.ghostty-extreme/agent-hooks/agent-hook.sh claude stop" }
+{ "type": "command", "command": "~/.operator/agent-hooks/agent-hook.sh claude stop" }
 ```
 
 **Codex.** Run `python3 agent-hooks/install-codex.py`. It registers Codex's hooks without
@@ -1049,7 +1049,7 @@ OpenCode are connected from **Check Setup → Connect**. Each gets a small hook
 own settings.
 
 **Claude usage meter** (optional). Have your Claude Code status line script save
-`rate_limits` to `~/.claude/ghostty-extreme/claude-usage.json` as
+`rate_limits` to `~/.claude/operator/claude-usage.json` as
 `{"updated": <unix time>, "rate_limits": <rate_limits>}`.
 
 </details>
@@ -1067,10 +1067,10 @@ own settings.
 - `jq` for the agent hooks: `brew install jq`
 
 ```sh
-git clone https://github.com/steventsvik/Tellurion.git
-cd Tellurion
+git clone https://github.com/alvaromuir/Operator.git
+cd Operator
 /opt/homebrew/opt/zig/bin/zig build -Doptimize=ReleaseFast -Dxcframework-target=native
-ditto macos/build/ReleaseLocal/Ghostty.app /Applications/Tellurion.app
+ditto macos/build/ReleaseLocal/Ghostty.app /Applications/Operator.app
 ```
 
 If the repo is in an iCloud-synced folder (like Desktop or Documents), codesign fails on

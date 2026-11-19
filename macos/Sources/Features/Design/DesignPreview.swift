@@ -4,7 +4,7 @@ import SwiftUI
 /// A design drawn small: a sidebar with tabs beside a terminal with a prompt, in the
 /// design's own colors. Cards use it at thumbnail size, the editor at full size.
 struct DesignPreview: View {
-    let design: TellurionDesign
+    let design: OperatorDesign
     /// 1 is the editor's size; cards use less.
     var scale: CGFloat = 1
 
@@ -17,7 +17,7 @@ struct DesignPreview: View {
     }
 
     /// The colors a design resolves to, using the live config for "mine".
-    static func terminalColors(for design: TellurionDesign) -> TerminalColors {
+    static func terminalColors(for design: OperatorDesign) -> TerminalColors {
         switch design.terminal {
         case .mine: return DesignStore.shared.currentTerminalColors
         case .theme(let name): return GhosttyThemes.colors(named: name) ?? DesignStore.shared.currentTerminalColors
@@ -29,7 +29,7 @@ struct DesignPreview: View {
         let chrome = chrome
         let terminal = terminal
         let pad = (CGFloat(design.window?.padding ?? 8) * 0.6 + 4) * scale
-        let font = design.font.family ?? Tellurion.fontFamily
+        let font = design.font.family ?? Operator.fontFamily
         HStack(spacing: 0) {
             sidebar(chrome)
                 .frame(width: 96 * scale)
@@ -66,7 +66,7 @@ struct DesignPreview: View {
         VStack(alignment: .leading, spacing: 5 * scale) {
             HStack(spacing: 4 * scale) {
                 PixelBitmap(rows: design.logo.rows, colors: design.logo.colors(in: chrome), pixel: 0.5 * scale)
-                Text("TELLURION").font(.system(size: 5.5 * scale, weight: .semibold)).kerning(1.2 * scale).foregroundColor(chrome.gold.color)
+                Text("OPERATOR").font(.system(size: 5.5 * scale, weight: .semibold)).kerning(1.2 * scale).foregroundColor(chrome.gold.color)
             }
             .padding(.bottom, 2 * scale)
             tab("claude · api", detail: "Working", color: chrome.core.color, active: true, chrome: chrome)
@@ -121,7 +121,7 @@ struct DesignPreview: View {
 extension DesignStore {
     /// The terminal's colors right now, from the live config.
     var currentTerminalColors: TerminalColors {
-        (NSApp.delegate as? AppDelegate).flatMap { TerminalColors(config: $0.ghostty.config) } ?? .tellurion
+        (NSApp.delegate as? AppDelegate).flatMap { TerminalColors(config: $0.ghostty.config) } ?? .operator
     }
 }
 #endif

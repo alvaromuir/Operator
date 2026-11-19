@@ -111,7 +111,7 @@ final class Housekeeping: ObservableObject {
     /// This app's own CPU and memory, so a runaway terminal shows up too.
     @Published private(set) var selfUsage: (cpu: Double, memory: Int64) = (0, 0)
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.housekeeping", qos: .utility)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.housekeeping", qos: .utility)
     private var history: [String: Seen] = [:]
     /// Test-only: sample items closed this run (see `refresh`).
     private var closedSamples: Set<String> = []
@@ -129,7 +129,7 @@ final class Housekeeping: ObservableObject {
     }
 
     private static var historyURL: URL {
-        URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".ghostty-extreme/background-activity.json")
+        URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".operator/background-activity.json")
     }
 
     private init() {
@@ -445,8 +445,8 @@ final class Housekeeping: ObservableObject {
             }
             history[item.id] = seen
             item.detail = "\(cpus) CPUs · \(Self.bytes(item.reserved)) memory reserved · \(containers.count) container\(containers.count == 1 ? "" : "s")"
-            if profile == "default" && FileManager.default.fileExists(atPath: NSHomeDirectory() + "/.ghostty-extreme/colima-started") {
-                item.reasons.append("Started by a Tellurion Docker session")
+            if profile == "default" && FileManager.default.fileExists(atPath: NSHomeDirectory() + "/.operator/colima-started") {
+                item.reasons.append("Started by a Operator Docker session")
             }
             items.append(item)
             items += containers
@@ -482,9 +482,9 @@ final class Housekeeping: ObservableObject {
                  memory: 212_000_000, up: 26 * 3600, idle: 19 * 3600, source: "has a live connection", ports: [4321]),
             item("codex", .agent, "Codex", "atlas-api", "codex", folder: home + "atlas-api",
                  memory: 184_000_000, up: 3 * 3600, idle: 2 * 3600 + 900, source: "typed in its terminal", terminal: true),
-            item("next", .devServer, "Next.js dev server", "acme-shop · :3000 · in a Tellurion tab", "next dev", folder: home + "acme-shop",
+            item("next", .devServer, "Next.js dev server", "acme-shop · :3000 · in a Operator tab", "next dev", folder: home + "acme-shop",
                  memory: 1_400_000_000, cpu: 3, up: 4 * 3600, idle: 60, source: "has a live connection", ports: [3000], terminal: true),
-            item("claude", .agent, "Claude Code", "acme-shop · in a Tellurion tab", "claude", folder: home + "acme-shop",
+            item("claude", .agent, "Claude Code", "acme-shop · in a Operator tab", "claude", folder: home + "acme-shop",
                  memory: 512_000_000, cpu: 9, up: 3 * 3600, idle: 5, source: "agent transcript updated", terminal: true),
             item("svc", .service, "dev.acme.preview-tunnel", "", "cloudflared tunnel run acme-preview", folder: nil,
                  memory: 41_000_000, up: 6 * 86400, idle: 6 * 86400, source: "", close: .launchdStop("dev.acme.preview-tunnel")),
@@ -519,7 +519,7 @@ final class Housekeeping: ObservableObject {
                 }
             case .colimaStop(let profile):
                 if let colima = Self.which("colima") { _ = Self.run(colima, ["stop", "-p", profile], timeout: 120) }
-                if profile == "default" { try? FileManager.default.removeItem(atPath: NSHomeDirectory() + "/.ghostty-extreme/colima-started") }
+                if profile == "default" { try? FileManager.default.removeItem(atPath: NSHomeDirectory() + "/.operator/colima-started") }
             case .dockerStop(let context, let id):
                 if let docker = Self.which("docker") { _ = Self.run(docker, ["--context", context, "stop", id], timeout: 60) }
             case .launchdStop(let label):
@@ -566,7 +566,7 @@ extension Housekeeping {
         func has(_ needles: String...) -> Bool { needles.contains { c.contains($0) } }
         // Never this app, Apple's processes, or ordinary GUI apps.
         if exe.hasPrefix("/system/") || exe.hasPrefix("/usr/libexec/") || exe.hasPrefix("/usr/sbin/") { return nil }
-        if has("ghosttyextreme.app/", "ghostty.app/contents/macos/ghostty") { return nil }
+        if has("operator.app/", "ghostty.app/contents/macos/ghostty") { return nil }
         if has("limactl hostagent", "limactl usernet", "/_lima/") { return .vm }
         if has("playwright", "puppeteer", "chrome-headless", "--headless", "--remote-debugging-port", "chromedriver", "geckodriver",
                "ms-playwright") { return .browser }
@@ -615,7 +615,7 @@ extension Housekeeping {
         var parts: [String] = []
         if let project = item.project { parts.append(project) }
         if !item.ports.isEmpty { parts.append(item.ports.prefix(3).map { ":\($0)" }.joined(separator: " ")) }
-        if item.inTerminal { parts.append("in a Tellurion tab") }
+        if item.inTerminal { parts.append("in a Operator tab") }
         return parts.joined(separator: " · ")
     }
 

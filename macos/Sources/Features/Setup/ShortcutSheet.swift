@@ -146,7 +146,7 @@ final class ShortcutSheet {
         if let main = NSApp.mainMenu { walk(main) }
         let ordered = essentials.compactMap { ghostty[$0] }
         return [
-            Group(id: "Tellurion", shortcuts: extreme.sorted { $0.title < $1.title }),
+            Group(id: "Operator", shortcuts: extreme.sorted { $0.title < $1.title }),
             Group(id: "Terminal", shortcuts: ordered),
             Group(id: "Splits", shortcuts: splits.sorted { $0.title < $1.title }),
         ].filter { !$0.shortcuts.isEmpty }
@@ -186,18 +186,18 @@ private struct ShortcutSheetView: View {
         VStack(alignment: .leading, spacing: 14) {
             ForEach(groups) { group in
                 VStack(alignment: .leading, spacing: 8) {
-                    TellurionSectionLabel(group.id)
+                    OperatorSectionLabel(group.id)
                     LazyVGrid(columns: [GridItem(.fixed(250), alignment: .leading), GridItem(.fixed(250), alignment: .leading)],
                               alignment: .leading, spacing: 7) {
                         ForEach(group.shortcuts, id: \.self) { shortcut in
                             HStack(spacing: 10) {
                                 Text(shortcut.keys)
-                                    .font(Tellurion.font(12, weight: .semibold))
-                                    .foregroundColor(Tellurion.gold)
+                                    .font(Operator.font(12, weight: .semibold))
+                                    .foregroundColor(Operator.gold)
                                     .frame(width: 58, alignment: .trailing)
                                 Text(shortcut.title)
-                                    .font(Tellurion.font(12, weight: .regular))
-                                    .foregroundColor(Tellurion.text)
+                                    .font(Operator.font(12, weight: .regular))
+                                    .foregroundColor(Operator.text)
                                     .lineLimit(1)
                             }
                         }
@@ -205,15 +205,15 @@ private struct ShortcutSheetView: View {
                 }
             }
             Text(sticky ? "Escape or click to close" : "Let go of ⌃⌘ to close · ⌃⌘/ keeps it open")
-                .font(Tellurion.font(10.5, weight: .regular))
-                .foregroundColor(Tellurion.dim)
+                .font(Operator.font(10.5, weight: .regular))
+                .foregroundColor(Operator.dim)
         }
         .padding(20)
         .frame(width: 560)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Tellurion.ink.opacity(0.97)))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Tellurion.lineStrong, lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Operator.ink.opacity(0.97)))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Operator.lineStrong, lineWidth: 1))
         .environment(\.colorScheme, .dark)
-        .onAppear { Tellurion.registerFonts() }
+        .onAppear { Operator.registerFonts() }
     }
 }
 #endif

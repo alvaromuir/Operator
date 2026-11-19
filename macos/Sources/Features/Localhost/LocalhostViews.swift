@@ -126,12 +126,12 @@ struct LocalhostSidebarSection: View {
                 Button { withAnimation(.easeOut(duration: 0.18)) { collapsed.toggle() } } label: {
                     HStack(spacing: 6) {
                         Image(systemName: collapsed ? "chevron.right" : "chevron.down")
-                            .font(.system(size: 8, weight: .bold)).foregroundColor(Tellurion.dim).frame(width: 8)
+                            .font(.system(size: 8, weight: .bold)).foregroundColor(Operator.dim).frame(width: 8)
                         Image(systemName: "globe").font(.system(size: 10, weight: .bold))
                             .foregroundStyle(LinearGradient(colors: [.cyan, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
                         Text("LOCALHOST").font(.system(size: 10.5, weight: .semibold)).kerning(0.4)
                         if collapsed {
-                            Text("\(entries.count)").font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                            Text("\(entries.count)").font(Operator.font(10)).foregroundColor(Operator.dim)
                         }
                     }
                     .contentShape(Rectangle())
@@ -193,7 +193,7 @@ struct LocalhostTabCard: View {
     let owner: BaseTerminalController
     let isSelected: Bool
     @State private var hovering = false
-    @Environment(\.tellurionMotion) private var motion
+    @Environment(\.operatorMotion) private var motion
 
     var body: some View {
         let accent = session.project.color
@@ -282,7 +282,7 @@ struct LocalhostTabCard: View {
 
     private var controls: some View {
         HStack(spacing: 4) {
-            LocalhostIconButton(symbol: "eye", help: "Preview in Tellurion", tint: .cyan, size: 20) {
+            LocalhostIconButton(symbol: "eye", help: "Preview in Operator", tint: .cyan, size: 20) {
                 if let url = session.url { LocalhostPreview.show(url, title: session.project.name) }
             }
             .disabled(session.url == nil)
@@ -308,7 +308,7 @@ struct LocalhostTabCard: View {
     private var menu: some View {
         Button("Fix Visually…") { VisualFixPanel.shared.show(from: owner, url: session.url) }.disabled(session.url == nil)
         Button("Open in Browser") { LocalhostSessions.shared.openInBrowser(session.url) }.disabled(session.url == nil)
-        Button("Preview in Tellurion") {
+        Button("Preview in Operator") {
             if let url = session.url { LocalhostPreview.show(url, title: session.project.name) }
         }.disabled(session.url == nil)
         Button("Copy URL") { VerticalTabsActions.copy(session.url?.absoluteString ?? "") }.disabled(session.url == nil)

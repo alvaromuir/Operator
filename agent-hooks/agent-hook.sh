@@ -1,5 +1,5 @@
 #!/bin/bash
-# Reports coding-agent activity to Tellurion's vertical tabs sidebar.
+# Reports coding-agent activity to Operator's vertical tabs sidebar.
 #
 # Usage (from an agent's hooks): agent-hook.sh <agent> <event>
 #   agent: claude | codex
@@ -7,8 +7,8 @@
 #          notification | stop | stop_failure | session_end | pre_tool_use |
 #          subagent_start | subagent_stop
 #
-# Emits an OSC 777 notification titled "ghostty-extreme://agent" with a compact JSON
-# body. Tellurion consumes it silently; it is never shown as a notification.
+# Emits an OSC 777 notification titled "operator://agent" with a compact JSON
+# body. Operator consumes it silently; it is never shown as a notification.
 # At session start it also adds what Codex remembers about the project (shared memory,
 # memory_context.py) to Claude Code's context.
 #   - Claude Code: printed as the `terminalSequence` hook field, so Claude Code
@@ -17,15 +17,15 @@
 #     agent sees an empty hook result.
 #
 # The one thing it changes: when Claude Code starts a dev server or tunnel (`npm run dev`,
-# `vite`, `ssh -L`, a command that ran in a localhost session here before, ...), the command is rewritten to open it in a Tellurion localhost
+# `vite`, `ssh -L`, a command that ran in a localhost session here before, ...), the command is rewritten to open it in a Operator localhost
 # session instead, a separate tab that keeps the server running after the agent is
 # done. Claude Code still asks for permission as usual, showing the rewritten command.
 # It never approves or denies anything.
 
-# Only inside Tellurion; anywhere else (including official Ghostty) do nothing.
+# Only inside Operator; anywhere else (including official Ghostty) do nothing.
 # The pre-rebrand "Ghostty Custom" build is still served until it's replaced.
 if [ "${GHOSTTY_EXTREME_AGENT_EVENTS:-}" = "1" ]; then
-  namespace="ghostty-extreme"
+  namespace="operator"
 elif [ "${GHOSTTY_CUSTOM_AGENT_EVENTS:-}" = "1" ]; then
   namespace="ghostty-custom"
 else
@@ -41,13 +41,13 @@ if [ "$agent" = "codex" ]; then
 fi
 input=$(cat)
 
-# Dev servers Claude Code starts go to a localhost session (Tellurion only).
+# Dev servers Claude Code starts go to a localhost session (Operator only).
 if [ "$event" = "pre_tool_use" ]; then
-  [ "$agent" = "claude" ] && [ "$namespace" = "ghostty-extreme" ] || exit 0
-  launcher="$HOME/.ghostty-extreme/bin/localhost"
+  [ "$agent" = "claude" ] && [ "$namespace" = "operator" ] || exit 0
+  launcher="$HOME/.operator/bin/localhost"
   [ -x "$launcher" ] || exit 0
-  # Turned off in Tellurion's Settings.
-  [ -e "$HOME/.ghostty-extreme/features/localhost-off" ] && exit 0
+  # Turned off in Operator's Settings.
+  [ -e "$HOME/.operator/features/localhost-off" ] && exit 0
   [ "$(jq -r '.tool_name // empty' <<<"$input")" = "Bash" ] || exit 0
   command=$(jq -r '.tool_input.command // empty' <<<"$input")
   cwd=$(jq -r '.cwd // empty' <<<"$input")
@@ -58,7 +58,7 @@ if [ "$event" = "pre_tool_use" ]; then
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       updatedInput: (.tool_input + {command: $cmd, run_in_background: false}),
-      additionalContext: "The server was moved to a Tellurion localhost session: a separate terminal tab the user manages, which keeps running after you finish. The command prints its URL and where its logs are. Do not start the server again yourself."
+      additionalContext: "The server was moved to a Operator localhost session: a separate terminal tab the user manages, which keeps running after you finish. The command prints its URL and where its logs are. Do not start the server again yourself."
     }
   }' <<<"$input"
   exit 0
@@ -128,7 +128,7 @@ agent_tty() {
 if [ "$agent" = "claude" ]; then
   # Shared memory: a new session starts with what Codex remembers about the project.
   shared=""
-  if [ "$event" = "session_start" ] && [ "$namespace" = "ghostty-extreme" ] && command -v python3 >/dev/null 2>&1; then
+  if [ "$event" = "session_start" ] && [ "$namespace" = "operator" ] && command -v python3 >/dev/null 2>&1; then
     cwd=$(jq -r '.cwd // empty' <<<"$input" 2>/dev/null)
     [ -n "$cwd" ] && shared=$(python3 "$(dirname "$0")/memory_context.py" claude "$cwd" 2>/dev/null)
   fi

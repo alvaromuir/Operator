@@ -82,7 +82,7 @@ enum HeadlessAgent {
     }
 
     /// Runs in its own folder, so its sessions stay out of your projects' histories. Gets your
-    /// login shell's PATH and nothing else from Tellurion's environment (no event token).
+    /// login shell's PATH and nothing else from Operator's environment (no event token).
     /// Call it off the main thread; `handle` stops it.
     static func run(_ handle: Run, tool: String, arguments: [String], input: Data) -> AgentTools.Result {
         let folder = AgentTools.root.appendingPathComponent("board-agent", isDirectory: true)
@@ -118,7 +118,7 @@ enum HeadlessAgent {
                                  error: String(bytes: errData, encoding: .utf8) ?? "")
     }
 
-    /// Your login shell's PATH and nothing else from Tellurion's environment (no event token).
+    /// Your login shell's PATH and nothing else from Operator's environment (no event token).
     private static func environment() -> [String: String] {
         let inherited = ProcessInfo.processInfo.environment
         var environment = ["HOME": NSHomeDirectory(), "PATH": SetupChecks.loginPath.joined(separator: ":"),

@@ -31,14 +31,14 @@ class CodexHookTests(unittest.TestCase):
         status = hook.record_event({"session_id": session, "transcript_path": path, "prompt": "🐋" * 100}, "prompt_submit", self.home)
         self.assertLessEqual(len(json.dumps(status, ensure_ascii=True, separators=(",", ":")).encode()), 250)
         self.assertEqual(status["session"], session)
-        manifest = json.loads((self.home / ".ghostty-extreme/codex-tracking" / (session + ".json")).read_text())
+        manifest = json.loads((self.home / ".operator/codex-tracking" / (session + ".json")).read_text())
         self.assertEqual(manifest["transcript"], path)
 
     def test_child_never_marks_parent_done(self):
         path = self.transcript("child", "parent")
         self.assertIsNone(hook.record_event({"session_id": "parent", "transcript_path": path}, "stop", self.home))
         self.assertIsNone(hook.record_event({"session_id": "parent", "agent_id": "child"}, "subagent_stop", self.home))
-        records = (self.home / ".ghostty-extreme/codex-tracking/child.jsonl").read_text().splitlines()
+        records = (self.home / ".operator/codex-tracking/child.jsonl").read_text().splitlines()
         self.assertEqual(json.loads(records[0])["parent"], "parent")
 
     def test_memory_writing_agent_is_ignored(self):
@@ -48,7 +48,7 @@ class CodexHookTests(unittest.TestCase):
                 payload = {"session_id": "memory-agent", "cwd": memories, "transcript_path": None,
                            "prompt": "## Memory Writing Agent: Phase 2 (Consolidation)"}
                 self.assertIsNone(hook.record_event(payload, event, self.home))
-            self.assertFalse((self.home / ".ghostty-extreme/codex-tracking/memory-agent.jsonl").exists())
+            self.assertFalse((self.home / ".operator/codex-tracking/memory-agent.jsonl").exists())
             project = {"session_id": "project", "cwd": str(self.home / "project"), "prompt": "Fix the links"}
             self.assertIsNotNone(hook.record_event(project, "prompt_submit", self.home))
 
@@ -70,19 +70,19 @@ class CodexHookTests(unittest.TestCase):
             with contextlib.redirect_stdout(output):
                 hook.main()
             self.assertEqual(output.getvalue(), "")
-            self.assertFalse((self.home / ".ghostty-extreme").exists())
+            self.assertFalse((self.home / ".operator").exists())
 
     def test_no_path_traversal(self):
         self.assertIsNone(hook.record_event({"session_id": "../../escape"}, "session_start", self.home))
-        self.assertFalse((self.home / ".ghostty-extreme").exists())
+        self.assertFalse((self.home / ".operator").exists())
 
     def test_localhost_rewrite_preserves_permission_arguments(self):
-        launcher = self.home / ".ghostty-extreme/bin/localhost"
+        launcher = self.home / ".operator/bin/localhost"
         launcher.parent.mkdir(parents=True)
         launcher.touch()
         payload = {"session_id": "parent", "tool_name": "Bash", "cwd": "/tmp/a project",
                    "tool_input": {"command": "npm run dev", "sandbox_permissions": "require_escalated", "justification": "Start server"}}
-        with patch.dict(os.environ, {"GHOSTTY_EXTREME_AGENT_EVENTS": "1"}), patch.object(hook.subprocess, "check_output", return_value="~/.ghostty-extreme/bin/localhost start -- 'npm run dev'\n"):
+        with patch.dict(os.environ, {"GHOSTTY_EXTREME_AGENT_EVENTS": "1"}), patch.object(hook.subprocess, "check_output", return_value="~/.operator/bin/localhost start -- 'npm run dev'\n"):
             result = hook.localhost_context(payload, "pre_tool_use", self.home)["hookSpecificOutput"]
         self.assertEqual(result["hookEventName"], "PreToolUse")
         self.assertEqual(result["updatedInput"]["sandbox_permissions"], "require_escalated")
@@ -92,7 +92,7 @@ class CodexHookTests(unittest.TestCase):
         self.assertIsNone(hook.localhost_context(payload, "permission_request", self.home))
 
     def test_non_server_is_not_rewritten(self):
-        launcher = self.home / ".ghostty-extreme/bin/localhost"
+        launcher = self.home / ".operator/bin/localhost"
         launcher.parent.mkdir(parents=True)
         launcher.touch()
         payload = {"tool_name": "Bash", "tool_input": {"command": "npm test"}}
@@ -109,7 +109,7 @@ class CodexHookTests(unittest.TestCase):
         try:
             result = subprocess.run(["/bin/zsh", "-f", "-c",
                 'source "$1"; TTY=/dev/ttys123; codex resume saved-session --sandbox read-only "$2"',
-                "zsh", str(Path(__file__).with_name("ghostty-extreme.zsh")), "a literal $prompt"],
+                "zsh", str(Path(__file__).with_name("operator.zsh")), "a literal $prompt"],
                 stdin=slave, stdout=slave, stderr=slave, env=environment, timeout=3)
             self.assertEqual(result.returncode, 0)
             arguments = os.read(master, 65536).decode().splitlines()

@@ -90,7 +90,7 @@ extension BoardController {
                                     appearance: window?.effectiveAppearance)
     }
 
-    /// The sketch as a PNG file under ~/.ghostty-extreme/sketches, named after it.
+    /// The sketch as a PNG file under ~/.operator/sketches, named after it.
     func exportSketch(_ id: UUID) -> URL? {
         guard let sketch = model.sketches.first(where: { $0.id == id }), let image = picture(id),
               let data = SketchRenderer.png(image) else {
@@ -219,7 +219,7 @@ extension BoardController {
         // Video and audio play in a media tile; Markdown shows as a document.
         let media = urls.filter(BoardMedia.isMedia)
         if !media.isEmpty, addMedia(media, at: point) != nil { opened = true }
-        let documents = TellurionSettings.isOn(.documents)
+        let documents = OperatorSettings.isOn(.documents)
         for url in urls where documents && url.pathExtension.lowercased() == "md" {
             placeDocument(url, at: point)
             opened = true

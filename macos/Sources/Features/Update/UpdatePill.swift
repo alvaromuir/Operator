@@ -46,7 +46,7 @@ struct UpdatePill: View {
                 model.state = .idle
                 notFound.acknowledgement()
             case .updateAvailable, .downloading, .extracting, .installing:
-                // Tellurion's update window: what's new, then the progress.
+                // Operator's update window: what's new, then the progress.
                 UpdateWindow.show()
             default:
                 showPopover.toggle()

@@ -36,7 +36,7 @@ enum UntrustedURLAlert {
             let alert = NSAlert()
             alert.alertStyle = .warning
             alert.icon = NSImage(named: NSImage.cautionName)
-            alert.messageText = "Tellurion Blocked This Link"
+            alert.messageText = "Operator Blocked This Link"
             alert.informativeText = reason.message
             alert.accessoryView = targetView(displayString)
             alert.addButton(withTitle: "OK")

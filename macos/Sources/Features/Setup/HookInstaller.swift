@@ -13,11 +13,11 @@ enum HookInstaller {
 
     private static let log = StoredFile.logger("Setup")
 
-    /// The home folder. Test-only: `TELLURION_TEST_HOME` points the installer and the
+    /// The home folder. Test-only: `OPERATOR_TEST_HOME` points the installer and the
     /// setup check at a scratch folder instead of the user's real configs.
     static let home = TestHooks.home ?? NSHomeDirectory()
     static var hooksFolder: URL { URL(fileURLWithPath: HookConfig.hooksFolder(home: home), isDirectory: true) }
-    static var binFolder: URL { URL(fileURLWithPath: home + "/.ghostty-extreme/bin", isDirectory: true) }
+    static var binFolder: URL { URL(fileURLWithPath: home + "/.operator/bin", isDirectory: true) }
     static var claudeSettings: URL { URL(fileURLWithPath: home + "/.claude/settings.json") }
     static var codexHooks: URL { URL(fileURLWithPath: home + "/.codex/hooks.json") }
     static var zshrc: URL { URL(fileURLWithPath: home + "/.zshrc") }
@@ -32,7 +32,7 @@ enum HookInstaller {
     private static var installedFiles: [(String, URL)] {
         [
             ("agent-hook.sh", hooksFolder),
-            ("ghostty-extreme.zsh", hooksFolder),
+            ("operator.zsh", hooksFolder),
             ("codex-hook.py", hooksFolder),
             ("memory_context.py", hooksFolder),
             ("agent-event.py", hooksFolder),
@@ -44,12 +44,12 @@ enum HookInstaller {
             ("local-catalog.py", hooksFolder),
             ("localhost", binFolder),
             ("localhost-run", binFolder),
-            ("tellurion", binFolder),
-            ("ghostty-extreme", binFolder),
+            ("operator", binFolder),
+            ("operator", binFolder),
         ]
     }
 
-    private static let executables: Set<String> = ["agent-hook.sh", "agent-event.py", "local-chat.py", "localhost", "localhost-run", "tellurion", "ghostty-extreme"]
+    private static let executables: Set<String> = ["agent-hook.sh", "agent-event.py", "local-chat.py", "localhost", "localhost-run", "operator", "operator"]
 
     // MARK: Hook files
 
@@ -74,9 +74,9 @@ enum HookInstaller {
         return !anyInstalled ? .missing : anyDifferent ? .outdated : .current
     }
 
-    /// Copies the hooks and the `localhost` and `tellurion` commands out of the app.
+    /// Copies the hooks and the `localhost` and `operator` commands out of the app.
     static func installFiles() throws {
-        guard let bundled else { throw Failure(message: "This build of Tellurion doesn't include the agent hooks.") }
+        guard let bundled else { throw Failure(message: "This build of Operator doesn't include the agent hooks.") }
         let fm = FileManager.default
         var folders = [hooksFolder, binFolder]
         // Agents may still run the pre-rebrand copy (Codex ties approvals to the exact path).
@@ -99,7 +99,7 @@ enum HookInstaller {
     /// only when they were installed before and only from the real app (test copies have
     /// their own bundle id and leave the user's hooks alone).
     static func refreshIfInstalled() {
-        guard Bundle.main.bundleIdentifier == "com.steventsvik.ghostty-extreme",
+        guard Bundle.main.bundleIdentifier == "com.alvaromuir.operator",
               filesState() == .outdated else { return }
         do {
             try installFiles()
@@ -166,7 +166,7 @@ enum HookInstaller {
         try data.write(to: url, options: .atomic)
     }
 
-    /// Copies the file, when there is one, to `<name>.ghostty-extreme-backup-<timestamp>` beside
+    /// Copies the file, when there is one, to `<name>.operator-backup-<timestamp>` beside
     /// it before it's rewritten. Every write gets its own copy: a backup from the same second
     /// is kept, and the new one gets a `-2`, `-3`… suffix.
     @discardableResult
@@ -174,7 +174,7 @@ enum HookInstaller {
         let fm = FileManager.default
         guard fm.fileExists(atPath: url.path) else { return nil }
         let folder = url.deletingLastPathComponent()
-        let base = "\(url.lastPathComponent).ghostty-extreme-backup-\(stamp)"
+        let base = "\(url.lastPathComponent).operator-backup-\(stamp)"
         var backup = folder.appendingPathComponent(base)
         var n = 2
         while fm.fileExists(atPath: backup.path) {
@@ -238,8 +238,8 @@ enum HookInstaller {
         guard HookConfig.zshrcHasIntegration(text) else { return }
         let cleaned = HookConfig.zshrcRemovingIntegration(text)
         guard cleaned != text else {
-            let script = text.contains("ghostty-custom.zsh") ? "ghostty-custom.zsh" : "ghostty-extreme.zsh"
-            throw Failure(message: "\(display(zshrc)) loads \(script) on a line Tellurion didn't write, so it was left alone. Remove that line by hand.")
+            let script = text.contains("ghostty-custom.zsh") ? "ghostty-custom.zsh" : "operator.zsh"
+            throw Failure(message: "\(display(zshrc)) loads \(script) on a line Operator didn't write, so it was left alone. Remove that line by hand.")
         }
         try backUp(url)
         try cleaned.write(to: url, atomically: true, encoding: .utf8)

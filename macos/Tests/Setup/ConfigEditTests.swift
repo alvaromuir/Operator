@@ -22,8 +22,8 @@ struct ConfigEditTests {
         let respaced = """
         export A=1
 
-          # Tellurion:   shows which coding agent each pane runs  (does nothing in other terminals)
-        \t[[ -n "$GHOSTTY_EXTREME_AGENT_EVENTS" ]]   &&  source  ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh
+          # Operator:   shows which coding agent each pane runs  (does nothing in other terminals)
+        \t[[ -n "$GHOSTTY_EXTREME_AGENT_EVENTS" ]]   &&  source  ~/.operator/agent-hooks/operator.zsh
         export B=2
 
         """
@@ -31,8 +31,8 @@ struct ConfigEditTests {
     }
 
     @Test func theOlderCommentComesOutToo() {
-        let old = "a\n\n# GhosttyEXTREME: shows which coding agent each pane runs (does nothing in other terminals)\n"
-            + "[[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh\n"
+        let old = "a\n\n# Operator: shows which coding agent each pane runs (does nothing in other terminals)\n"
+            + "[[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.operator/agent-hooks/operator.zsh\n"
         #expect(HookConfig.zshrcRemovingIntegration(old) == "a\n")
     }
 
@@ -40,10 +40,10 @@ struct ConfigEditTests {
         // A line the user wrote (their own guard, a comment, extra words) isn't ours, so the
         // file is returned byte for byte and the caller can say so.
         let theirs = [
-            "source ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh\n",
-            "# [[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh\n",
-            "[[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh # mine\n",
-            "# Tellurion: shows which coding agent each pane runs (does nothing in other terminals)\n",
+            "source ~/.operator/agent-hooks/operator.zsh\n",
+            "# [[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.operator/agent-hooks/operator.zsh\n",
+            "[[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.operator/agent-hooks/operator.zsh # mine\n",
+            "# Operator: shows which coding agent each pane runs (does nothing in other terminals)\n",
         ]
         for text in theirs {
             #expect(HookConfig.zshrcRemovingIntegration(text) == text)
@@ -64,16 +64,16 @@ struct ConfigEditTests {
 
         try Data("one".utf8).write(to: file)
         let first = try #require(try HookInstaller.backUp(file, stamp: "20260101-120000"))
-        #expect(first.lastPathComponent == "settings.json.ghostty-extreme-backup-20260101-120000")
+        #expect(first.lastPathComponent == "settings.json.operator-backup-20260101-120000")
 
         // A second write in the same second keeps the first copy and adds another.
         try Data("two".utf8).write(to: file)
         let second = try #require(try HookInstaller.backUp(file, stamp: "20260101-120000"))
-        #expect(second.lastPathComponent == "settings.json.ghostty-extreme-backup-20260101-120000-2")
+        #expect(second.lastPathComponent == "settings.json.operator-backup-20260101-120000-2")
         #expect(try String(contentsOf: first, encoding: .utf8) == "one")
         #expect(try String(contentsOf: second, encoding: .utf8) == "two")
 
         let third = try #require(try HookInstaller.backUp(file, stamp: "20260101-120000"))
-        #expect(third.lastPathComponent == "settings.json.ghostty-extreme-backup-20260101-120000-3")
+        #expect(third.lastPathComponent == "settings.json.operator-backup-20260101-120000-3")
     }
 }

@@ -2,19 +2,19 @@
 """Chat with a model on this Mac, where nothing leaves it, or on a Venice account.
 
 Usage: local-chat.py [--provider P] [--base URL] <model>
-       (Tellurion runs it as `tellurion local …`)
+       (Operator runs it as `operator local …`)
   ollama (the default)  Ollama, at OLLAMA_HOST or 127.0.0.1:11434
   lmstudio              LM Studio's server, 127.0.0.1:1234
   openai                any OpenAI-compatible server at --base (llama.cpp's llama-server,
                         MLX's mlx_lm.server: 127.0.0.1:8080)
-  apple                 Apple's on-device model, served by Tellurion itself (its address
-                        and key are in ~/.ghostty-extreme/apple-model.json)
+  apple                 Apple's on-device model, served by Operator itself (its address
+                        and key are in ~/.operator/apple-model.json)
   venice                a model on your Venice account, in the cloud: what you type goes to
-                        Venice's servers. Tellurion holds the account's key and forwards the
+                        Venice's servers. Operator holds the account's key and forwards the
                         chat; this only knows a token for that, in
-                        ~/.ghostty-extreme/venice-proxy.json
+                        ~/.operator/venice-proxy.json
 
-A plain chat in the terminal: type a message, the reply streams in. Inside Tellurion it
+A plain chat in the terminal: type a message, the reply streams in. Inside Operator it
 also reports to the sidebar (working while it answers, done when it's finished), with the
 same OSC 777 events the agents' hooks send. Commands: /think shows or hides the
 model's reasoning (hidden by default: a model that reasons first shows "Thinking… 12s"), /clear forgets the conversation,
@@ -42,7 +42,7 @@ def clean(text):
     return CONTROL.sub("", text)
 
 
-def tellurion_home():
+def operator_home():
     return os.environ.get("TELLURION_TEST_HOME") or os.path.expanduser("~")
 
 
@@ -61,8 +61,8 @@ def ollama_base():
     return f"{scheme}://{host}"
 
 
-PROVIDERS = {"ollama": "Ollama", "lmstudio": "LM Studio", "openai": "the model server", "apple": "Tellurion",
-             "venice": "Tellurion"}
+PROVIDERS = {"ollama": "Ollama", "lmstudio": "LM Studio", "openai": "the model server", "apple": "Operator",
+             "venice": "Operator"}
 PROVIDER = "ollama"
 BASE = ollama_base()
 HEADERS = {"Content-Type": "application/json"}
@@ -77,12 +77,12 @@ def configure(provider, base):
     elif provider == "openai":
         BASE = (base or "http://127.0.0.1:8080").rstrip("/")
     elif provider == "apple":
-        with open(os.path.join(os.path.expanduser("~"), ".ghostty-extreme", "apple-model.json")) as handle:
+        with open(os.path.join(os.path.expanduser("~"), ".operator", "apple-model.json")) as handle:
             server = json.load(handle)
         BASE = f"http://127.0.0.1:{int(server['port'])}"
         HEADERS["Authorization"] = "Bearer " + server["token"]
     elif provider == "venice":
-        with open(os.path.join(tellurion_home(), ".ghostty-extreme", "venice-proxy.json")) as handle:
+        with open(os.path.join(operator_home(), ".operator", "venice-proxy.json")) as handle:
             server = json.load(handle)
         # Its paths are /api/v1/…, and the chat's own are /v1/…
         BASE = f"http://127.0.0.1:{int(server['port'])}/api"
@@ -92,7 +92,7 @@ def configure(provider, base):
 
 
 def report(model, event, detail=""):
-    """Tells Tellurion's sidebar what the chat is doing. Silent anywhere else."""
+    """Tells Operator's sidebar what the chat is doing. Silent anywhere else."""
     if os.environ.get("GHOSTTY_EXTREME_AGENT_EVENTS") != "1":
         return
     if event != "transcript":
@@ -106,16 +106,16 @@ def report(model, event, detail=""):
         body["detail"] = body["detail"][:-1]
     try:
         with open("/dev/tty", "w") as tty:
-            tty.write("\033]777;notify;ghostty-extreme://agent;" + json.dumps(body, separators=(",", ":")) + "\a")
+            tty.write("\033]777;notify;operator://agent;" + json.dumps(body, separators=(",", ":")) + "\a")
     except OSError:
         pass
 
 
-FEED = os.path.join(os.path.expanduser("~"), ".ghostty-extreme", "feeds", f"local-{os.getpid()}.jsonl")
+FEED = os.path.join(os.path.expanduser("~"), ".operator", "feeds", f"local-{os.getpid()}.jsonl")
 
 
 def record(kind, content):
-    """Adds to the chat's feed, which Tellurion's code editor shows live (Claude Code's
+    """Adds to the chat's feed, which Operator's code editor shows live (Claude Code's
     transcript format, which it already reads)."""
     if os.environ.get("GHOSTTY_EXTREME_AGENT_EVENTS") != "1" or not content:
         return
@@ -138,7 +138,7 @@ def post(path, payload, timeout=600):
     return urllib.request.urlopen(request, timeout=timeout)
 
 
-NOT_SERVING = "Tellurion isn't connected to Venice right now. Open Tellurion, or connect your account in Tools → Local models."
+NOT_SERVING = "Operator isn't connected to Venice right now. Open Operator, or connect your account in Tools → Local models."
 
 # Venice's errors are mostly a sentence and a status. For someone in a chat, by status.
 VENICE_STATUS = {
@@ -147,7 +147,7 @@ VENICE_STATUS = {
     404: "Venice doesn't have this model, or it's offline. Pick one from Tools → Local models.",
     429: "Venice is limiting requests right now. Try again in a minute.",
 }
-# Those the proxy inside Tellurion answers with.
+# Those the proxy inside Operator answers with.
 PROXY_ERRORS = {"proxy_token": NOT_SERVING, "not_connected": NOT_SERVING}
 
 
@@ -178,7 +178,7 @@ def error_text(error):
         return text or clean(str(error))
     if isinstance(error, urllib.error.URLError):
         if PROVIDER == "apple":
-            return "Tellurion isn't serving Apple's model right now. Open it again from Local models."
+            return "Operator isn't serving Apple's model right now. Open it again from Local models."
         if PROVIDER == "venice":
             return NOT_SERVING
         return f"{PROVIDERS[PROVIDER]} isn't answering at {BASE}. Start it, then try again."
@@ -374,7 +374,7 @@ def main():
             base = args[1]
         args = args[2:]
     if len(args) != 1 or not args[0].strip() or provider not in PROVIDERS:
-        print("Usage: tellurion local [--provider ollama|lmstudio|openai|apple|venice] [--base URL] <model>", file=sys.stderr)
+        print("Usage: operator local [--provider ollama|lmstudio|openai|apple|venice] [--base URL] <model>", file=sys.stderr)
         return 2
     model = clean(args[0].strip())
     if helper:
@@ -390,7 +390,7 @@ def main():
         if provider == "venice":
             print(f"{RED}{NOT_SERVING}{RESET}", file=sys.stderr)
         else:
-            print(f"{RED}Tellurion isn't serving Apple's model right now. Open it again from Local models.{RESET}", file=sys.stderr)
+            print(f"{RED}Operator isn't serving Apple's model right now. Open it again from Local models.{RESET}", file=sys.stderr)
         return 1
     sys.stdout.write(f"\033]2;{model}\a")  # The tab's title.
     cloud = PROVIDER == "venice"

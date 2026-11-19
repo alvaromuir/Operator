@@ -51,7 +51,7 @@ final class JJPanelModel: ObservableObject {
     @Published var error: String?
     @Published var notice: String?
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.jjpanel", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.jjpanel", qos: .userInitiated)
 
     init(root: String) {
         self.root = root
@@ -204,43 +204,43 @@ struct JJPanelSections: View {
 
     private var workingCopySection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            TellurionSectionLabel("Working copy") {
+            OperatorSectionLabel("Working copy") {
                 Button("New change") { model.newChange() }
-                    .buttonStyle(.plain).font(Tellurion.font(10.5)).foregroundColor(Tellurion.gold)
+                    .buttonStyle(.plain).font(Operator.font(10.5)).foregroundColor(Operator.gold)
                     .disabled(model.busy)
                     .help("jj new: start a fresh change on top of this one")
             }
             if let change = model.workingCopy {
                 HStack(spacing: 6) {
-                    Text(change.changeID).font(Tellurion.mono(10.5)).foregroundColor(Tellurion.gold)
+                    Text(change.changeID).font(Operator.mono(10.5)).foregroundColor(Operator.gold)
                     Text(change.description.isEmpty ? "No description yet" : change.description)
-                        .font(Tellurion.font(10.5)).foregroundColor(change.description.isEmpty ? Tellurion.dim : Tellurion.text)
+                        .font(Operator.font(10.5)).foregroundColor(change.description.isEmpty ? Operator.dim : Operator.text)
                         .lineLimit(1)
                     Spacer(minLength: 0)
                     Text(change.empty ? "empty" : "\(model.changedFiles) file\(model.changedFiles == 1 ? "" : "s")")
-                        .font(Tellurion.font(9.5)).foregroundColor(Tellurion.dim)
+                        .font(Operator.font(9.5)).foregroundColor(Operator.dim)
                 }
                 if change.conflict {
                     Text("This change has conflicts. Resolve them in the files, or with jj resolve.")
-                        .font(Tellurion.font(10)).foregroundColor(Tellurion.danger).fixedSize(horizontal: false, vertical: true)
+                        .font(Operator.font(10)).foregroundColor(Operator.danger).fixedSize(horizontal: false, vertical: true)
                 }
                 HStack(spacing: 6) {
                     TextField(change.description.isEmpty ? "Describe this change" : change.description, text: $message)
-                        .textFieldStyle(.roundedBorder).font(Tellurion.font(11))
+                        .textFieldStyle(.roundedBorder).font(Operator.font(11))
                     Button("Describe") { model.describe(message); message = "" }
                         .disabled(message.trimmingCharacters(in: .whitespaces).isEmpty || model.busy)
                         .help("jj describe: set the working copy's description")
                     Button("Commit") { model.commit(message); message = "" }
-                        .buttonStyle(TellurionButtonStyle(prominent: true))
+                        .buttonStyle(OperatorButtonStyle(prominent: true))
                         .disabled(message.trimmingCharacters(in: .whitespaces).isEmpty || model.busy || change.empty)
                         .help("jj commit: describe it and start a new change on top")
                 }
                 if !change.empty, let parent = model.changes.first(where: { !$0.isWorkingCopy }), !parent.immutable {
-                    small("Squash into \(parent.changeID)", color: Tellurion.muted) { model.squash() }
+                    small("Squash into \(parent.changeID)", color: Operator.muted) { model.squash() }
                         .help("jj squash: move the working copy's edits into its parent")
                 }
             } else {
-                Text(model.loaded ? "No working copy here" : "…").font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim)
+                Text(model.loaded ? "No working copy here" : "…").font(Operator.font(10.5)).foregroundColor(Operator.dim)
             }
         }
     }
@@ -249,34 +249,34 @@ struct JJPanelSections: View {
 
     private var changesSection: some View {
         VStack(alignment: .leading, spacing: 5) {
-            TellurionSectionLabel("Changes")
+            OperatorSectionLabel("Changes")
             ForEach(model.changes) { change in changeRow(change) }
         }
     }
 
     private func changeRow(_ change: JJPanelModel.Change) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text(change.isWorkingCopy ? "@" : "○").font(Tellurion.mono(10))
-                .foregroundColor(change.isWorkingCopy ? Tellurion.gold : Tellurion.dim).frame(width: 10)
-            Text(change.changeID).font(Tellurion.mono(10)).foregroundColor(change.immutable ? Tellurion.dim : Tellurion.bronze)
+            Text(change.isWorkingCopy ? "@" : "○").font(Operator.mono(10))
+                .foregroundColor(change.isWorkingCopy ? Operator.gold : Operator.dim).frame(width: 10)
+            Text(change.changeID).font(Operator.mono(10)).foregroundColor(change.immutable ? Operator.dim : Operator.bronze)
             ForEach(change.bookmarks, id: \.self) { name in
-                Text(name).font(Tellurion.mono(9.5)).foregroundColor(Tellurion.gold)
+                Text(name).font(Operator.mono(9.5)).foregroundColor(Operator.gold)
                     .padding(.horizontal, 4).padding(.vertical, 1)
-                    .background(RoundedRectangle(cornerRadius: 4).fill(Tellurion.gold.opacity(0.12)))
+                    .background(RoundedRectangle(cornerRadius: 4).fill(Operator.gold.opacity(0.12)))
             }
             Text(change.description.isEmpty ? (change.empty ? "(empty)" : "(no description)") : change.description)
-                .font(Tellurion.font(10.5))
-                .foregroundColor(change.description.isEmpty ? Tellurion.dim : Tellurion.text).lineLimit(1)
+                .font(Operator.font(10.5))
+                .foregroundColor(change.description.isEmpty ? Operator.dim : Operator.text).lineLimit(1)
             if change.conflict {
-                Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 9)).foregroundColor(Tellurion.danger)
+                Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 9)).foregroundColor(Operator.danger)
             }
             Spacer(minLength: 4)
-            Text(change.age).font(Tellurion.font(9.5)).foregroundColor(Tellurion.dim).lineLimit(1)
+            Text(change.age).font(Operator.font(9.5)).foregroundColor(Operator.dim).lineLimit(1)
             // A menu's label only draws one line of text, so the actions sit in their own menu.
             Menu {
                 changeActions(change)
             } label: {
-                Image(systemName: "ellipsis").font(.system(size: 9, weight: .bold)).foregroundColor(Tellurion.muted)
+                Image(systemName: "ellipsis").font(.system(size: 9, weight: .bold)).foregroundColor(Operator.muted)
             }
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)
@@ -320,37 +320,37 @@ struct JJPanelSections: View {
 
     private var bookmarksSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            TellurionSectionLabel("Bookmarks") {
+            OperatorSectionLabel("Bookmarks") {
                 HStack(spacing: 10) {
                     if model.hasRemote {
                         Button("Fetch") { model.fetch() }
-                            .buttonStyle(.plain).font(Tellurion.font(10.5)).foregroundColor(Tellurion.gold)
+                            .buttonStyle(.plain).font(Operator.font(10.5)).foregroundColor(Operator.gold)
                             .disabled(model.busy).help("jj git fetch")
                     } else {
-                        Text("no remote").font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                        Text("no remote").font(Operator.font(10)).foregroundColor(Operator.dim)
                     }
                     Button(naming ? "Cancel" : "New…") { naming.toggle(); newBookmark = "" }
-                        .buttonStyle(.plain).font(Tellurion.font(10.5)).foregroundColor(Tellurion.gold)
+                        .buttonStyle(.plain).font(Operator.font(10.5)).foregroundColor(Operator.gold)
                 }
             }
             if naming {
                 HStack(spacing: 6) {
                     TextField("bookmark-name", text: $newBookmark, onCommit: createBookmark)
-                        .textFieldStyle(.roundedBorder).font(Tellurion.mono(11))
+                        .textFieldStyle(.roundedBorder).font(Operator.mono(11))
                     Button("Set", action: createBookmark).disabled(newBookmark.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
                 Text("On the working copy, or on its parent while the working copy is empty. An existing bookmark moves here.")
-                    .font(Tellurion.font(10)).foregroundColor(Tellurion.dim).fixedSize(horizontal: false, vertical: true)
+                    .font(Operator.font(10)).foregroundColor(Operator.dim).fixedSize(horizontal: false, vertical: true)
             }
             if model.bookmarks.isEmpty {
-                Text(model.loaded ? "No bookmarks" : "…").font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim)
+                Text(model.loaded ? "No bookmarks" : "…").font(Operator.font(10.5)).foregroundColor(Operator.dim)
             }
             ForEach(model.bookmarks.prefix(10)) { bookmark in
                 HStack(spacing: 6) {
-                    Text(bookmark.name).font(Tellurion.mono(11)).foregroundColor(Tellurion.text).lineLimit(1).truncationMode(.middle)
-                    Text(bookmark.target).font(Tellurion.mono(9.5)).foregroundColor(Tellurion.dim)
+                    Text(bookmark.name).font(Operator.mono(11)).foregroundColor(Operator.text).lineLimit(1).truncationMode(.middle)
+                    Text(bookmark.target).font(Operator.mono(9.5)).foregroundColor(Operator.dim)
                     Spacer(minLength: 4)
-                    Text(syncText(bookmark)).font(Tellurion.font(9.5)).foregroundColor(Tellurion.dim).lineLimit(1)
+                    Text(syncText(bookmark)).font(Operator.font(9.5)).foregroundColor(Operator.dim).lineLimit(1)
                     if model.hasRemote {
                         small("Push") { model.push(bookmark) }
                             .help("jj git push -b \(bookmark.name)")
@@ -378,23 +378,23 @@ struct JJPanelSections: View {
 
     private var operationsSection: some View {
         VStack(alignment: .leading, spacing: 5) {
-            TellurionSectionLabel("Operations") {
+            OperatorSectionLabel("Operations") {
                 Button("Undo last") { model.undo() }
-                    .buttonStyle(.plain).font(Tellurion.font(10.5)).foregroundColor(Tellurion.gold)
+                    .buttonStyle(.plain).font(Operator.font(10.5)).foregroundColor(Operator.gold)
                     .disabled(model.busy || model.operations.count < 2)
                     .help("jj undo: reverse the most recent operation")
             }
             ForEach(Array(model.operations.enumerated()), id: \.element.id) { index, operation in
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(operation.description).font(Tellurion.font(10.5))
-                        .foregroundColor(index == 0 ? Tellurion.text : Tellurion.muted).lineLimit(1).truncationMode(.tail)
+                    Text(operation.description).font(Operator.font(10.5))
+                        .foregroundColor(index == 0 ? Operator.text : Operator.muted).lineLimit(1).truncationMode(.tail)
                     Spacer(minLength: 4)
-                    Text(operation.age).font(Tellurion.font(9.5)).foregroundColor(Tellurion.dim).lineLimit(1)
+                    Text(operation.age).font(Operator.font(9.5)).foregroundColor(Operator.dim).lineLimit(1)
                     if index > 0 {
                         if armed == operation.id {
-                            small("Restore?", color: Tellurion.danger) { model.restore(operation); armed = nil }
+                            small("Restore?", color: Operator.danger) { model.restore(operation); armed = nil }
                         } else {
-                            small("Restore", color: Tellurion.muted) {
+                            small("Restore", color: Operator.muted) {
                                 armed = operation.id
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) { if armed == operation.id { armed = nil } }
                             }
@@ -404,14 +404,14 @@ struct JJPanelSections: View {
                 }
             }
             Text("Every jj command is recorded here, including an agent's, so any of them can be undone.")
-                .font(Tellurion.font(10)).foregroundColor(Tellurion.dim).fixedSize(horizontal: false, vertical: true)
+                .font(Operator.font(10)).foregroundColor(Operator.dim).fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    private func small(_ title: String, color: Color = Tellurion.gold, action: @escaping () -> Void) -> some View {
+    private func small(_ title: String, color: Color = Operator.gold, action: @escaping () -> Void) -> some View {
         Button(title, action: action)
             .buttonStyle(.plain)
-            .font(Tellurion.font(10, weight: .semibold))
+            .font(Operator.font(10, weight: .semibold))
             .foregroundColor(color)
             .disabled(model.busy)
     }

@@ -32,7 +32,7 @@ final class HuggingFaceCatalog: ObservableObject {
         let downloads: Int
         let likes: Int
         let gated: Bool
-        /// The file Tellurion would download, once its size is known: a good default
+        /// The file Operator would download, once its size is known: a good default
         /// quantization (Q4_K_M if there is one).
         var quantization: String?
         var bytes: Int64?
@@ -155,27 +155,27 @@ struct HuggingFaceSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            TellurionSectionLabel("Hugging Face") {
+            OperatorSectionLabel("Hugging Face") {
                 Button { catalog.load(text: text, refresh: true) } label: {
                     Image(systemName: "arrow.clockwise").font(.system(size: 10))
                 }
-                .buttonStyle(.plain).foregroundColor(Tellurion.dim).help("Search again")
+                .buttonStyle(.plain).foregroundColor(Operator.dim).help("Search again")
             }
             Text("Any public GGUF model on Hugging Face, downloaded through Ollama. No account needed.")
-                .font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
+                .font(Operator.font(11)).foregroundColor(Operator.dim)
             HStack(spacing: 8) {
                 Picker("Show", selection: $catalog.filter) {
                     ForEach(HuggingFaceCatalog.Filter.allCases) { Text($0.rawValue).tag($0) }
                 }
                 .pickerStyle(.segmented).labelsHidden().frame(width: 260)
                 TextField("Search Hugging Face", text: $text, onCommit: { catalog.load(text: text) })
-                    .textFieldStyle(.roundedBorder).font(Tellurion.font(12))
+                    .textFieldStyle(.roundedBorder).font(Operator.font(12))
             }
             if catalog.loading {
-                HStack(spacing: 8) { ProgressView().controlSize(.small); Text("Searching…").font(Tellurion.font(11)).foregroundColor(Tellurion.dim) }
+                HStack(spacing: 8) { ProgressView().controlSize(.small); Text("Searching…").font(Operator.font(11)).foregroundColor(Operator.dim) }
                     .padding(.vertical, 6)
             } else if let error = catalog.error {
-                Text(error).font(Tellurion.font(11)).foregroundColor(Tellurion.warn)
+                Text(error).font(Operator.font(11)).foregroundColor(Operator.warn)
             } else {
                 VStack(spacing: 2) {
                     ForEach(catalog.models) { HuggingFaceRow(model: $0, installed: isInstalled($0)) }
@@ -209,22 +209,22 @@ private struct HuggingFaceRow: View {
     var body: some View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
-                Text(model.repo).font(Tellurion.mono(12)).foregroundColor(fits ? Tellurion.text : Tellurion.dim)
+                Text(model.repo).font(Operator.mono(12)).foregroundColor(fits ? Operator.text : Operator.dim)
                     .lineLimit(1).truncationMode(.middle)
-                Text(detail).font(Tellurion.font(11)).foregroundColor(Tellurion.dim).lineLimit(1)
+                Text(detail).font(Operator.font(11)).foregroundColor(Operator.dim).lineLimit(1)
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 1) {
                 Text(model.bytes.map { ByteCountFormatter.string(fromByteCount: $0, countStyle: .file) } ?? (model.checked ? "" : "…"))
-                    .font(Tellurion.font(11, weight: .medium)).foregroundColor(fits ? Tellurion.muted : Tellurion.warn)
-                Text("\(Self.short(model.downloads)) downloads").font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                    .font(Operator.font(11, weight: .medium)).foregroundColor(fits ? Operator.muted : Operator.warn)
+                Text("\(Self.short(model.downloads)) downloads").font(Operator.font(10)).foregroundColor(Operator.dim)
             }
             .frame(width: 96, alignment: .trailing)
             action.frame(width: 96)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
-        .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(hovering ? Tellurion.raised : .clear))
+        .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(hovering ? Operator.raised : .clear))
         .onHover { hovering = $0 }
     }
 
@@ -237,20 +237,20 @@ private struct HuggingFaceRow: View {
     @ViewBuilder
     private var action: some View {
         if installed {
-            Text("Downloaded").font(Tellurion.font(11)).foregroundColor(Tellurion.live)
+            Text("Downloaded").font(Operator.font(11)).foregroundColor(Operator.live)
         } else if !model.checked && !model.gated {
             ProgressView().controlSize(.small)
         } else if model.gated || model.ollamaName == nil {
             Button("Open page") { if let page = model.page { NSWorkspace.shared.open(page) } }
-                .buttonStyle(TellurionButtonStyle())
+                .buttonStyle(OperatorButtonStyle())
         } else if let name = model.ollamaName, let progress = models.downloads[name] {
             VStack(spacing: 2) {
-                ProgressView(value: progress ?? 0).progressViewStyle(.linear).tint(Tellurion.gold)
-                Text(progress.map { "\(Int($0 * 100))%" } ?? "Starting…").font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                ProgressView(value: progress ?? 0).progressViewStyle(.linear).tint(Operator.gold)
+                Text(progress.map { "\(Int($0 * 100))%" } ?? "Starting…").font(Operator.font(10)).foregroundColor(Operator.dim)
             }
         } else if let name = model.ollamaName {
             Button("Download") { models.download(name) }
-                .buttonStyle(TellurionButtonStyle())
+                .buttonStyle(OperatorButtonStyle())
                 .help(fits ? "Download \(name) through Ollama" : "Probably too big for this Mac's memory")
         }
     }

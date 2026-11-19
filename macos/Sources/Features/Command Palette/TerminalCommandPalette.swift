@@ -99,7 +99,7 @@ struct TerminalCommandPaletteView: View {
             // convey it'll go all the way through.
             let title: String
             if case .updateAvailable = updateViewModel.state {
-                title = "Update Tellurion and Restart"
+                title = "Update Operator and Restart"
             } else {
                 title = updateViewModel.text
             }
@@ -144,7 +144,7 @@ struct TerminalCommandPaletteView: View {
             }
     }
 
-    /// Tellurion: new sessions and sidebar/editor toggles.
+    /// Operator: new sessions and sidebar/editor toggles.
     private var customOptions: [CommandOption] {
         #if os(macOS)
         PaletteExtras.commandOptions(for: surfaceView)

@@ -26,7 +26,7 @@ final class BoardSketchView: BoardNodeView, NSDraggingSource, NSServicesMenuRequ
         clip.layer?.cornerCurve = .continuous
         clip.layer?.masksToBounds = true
         clip.layer?.borderWidth = 1.25
-        clip.layer?.backgroundColor = Tellurion.chrome.panel.nsColor.cgColor
+        clip.layer?.backgroundColor = Operator.chrome.panel.nsColor.cgColor
         addSubview(clip)
 
         let header = PassiveHostingView(rootView: BoardSketchHeader(state: state))
@@ -74,7 +74,7 @@ final class BoardSketchView: BoardNodeView, NSDraggingSource, NSServicesMenuRequ
         setZoom(zoom)
         overview.isHidden = zoom >= 0.45
         toolbar.isHidden = zoom < 0.45
-        clip.layer?.borderColor = (focused ? NSColor.controlAccentColor.withAlphaComponent(0.85) : Tellurion.chrome.lineStrong.nsColor).cgColor
+        clip.layer?.borderColor = (focused ? NSColor.controlAccentColor.withAlphaComponent(0.85) : Operator.chrome.lineStrong.nsColor).cgColor
         clip.layer?.borderWidth = focused ? 2 : 1.25
     }
 
@@ -172,8 +172,8 @@ private struct BoardSketchHeader: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "scribble.variable").font(.system(size: 11, weight: .medium)).foregroundColor(Tellurion.muted)
-            Text(state.title).font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text).lineLimit(1)
+            Image(systemName: "scribble.variable").font(.system(size: 11, weight: .medium)).foregroundColor(Operator.muted)
+            Text(state.title).font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text).lineLimit(1)
             Spacer(minLength: 4)
             glyph("ellipsis")
             glyph("arrow.up.left.and.arrow.down.right")
@@ -181,12 +181,12 @@ private struct BoardSketchHeader: View {
         }
         .padding(.horizontal, 10)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(state.focused ? Tellurion.raised : Tellurion.panel)
-        .overlay(Rectangle().fill(Tellurion.line).frame(height: 1), alignment: .bottom)
+        .background(state.focused ? Operator.raised : Operator.panel)
+        .overlay(Rectangle().fill(Operator.line).frame(height: 1), alignment: .bottom)
     }
 
     private func glyph(_ symbol: String) -> some View {
-        Image(systemName: symbol).font(.system(size: 9.5, weight: .bold)).foregroundColor(Tellurion.muted)
+        Image(systemName: symbol).font(.system(size: 9.5, weight: .bold)).foregroundColor(Operator.muted)
             .frame(width: 18, height: 18)
     }
 }
@@ -197,12 +197,12 @@ private struct BoardSketchOverview: View {
     var body: some View {
         GeometryReader { geo in
             VStack(spacing: 6) {
-                Image(systemName: "scribble.variable").font(.system(size: 20, weight: .medium)).foregroundColor(Tellurion.text)
-                Text(state.title).font(Tellurion.font(13, weight: .semibold)).foregroundColor(Tellurion.text).lineLimit(1)
+                Image(systemName: "scribble.variable").font(.system(size: 20, weight: .medium)).foregroundColor(Operator.text)
+                Text(state.title).font(Operator.font(13, weight: .semibold)).foregroundColor(Operator.text).lineLimit(1)
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
             .frame(maxWidth: 200)
-            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Tellurion.panel.opacity(0.92)))
+            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Operator.panel.opacity(0.92)))
             .scaleEffect(min(1 / max(state.zoom, 0.08), geo.size.width / 220))
             .frame(width: geo.size.width, height: geo.size.height)
         }
@@ -463,14 +463,14 @@ struct SketchStylePanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if first == nil {
-                Text("Select something in the sketch to style it.").font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                Text("Select something in the sketch to style it.").font(Operator.font(12)).foregroundColor(Operator.muted)
             } else {
                 label("Color")
                 HStack(spacing: 6) {
                     ForEach(SketchStyle.colors.indices, id: \.self) { index in
                         Button { apply("Change Color") { $0.color = index } } label: {
                             Circle().fill(Color(nsColor: SketchStyle.color(index))).frame(width: 18, height: 18)
-                                .overlay(Circle().strokeBorder(first?.color == index ? Tellurion.core : .clear, lineWidth: 2).padding(-3))
+                                .overlay(Circle().strokeBorder(first?.color == index ? Operator.core : .clear, lineWidth: 2).padding(-3))
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(SketchStyle.colors[index].name)
@@ -501,7 +501,7 @@ struct SketchStylePanel: View {
                         apply("Opacity") { $0.opacity = value }
                         dragging = nil
                     }
-                    Text("\(Int(((dragging ?? first?.opacity ?? 1) * 100).rounded()))%").font(Tellurion.mono(11)).foregroundColor(Tellurion.muted).frame(width: 40)
+                    Text("\(Int(((dragging ?? first?.opacity ?? 1) * 100).rounded()))%").font(Operator.mono(11)).foregroundColor(Operator.muted).frame(width: 40)
                 }
                 HStack(spacing: 4) {
                     chip("Dashed", on: first?.dashed == true) { apply("Dashed") { $0.dashed = $0.dashed == true ? nil : true } }
@@ -530,7 +530,7 @@ struct SketchStylePanel: View {
     }
 
     private func label(_ text: String) -> some View {
-        Text(text.uppercased()).font(Tellurion.font(9.5, weight: .bold)).foregroundColor(Tellurion.dim).tracking(0.6)
+        Text(text.uppercased()).font(Operator.font(9.5, weight: .bold)).foregroundColor(Operator.dim).tracking(0.6)
     }
 
     private func chip(_ title: String, symbol: String? = nil, on: Bool, action: @escaping () -> Void) -> some View {
@@ -539,12 +539,12 @@ struct SketchStylePanel: View {
                 if let symbol {
                     Image(systemName: symbol).font(.system(size: 11)).help(title)
                 } else {
-                    Text(title).font(Tellurion.font(11, weight: .medium))
+                    Text(title).font(Operator.font(11, weight: .medium))
                 }
             }
-            .foregroundColor(on ? Tellurion.ink : Tellurion.text)
+            .foregroundColor(on ? Operator.ink : Operator.text)
             .padding(.horizontal, 9).frame(height: 24)
-            .background(RoundedRectangle(cornerRadius: 6).fill(on ? Tellurion.core : Tellurion.raised))
+            .background(RoundedRectangle(cornerRadius: 6).fill(on ? Operator.core : Operator.raised))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(title)

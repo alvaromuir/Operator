@@ -29,7 +29,7 @@ branch="ghostty-${latest#v}"
 git switch --quiet -c "$branch" origin/dev
 if ! git merge --no-ff --no-edit "$latest"; then
   echo
-  echo "$latest conflicts with Tellurion on $branch. Resolve the conflicts, then: git commit"
+  echo "$latest conflicts with Operator on $branch. Resolve the conflicts, then: git commit"
   echo "To give up: git merge --abort"
   exit 1
 fi

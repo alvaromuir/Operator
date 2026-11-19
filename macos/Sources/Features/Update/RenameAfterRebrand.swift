@@ -4,11 +4,11 @@ import CoreServices
 
 /// Copies installed before the rename keep their file name when they update (the updater
 /// installs over the same path), so Finder, Spotlight and Launchpad would still say
-/// GhosttyEXTREME. On a normal quit the app renames its own bundle to Tellurion.app.
+/// Operator. On a normal quit the app renames its own bundle to Operator.app.
 /// Never while an update is being installed: the installer is about to write to this path.
 enum RenameAfterRebrand {
-    private static let oldName = "GhosttyEXTREME.app"
-    private static let newName = "Tellurion.app"
+    private static let oldName = "Operator.app"
+    private static let newName = "Operator.app"
 
     /// Set by the updater's delegate once an update is going to be installed.
     static var updatePending = false

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Live status from more coding agents, for Tellurion's sidebar.
+"""Live status from more coding agents, for Operator's sidebar.
 
 Usage (from an agent's hooks): agent-event.py <agent> <hook event>
   agent: copilot | droid | kiro | gemini | antigravity | cursor | qwen | kimi | goose | mistral
@@ -7,7 +7,7 @@ Usage (from an agent's hooks): agent-event.py <agent> <hook event>
 Reads the hook's JSON from stdin, turns the agent's own event into one of the sidebar's
 (session_start, prompt_submit, tool_complete, permission_request, input_needed, stop,
 stop_failure, session_end), and writes it to the agent's terminal as an OSC 777
-notification titled "ghostty-extreme://agent". It only observes: it never approves,
+notification titled "operator://agent". It only observes: it never approves,
 denies or changes anything, prints only what each agent needs to carry on ("{}" for the
 ones that parse JSON), and always exits 0.
 """
@@ -132,9 +132,9 @@ def tty_path():
 # The editor shows an agent's prompts and tool calls live by reading its session transcript,
 # in Claude Code's format. These agents keep no such transcript (or one in their own
 # format), so each event is also appended to a small one of ours, with the same records,
-# under ~/.ghostty-extreme/feeds/. Old feeds are removed after a week.
+# under ~/.operator/feeds/. Old feeds are removed after a week.
 
-FEEDS = os.path.join(os.path.expanduser("~"), ".ghostty-extreme", "feeds")
+FEEDS = os.path.join(os.path.expanduser("~"), ".operator", "feeds")
 PATH_KEYS = ("file_path", "filePath", "absolute_path", "target_file", "path", "file", "notebook_path")
 
 
@@ -257,7 +257,7 @@ def main():
         # The terminal caps notification bodies at 255 bytes.
         while len(json.dumps(status, ensure_ascii=True, separators=(",", ":")).encode()) > 250 and status["detail"]:
             status["detail"] = status["detail"][:-1]
-        sequence = "\x1b]777;notify;ghostty-extreme://agent;" + json.dumps(status, ensure_ascii=True, separators=(",", ":")) + "\x07"
+        sequence = "\x1b]777;notify;operator://agent;" + json.dumps(status, ensure_ascii=True, separators=(",", ":")) + "\x07"
         tty = tty_path()
         # The editor's live feed (OpenCode and Amp write theirs from their plugins).
         if os.environ.get("GHOSTTY_EXTREME_AGENT_FEED", "1") != "0":
@@ -269,7 +269,7 @@ def main():
                 if name in ("session_start", "prompt_submit") and len(path) < 160:
                     where = {"agent": agent, "event": "transcript", "detail": path,
                              "t": os.environ.get("GHOSTTY_EXTREME_EVENT_TOKEN", "")}
-                    sequence += "\x1b]777;notify;ghostty-extreme://agent;" + json.dumps(where, ensure_ascii=True, separators=(",", ":")) + "\x07"
+                    sequence += "\x1b]777;notify;operator://agent;" + json.dumps(where, ensure_ascii=True, separators=(",", ":")) + "\x07"
             except OSError:
                 pass
         if tty:

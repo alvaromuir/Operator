@@ -9,7 +9,7 @@ enum BoardMedia {
     static let size = CGSize(width: 640, height: 400)
 
     static func isMedia(_ url: URL) -> Bool {
-        guard TellurionSettings.isOn(.media), let type = UTType(filenameExtension: url.pathExtension) else { return false }
+        guard OperatorSettings.isOn(.media), let type = UTType(filenameExtension: url.pathExtension) else { return false }
         return type.conforms(to: .audiovisualContent) || type.conforms(to: .audio) || type.conforms(to: .movie)
     }
 }

@@ -2,13 +2,13 @@
 import Foundation
 import os
 
-/// Writing Tellurion's own files (settings, designs, presets, saved pictures): the folder is
+/// Writing Operator's own files (settings, designs, presets, saved pictures): the folder is
 /// made, the write is atomic, and a failure is logged under the feature's category instead of
 /// being dropped. Logs say what failed and why, never the file's contents.
 enum StoredFile {
     /// One logger per feature, in Console.app under the app's subsystem.
     static func logger(_ category: String) -> Logger {
-        Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.steventsvik.ghostty-extreme", category: category)
+        Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.alvaromuir.operator", category: category)
     }
 
     /// Writes `data` to `url`, making its folder first. Returns whether it worked; on failure

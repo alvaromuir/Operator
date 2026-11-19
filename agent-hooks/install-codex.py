@@ -11,12 +11,12 @@ import os
 
 def install(home):
     source = Path(__file__).resolve().parent
-    current = home / ".ghostty-extreme/agent-hooks"
+    current = home / ".operator/agent-hooks"
     legacy = home / ".ghostty-custom/agent-hooks"
     directories = [current] + ([legacy] if legacy.is_dir() else [])
     for directory in directories:
         directory.mkdir(parents=True, exist_ok=True)
-        for name in ("agent-hook.sh", "codex-hook.py", "ghostty-extreme.zsh"):
+        for name in ("agent-hook.sh", "codex-hook.py", "operator.zsh"):
             shutil.copy2(source / name, directory / name)
         (directory / "agent-hook.sh").chmod(0o755)
     config = home / ".codex/hooks.json"
@@ -46,7 +46,7 @@ def install(home):
         changed = True
     if changed:
         if config.exists():
-            shutil.copy2(config, config.with_name("hooks.json.ghostty-extreme-backup-" + str(time.time_ns())))
+            shutil.copy2(config, config.with_name("hooks.json.operator-backup-" + str(time.time_ns())))
         descriptor, temporary = tempfile.mkstemp(dir=config.parent)
         with os.fdopen(descriptor, "w") as stream:
             json.dump(data, stream, indent=2)

@@ -5,38 +5,38 @@ import SwiftUI
 
 /// The design in use: loads and saves it, resolves the chrome's colors and the logo for
 /// the views, writes the terminal's part into the Ghostty config, and tells the windows
-/// to redraw. Every `Tellurion` color reads from here.
+/// to redraw. Every `Operator` color reads from here.
 final class DesignStore: ObservableObject {
     static let shared = DesignStore()
 
     /// Posted on the main thread after the design changes and the chrome is resolved.
-    static let didChange = Notification.Name("com.steventsvik.ghostty-extreme.designDidChange")
+    static let didChange = Notification.Name("com.alvaromuir.operator.designDidChange")
 
-    @Published private(set) var design: TellurionDesign
+    @Published private(set) var design: OperatorDesign
     /// Bumped on every change; views keyed on it rebuild with the new colors.
     @Published private(set) var revision = 0
     /// The user's own saved designs.
-    @Published private(set) var mine: [TellurionDesign] = []
+    @Published private(set) var mine: [OperatorDesign] = []
 
-    /// The chrome's colors, resolved. Read by `Tellurion` on every draw, so it's a plain value.
-    private(set) var chrome = ChromeColors.tellurion
-    private(set) var chromeColors = ResolvedChrome(ChromeColors.tellurion)
-    private(set) var logoRows = DesignLogo.tellurion.rows
-    private(set) var logoColors: [Character: Color] = DesignLogo.tellurion.colors(in: .tellurion)
+    /// The chrome's colors, resolved. Read by `Operator` on every draw, so it's a plain value.
+    private(set) var chrome = ChromeColors.operator
+    private(set) var chromeColors = ResolvedChrome(ChromeColors.operator)
+    private(set) var logoRows = DesignLogo.operator.rows
+    private(set) var logoColors: [Character: Color] = DesignLogo.operator.colors(in: .operator)
 
     /// The terminal's colors as the design resolves them (what the preview shows).
-    private(set) var terminalColors = TerminalColors.tellurion
+    private(set) var terminalColors = TerminalColors.operator
 
     private var pending: DispatchWorkItem?
     private var observers: [NSObjectProtocol] = []
     /// Whether the Dock shows the design's logo right now.
     private var dockIconShown = false
 
-    /// Where `design.json` and `designs/` live. Test-only: `TELLURION_TEST_HOME`
+    /// Where `design.json` and `designs/` live. Test-only: `OPERATOR_TEST_HOME`
     /// moves them, so a test copy never changes the maintainer's design.
     static var folder: URL {
         if let home = TestHooks.home {
-            return URL(fileURLWithPath: home).appendingPathComponent(".ghostty-extreme", isDirectory: true)
+            return URL(fileURLWithPath: home).appendingPathComponent(".operator", isDirectory: true)
         }
         return AgentTools.root
     }
@@ -45,14 +45,14 @@ final class DesignStore: ObservableObject {
 
     private init() {
         let decoder = JSONDecoder()
-        if let data = try? Data(contentsOf: Self.file), let saved = try? decoder.decode(TellurionDesign.self, from: data) {
+        if let data = try? Data(contentsOf: Self.file), let saved = try? decoder.decode(OperatorDesign.self, from: data) {
             design = saved
         } else {
             design = .standard
         }
         mine = Self.loadMine()
         resolve(reload: false, notify: false)
-        // Not from init: the views and `Tellurion` read `shared`, which is still being made.
+        // Not from init: the views and `Operator` read `shared`, which is still being made.
         DispatchQueue.main.async { [weak self] in self?.applyDockIcon() }
         observers.append(NotificationCenter.default.addObserver(forName: .ghosttyConfigDidChange, object: nil, queue: .main) { [weak self] _ in
             guard let self else { return }
@@ -67,7 +67,7 @@ final class DesignStore: ObservableObject {
 
     /// Makes `design` the one in use: saves it, writes the terminal's part to the Ghostty
     /// config and reloads it, and redraws the chrome.
-    func apply(_ next: TellurionDesign) {
+    func apply(_ next: OperatorDesign) {
         pending?.cancel()
         pending = nil
         design = next
@@ -76,7 +76,7 @@ final class DesignStore: ObservableObject {
     }
 
     /// Like `apply`, a moment after the last call: for sliders and color pickers.
-    func preview(_ next: TellurionDesign) {
+    func preview(_ next: OperatorDesign) {
         guard next != design || pending != nil else { return }
         design = next
         let work = DispatchWorkItem { [weak self] in
@@ -89,7 +89,7 @@ final class DesignStore: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work)
     }
 
-    /// Back to Tellurion as shipped.
+    /// Back to Operator as shipped.
     func reset() { apply(.standard) }
 
     private static let log = StoredFile.logger("Design")
@@ -105,8 +105,8 @@ final class DesignStore: ObservableObject {
         let before = (chrome, logoRows)
         let live = (NSApp.delegate as? AppDelegate).flatMap { TerminalColors(config: $0.ghostty.config) }
         switch design.terminal {
-        case .mine: terminalColors = live ?? .tellurion
-        case .theme(let name): terminalColors = GhosttyThemes.colors(named: name) ?? live ?? .tellurion
+        case .mine: terminalColors = live ?? .operator
+        case .theme(let name): terminalColors = GhosttyThemes.colors(named: name) ?? live ?? .operator
         case .custom(let colors): terminalColors = colors
         }
         switch design.chrome {
@@ -130,7 +130,7 @@ final class DesignStore: ObservableObject {
 
     // MARK: My designs
 
-    func saveToMine(_ draft: TellurionDesign) {
+    func saveToMine(_ draft: OperatorDesign) {
         var saved = draft
         saved.builtIn = false
         if saved.name.trimmingCharacters(in: .whitespaces).isEmpty { saved.name = "My design" }
@@ -146,7 +146,7 @@ final class DesignStore: ObservableObject {
         mine = Self.loadMine()
     }
 
-    private static func loadMine() -> [TellurionDesign] {
+    private static func loadMine() -> [OperatorDesign] {
         let decoder = JSONDecoder()
         let urls = (try? FileManager.default.contentsOfDirectory(at: mineFolder, includingPropertiesForKeys: [.contentModificationDateKey])) ?? []
         return urls.filter { $0.pathExtension == "json" }
@@ -155,7 +155,7 @@ final class DesignStore: ObservableObject {
                 let db = (try? b.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
                 return da > db
             }
-            .compactMap { url in (try? Data(contentsOf: url)).flatMap { try? decoder.decode(TellurionDesign.self, from: $0) } }
+            .compactMap { url in (try? Data(contentsOf: url)).flatMap { try? decoder.decode(OperatorDesign.self, from: $0) } }
     }
 
     // MARK: Dock icon
@@ -221,7 +221,7 @@ struct ResolvedChrome {
     }
 }
 
-/// Rebuilds its content whenever the design changes, so every `Tellurion` color inside is
+/// Rebuilds its content whenever the design changes, so every `Operator` color inside is
 /// read again. Put it at the root of a window or a chrome subtree, never around a terminal.
 struct DesignRoot<Content: View>: View {
     @ObservedObject private var store = DesignStore.shared
@@ -232,7 +232,7 @@ struct DesignRoot<Content: View>: View {
     }
 }
 
-/// The tool-window styling (`tellurionWindow()`) re-applied on every design change without
+/// The tool-window styling (`operatorWindow()`) re-applied on every design change without
 /// rebuilding the content: for views that keep state while the design changes under them.
 struct DesignSkin<Content: View>: View {
     @ObservedObject private var store = DesignStore.shared
@@ -241,22 +241,22 @@ struct DesignSkin<Content: View>: View {
     var body: some View {
         content()
             .background(store.chromeColors.ink)
-            .buttonStyle(TellurionButtonStyle())
+            .buttonStyle(OperatorButtonStyle())
             .tint(store.chromeColors.gold)
             .environment(\.colorScheme, store.chrome.isLight ? .light : .dark)
-            .onAppear { Tellurion.registerFonts() }
+            .onAppear { Operator.registerFonts() }
     }
 }
 
 // MARK: - The Ghostty config
 
-/// The terminal's part of a design lives in `tellurion-design.ghostty` next to the Ghostty
+/// The terminal's part of a design lives in `operator-design.ghostty` next to the Ghostty
 /// config, which includes it with a `config-file` line. Because includes are read after the
 /// whole config, the design's colors win over the config's own.
 enum GhosttyDesignConfig {
-    static let fragmentName = "tellurion-design.ghostty"
+    static let fragmentName = "operator-design.ghostty"
     static let includeLine = "config-file = ?\(fragmentName)"
-    static let marker = "# Tellurion's Design window writes the file below; keep this line to use it."
+    static let marker = "# Operator's Design window writes the file below; keep this line to use it."
 
     /// The config file Ghostty reads: the default files in Ghostty's order of
     /// preference (created if there is none); in debug builds `GHOSTTY_CONFIG_PATH`,
@@ -287,9 +287,9 @@ enum GhosttyDesignConfig {
     static var fragmentFile: URL { configFile.deletingLastPathComponent().appendingPathComponent(fragmentName) }
 
     /// What the fragment says for `design`.
-    static func fragment(for design: TellurionDesign) -> String {
+    static func fragment(for design: OperatorDesign) -> String {
         var lines = [
-            "# Written by Tellurion (Tools → Design). Edit the design there; changes here are overwritten.",
+            "# Written by Operator (Tools → Design). Edit the design there; changes here are overwritten.",
             "# Remove the `config-file` line from your config to stop using it.",
             "",
         ]
@@ -322,7 +322,7 @@ enum GhosttyDesignConfig {
     }
 
     /// Writes the fragment and makes sure the config includes it.
-    static func write(_ design: TellurionDesign) {
+    static func write(_ design: OperatorDesign) {
         let config = configFile
         let folder = config.deletingLastPathComponent()
         do {
@@ -344,7 +344,7 @@ enum GhosttyDesignConfig {
                 try text.write(to: config, atomically: true, encoding: .utf8)
             }
         } catch {
-            NSLog("Tellurion design: could not write the Ghostty config fragment: \(error)")
+            NSLog("Operator design: could not write the Ghostty config fragment: \(error)")
         }
     }
 }

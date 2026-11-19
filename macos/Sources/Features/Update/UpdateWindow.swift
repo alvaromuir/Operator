@@ -47,7 +47,7 @@ final class UpdateNotes: ObservableObject {
             blocks = Self.parse(description)
             return
         }
-        guard let url = URL(string: "https://api.github.com/repos/steventsvik/Tellurion/releases/tags/extreme-\(version)") else { return }
+        guard let url = URL(string: "https://api.github.com/repos/alvaromuir/Operator/releases/tags/extreme-\(version)") else { return }
         loading = true
         Task {
             var body = ""
@@ -92,7 +92,7 @@ final class UpdateNotes: ObservableObject {
 
 struct UpdateWindowView: View {
     @ObservedObject var model: UpdateViewModel
-    @ObservedObject private var updates = TellurionUpdates.shared
+    @ObservedObject private var updates = OperatorUpdates.shared
     @StateObject private var notes = UpdateNotes()
     /// The release being installed, kept for the progress screen (the states after
     /// "available" don't carry it).
@@ -120,16 +120,16 @@ struct UpdateWindowView: View {
                     Button("Cancel") { checking.cancel() }
                 }
             case .notFound(let notFound):
-                message(title: "You're up to date", text: "Tellurion \(currentVersion) is the latest version.", spinner: false) {
+                message(title: "You're up to date", text: "Operator \(currentVersion) is the latest version.", spinner: false) {
                     Button("OK") { model.state = .idle; notFound.acknowledgement() }
-                        .buttonStyle(TellurionButtonStyle(prominent: true))
+                        .buttonStyle(OperatorButtonStyle(prominent: true))
                         .keyboardShortcut(.defaultAction)
                 }
             case .error(let error):
                 message(title: "The update didn't finish", text: error.error.localizedDescription, spinner: false) {
                     Button("Close") { error.dismiss() }
                     Button("Try again") { error.retry() }
-                        .buttonStyle(TellurionButtonStyle(prominent: true))
+                        .buttonStyle(OperatorButtonStyle(prominent: true))
                         .keyboardShortcut(.defaultAction)
                 }
             case .idle, .permissionRequest:
@@ -137,7 +137,7 @@ struct UpdateWindowView: View {
             }
         }
         .frame(minWidth: 440, minHeight: 360)
-        .tellurionWindow()
+        .operatorWindow()
         .onAppear { remember(model.state) }
         .onChange(of: model.state) { state in
             remember(state)
@@ -158,7 +158,7 @@ struct UpdateWindowView: View {
     private func available(_ update: UpdateState.UpdateAvailable) -> some View {
         let version = update.appcastItem.displayVersionString
         return VStack(alignment: .leading, spacing: 18) {
-            header(title: "Tellurion \(version)",
+            header(title: "Operator \(version)",
                    subtitle: currentVersion.isEmpty ? "A new version is ready" : "A new version is ready. You have \(currentVersion).")
             HStack(spacing: 8) {
                 if update.appcastItem.contentLength > 0 {
@@ -170,12 +170,12 @@ struct UpdateWindowView: View {
                 chip("Notarized by Apple")
             }
             VStack(alignment: .leading, spacing: 10) {
-                TellurionSectionLabel("What's new") {
+                OperatorSectionLabel("What's new") {
                     if let url = update.releaseNotes?.url {
                         Button("On GitHub ↗") { NSWorkspace.shared.open(url) }
                             .buttonStyle(.plain)
-                            .font(Tellurion.font(10.5))
-                            .foregroundColor(Tellurion.gold)
+                            .font(Operator.font(10.5))
+                            .foregroundColor(Operator.gold)
                             .fixedSize()
                     }
                 }
@@ -194,34 +194,34 @@ struct UpdateWindowView: View {
             VStack(alignment: .leading, spacing: 9) {
                 if notes.blocks.isEmpty {
                     Text(notes.loading ? "Loading the release notes…" : "No release notes for this version.")
-                        .font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                        .font(Operator.font(12)).foregroundColor(Operator.muted)
                 }
                 ForEach(Array(notes.blocks.enumerated()), id: \.offset) { _, block in
                     switch block {
                     case .heading(let text):
                         Text(UpdateNotes.inline(text))
-                            .font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.gold)
+                            .font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.gold)
                             .padding(.top, 4)
                     case .bullet(let text):
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Rectangle().fill(Tellurion.gold).frame(width: 4, height: 4).offset(y: -2)
+                            Rectangle().fill(Operator.gold).frame(width: 4, height: 4).offset(y: -2)
                             Text(UpdateNotes.inline(text))
-                                .font(Tellurion.font(12, weight: .regular)).foregroundColor(Tellurion.text)
+                                .font(Operator.font(12, weight: .regular)).foregroundColor(Operator.text)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     case .paragraph(let text):
                         Text(UpdateNotes.inline(text))
-                            .font(Tellurion.font(12, weight: .regular)).foregroundColor(Tellurion.text)
+                            .font(Operator.font(12, weight: .regular)).foregroundColor(Operator.text)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
             .textSelection(.enabled)
-            .tint(Tellurion.gold)
+            .tint(Operator.gold)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
         }
-        .tellurionPanel()
+        .operatorPanel()
     }
 
     @ViewBuilder
@@ -237,23 +237,23 @@ struct UpdateWindowView: View {
             HStack(spacing: 8) {
                 Button("Skip this version") { update.reply(.skip) }
                     .buttonStyle(.plain)
-                    .font(Tellurion.font(11))
-                    .foregroundColor(Tellurion.muted)
+                    .font(Operator.font(11))
+                    .foregroundColor(Operator.muted)
                 Spacer()
                 Button("Later") { UpdateWindow.close() }
                     .keyboardShortcut(.cancelAction)
                 if updates.waitingForAgents {
                     Button("Cancel waiting") { updates.cancelWaiting() }
                     Button("Update now") { updates.installNow() }
-                        .buttonStyle(TellurionButtonStyle(prominent: true))
+                        .buttonStyle(OperatorButtonStyle(prominent: true))
                 } else if updates.busyAgents > 0 {
                     Button("Update now") { updates.installNow() }
                     Button("Update when done") { updates.installWhenAgentsFinish() }
-                        .buttonStyle(TellurionButtonStyle(prominent: true))
+                        .buttonStyle(OperatorButtonStyle(prominent: true))
                         .keyboardShortcut(.defaultAction)
                 } else {
                     Button("Update and restart") { updates.installNow() }
-                        .buttonStyle(TellurionButtonStyle(prominent: true))
+                        .buttonStyle(OperatorButtonStyle(prominent: true))
                         .keyboardShortcut(.defaultAction)
                 }
             }
@@ -269,21 +269,21 @@ struct UpdateWindowView: View {
         let titles = ["Downloading", "Preparing", "Restarting into"]
         return VStack(spacing: 22) {
             Spacer(minLength: 0)
-            TellurionSigil(size: 64)
+            OperatorSigil(size: 64)
             VStack(spacing: 6) {
-                Text("\(titles[step]) Tellurion \(version)")
-                    .font(Tellurion.font(17, weight: .semibold)).foregroundColor(Tellurion.text)
+                Text("\(titles[step]) Operator \(version)")
+                    .font(Operator.font(17, weight: .semibold)).foregroundColor(Operator.text)
                 Text("Your tabs, agents and servers reopen where they were.")
-                    .font(Tellurion.font(12, weight: .regular)).foregroundColor(Tellurion.muted)
+                    .font(Operator.font(12, weight: .regular)).foregroundColor(Operator.muted)
             }
             VStack(spacing: 8) {
                 UpdateProgressBar(fraction: fraction, height: 8)
                 HStack {
-                    Text(detail ?? " ").font(Tellurion.font(11, weight: .regular)).foregroundColor(Tellurion.muted)
+                    Text(detail ?? " ").font(Operator.font(11, weight: .regular)).foregroundColor(Operator.muted)
                     Spacer()
                     if let fraction {
                         Text("\(Int((fraction * 100).rounded()))%")
-                            .font(Tellurion.font(11.5, weight: .semibold)).foregroundColor(Tellurion.gold).monospacedDigit()
+                            .font(Operator.font(11.5, weight: .semibold)).foregroundColor(Operator.gold).monospacedDigit()
                     }
                 }
             }
@@ -292,14 +292,14 @@ struct UpdateWindowView: View {
                 ForEach(Array(Self.steps.enumerated()), id: \.offset) { index, name in
                     HStack(spacing: 6) {
                         if index < step {
-                            Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundColor(Tellurion.gold)
+                            Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundColor(Operator.gold)
                         } else if index == step {
-                            PixelSpinner(color: Tellurion.gold, pixel: 3)
+                            PixelSpinner(color: Operator.gold, pixel: 3)
                         } else {
-                            Circle().strokeBorder(Tellurion.dim, lineWidth: 1).frame(width: 9, height: 9)
+                            Circle().strokeBorder(Operator.dim, lineWidth: 1).frame(width: 9, height: 9)
                         }
-                        Text(name).font(Tellurion.font(11.5, weight: index == step ? .semibold : .regular))
-                            .foregroundColor(index <= step ? Tellurion.text : Tellurion.dim)
+                        Text(name).font(Operator.font(11.5, weight: index == step ? .semibold : .regular))
+                            .foregroundColor(index <= step ? Operator.text : Operator.dim)
                     }
                 }
             }
@@ -324,13 +324,13 @@ struct UpdateWindowView: View {
                                         @ViewBuilder buttons: () -> Buttons) -> some View {
         VStack(spacing: 16) {
             Spacer(minLength: 0)
-            TellurionSigil(size: 56)
+            OperatorSigil(size: 56)
             HStack(spacing: 8) {
-                if spinner { PixelSpinner(color: Tellurion.gold, pixel: 3) }
-                Text(title).font(Tellurion.font(16, weight: .semibold)).foregroundColor(Tellurion.text)
+                if spinner { PixelSpinner(color: Operator.gold, pixel: 3) }
+                Text(title).font(Operator.font(16, weight: .semibold)).foregroundColor(Operator.text)
             }
             if let text {
-                Text(text).font(Tellurion.font(12, weight: .regular)).foregroundColor(Tellurion.muted)
+                Text(text).font(Operator.font(12, weight: .regular)).foregroundColor(Operator.muted)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
@@ -346,28 +346,28 @@ struct UpdateWindowView: View {
 
     private func header(title: String, subtitle: String) -> some View {
         HStack(spacing: 14) {
-            TellurionSigil(size: 52)
+            OperatorSigil(size: 52)
             VStack(alignment: .leading, spacing: 4) {
                 Text("UPDATE AVAILABLE")
-                    .font(Tellurion.font(10, weight: .semibold)).kerning(1.2).foregroundColor(Tellurion.gold)
-                Text(title).font(Tellurion.font(19, weight: .semibold)).foregroundColor(Tellurion.text)
-                Text(subtitle).font(Tellurion.font(12, weight: .regular)).foregroundColor(Tellurion.muted)
+                    .font(Operator.font(10, weight: .semibold)).kerning(1.2).foregroundColor(Operator.gold)
+                Text(title).font(Operator.font(19, weight: .semibold)).foregroundColor(Operator.text)
+                Text(subtitle).font(Operator.font(12, weight: .regular)).foregroundColor(Operator.muted)
             }
         }
     }
 
     private func chip(_ text: String) -> some View {
         Text(text)
-            .font(Tellurion.font(10.5))
-            .foregroundColor(Tellurion.text.opacity(0.85))
+            .font(Operator.font(10.5))
+            .foregroundColor(Operator.text.opacity(0.85))
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
-            .background(Capsule().fill(Tellurion.raised))
-            .overlay(Capsule().strokeBorder(Tellurion.line, lineWidth: 1))
+            .background(Capsule().fill(Operator.raised))
+            .overlay(Capsule().strokeBorder(Operator.line, lineWidth: 1))
     }
 
     private func note(_ text: String) -> some View {
-        Text(text).font(Tellurion.font(11, weight: .regular)).foregroundColor(Tellurion.muted)
+        Text(text).font(Operator.font(11, weight: .regular)).foregroundColor(Operator.muted)
             .fixedSize(horizontal: false, vertical: true)
     }
 

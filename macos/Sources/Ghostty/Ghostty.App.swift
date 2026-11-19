@@ -1657,7 +1657,7 @@ extension Ghostty {
                 guard let surfaceView = self.surfaceView(from: surface) else { return }
 
                 #if os(macOS)
-                // Tellurion: keep the command and its output for the command history.
+                // Operator: keep the command and its output for the command history.
                 CommandBlocks.shared.commandFinished(on: surfaceView, exitCode: v.exit_code, duration: v.duration)
                 #endif
 

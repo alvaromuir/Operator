@@ -174,7 +174,7 @@ extension NSApplication {
 
         guard let appDelegate = delegate as? AppDelegate else {
             command.scriptErrorNumber = errAEEventFailed
-            command.scriptErrorString = "Tellurion app delegate is unavailable."
+            command.scriptErrorString = "Operator app delegate is unavailable."
             return nil
         }
 
@@ -232,7 +232,7 @@ extension NSApplication {
 
         guard let appDelegate = delegate as? AppDelegate else {
             command.scriptErrorNumber = errAEEventFailed
-            command.scriptErrorString = "Tellurion app delegate is unavailable."
+            command.scriptErrorString = "Operator app delegate is unavailable."
             return nil
         }
 

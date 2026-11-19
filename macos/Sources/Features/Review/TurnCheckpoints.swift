@@ -32,7 +32,7 @@ final class TurnCheckpoints: ObservableObject {
 
     private var lastActivity: [ObjectIdentifier: VerticalTabAgentActivity] = [:]
     private var taking: Set<ObjectIdentifier> = []
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.checkpoints", qos: .utility)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.checkpoints", qos: .utility)
     private var cancellables: Set<AnyCancellable> = []
     private let maxPerPane = 30
 
@@ -77,7 +77,7 @@ final class TurnCheckpoints: ObservableObject {
         let info = VerticalTabsAgents.shared.info(for: surface)
         let previous = lastActivity[key]
         lastActivity[key] = info?.activity
-        guard let info, info.kind != .hermes, info.activity == .working, TellurionSettings.isOn(.undo),
+        guard let info, info.kind != .hermes, info.activity == .working, OperatorSettings.isOn(.undo),
               previous != .working, previous != .needsPermission, let folder = surface.pwd else { return }
         take(for: surface, folder: folder, title: info.task ?? "Agent turn", agent: info.kind)
     }

@@ -71,7 +71,7 @@ struct BoardAssistantHandles {
 /// What the board's agent is told.
 enum BoardAssistantPrompt {
     static let instructions = """
-    You are the board agent inside Tellurion, a macOS terminal app. The user's board is a \
+    You are the board agent inside Operator, a macOS terminal app. The user's board is a \
     canvas of tiles: terminals (each may run a coding agent such as Claude Code or Codex), \
     notes, checklists, kanban boards, sketches and Agent Maps. You help the user set the \
     board up and run workflows on it: start agents, organize work into cards, hand tasks to \
@@ -538,7 +538,7 @@ extension BoardController {
             arrangeByProject()
             return "Grouped the tiles by project"
         case "show":
-            if action.target?.lowercased() == "mission_map", TellurionSettings.isOn(.missionMap) {
+            if action.target?.lowercased() == "mission_map", OperatorSettings.isOn(.missionMap) {
                 model.showMissionMap = true
                 return "Opened the Mission Map"
             }

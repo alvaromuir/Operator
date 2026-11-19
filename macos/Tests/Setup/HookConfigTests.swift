@@ -2,12 +2,12 @@ import Foundation
 import Testing
 @testable import Ghostty
 
-/// HookConfig merges Tellurion's hook entries into an agent's config and takes them out
+/// HookConfig merges Operator's hook entries into an agent's config and takes them out
 /// again. Pure data in, data out: what isn't ours stays byte for byte, merging twice
 /// changes nothing the second time, and removing after merging gives the file back.
 struct HookConfigTests {
     private let home = "/Users/someone"
-    private var installed: String { home + "/.ghostty-extreme/agent-hooks/agent-hook.sh" }
+    private var installed: String { home + "/.operator/agent-hooks/agent-hook.sh" }
     private var legacy: String { home + "/.ghostty-custom/agent-hooks/agent-hook.sh" }
 
     /// A settings file with someone else's hooks and settings in it.
@@ -122,7 +122,7 @@ struct HookConfigTests {
     }
 
     @Test func aTildeCountsAsInstalled() {
-        let config: [String: Any] = ["hooks": ["Stop": [["hooks": [["type": "command", "command": "~/.ghostty-extreme/agent-hooks/agent-hook.sh claude stop"]]]]]]
+        let config: [String: Any] = ["hooks": ["Stop": [["hooks": [["type": "command", "command": "~/.operator/agent-hooks/agent-hook.sh claude stop"]]]]]]
         let report = HookConfig.report(config, agent: .claude, home: home)
         #expect(report.entries["Stop"] == .ok)
         #expect(report.missing.count == HookConfig.claudeEvents.count - 1)
@@ -177,27 +177,27 @@ struct HookConfigTests {
 
     @Test func aReSpacedOrReIndentedBlockStillGoes() {
         let before = "alias ll='ls -l'\n"
-        let respaced = before + "\n  #   Tellurion:  shows which coding agent each pane runs (does nothing in other terminals)\n"
-            + "\t[[  -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]]  &&   source   ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh  \n"
+        let respaced = before + "\n  #   Operator:  shows which coding agent each pane runs (does nothing in other terminals)\n"
+            + "\t[[  -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]]  &&   source   ~/.operator/agent-hooks/operator.zsh  \n"
         #expect(HookConfig.zshrcRemovingIntegration(respaced) == before)
     }
 
     @Test func theBlockAnEarlierVersionWroteGoesWithItsComment() {
         let before = "alias ll='ls -l'\n"
-        let line = "[[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh"
-        let legacy = before + "\n# GhosttyEXTREME: shows which coding agent each pane runs (does nothing in other terminals)\n" + line + "\n"
+        let line = "[[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.operator/agent-hooks/operator.zsh"
+        let legacy = before + "\n# Operator: shows which coding agent each pane runs (does nothing in other terminals)\n" + line + "\n"
         #expect(HookConfig.zshrcRemovingIntegration(legacy) == before)
         // A ghostty-custom.zsh line was never written by the app: it's detected, but left alone.
         let custom = before + "source ~/.ghostty-custom/agent-hooks/ghostty-custom.zsh\n"
         #expect(HookConfig.zshrcHasIntegration(custom))
         #expect(HookConfig.zshrcRemovingIntegration(custom) == custom)
-        #expect(!HookConfig.isZshrcSourceLine("source \"$HOME/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh\""))
+        #expect(!HookConfig.isZshrcSourceLine("source \"$HOME/.operator/agent-hooks/operator.zsh\""))
     }
 
     @Test func aBlankLineWithoutOurCommentIsTheUsersAndStays() {
         // The user deleted our comment: the blank line above the source line is their own spacing.
         let before = "alias ll='ls -l'\n\n"
-        let text = before + "[[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh\n" + "export EDITOR=vim\n"
+        let text = before + "[[ -n \"$GHOSTTY_EXTREME_AGENT_EVENTS\" ]] && source ~/.operator/agent-hooks/operator.zsh\n" + "export EDITOR=vim\n"
         #expect(HookConfig.zshrcRemovingIntegration(text) == before + "export EDITOR=vim\n")
     }
 }

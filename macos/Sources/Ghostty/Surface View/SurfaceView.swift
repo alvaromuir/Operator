@@ -140,9 +140,9 @@ extension Ghostty {
                 HighlightOverlay(highlighted: surfaceView.highlighted)
 
                 #if os(macOS)
-                // Tellurion: a failed command offers to have an agent fix it.
+                // Operator: a failed command offers to have an agent fix it.
                 CommandFailureChip(surfaceView: surfaceView)
-                // Tellurion: a scan line and "AI LINKED" when an agent starts here.
+                // Operator: a scan line and "AI LINKED" when an agent starts here.
                 AgentLinkSweep(surfaceView: surfaceView)
                 #endif
 

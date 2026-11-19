@@ -21,7 +21,7 @@ class UpdateController {
         viewModel.state.shouldTerminateWithoutWarning
     }
 
-    /// Tellurion: starts installing the update on offer. The driver takes it from there:
+    /// Operator: starts installing the update on offer. The driver takes it from there:
     /// downloading, then installing and restarting without asking again.
     func installUpdate() {
         viewModel.state.confirm()

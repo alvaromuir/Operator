@@ -8,7 +8,7 @@ enum EnvironmentWindow {
     static let windowID = "environment"
 
     static func show(folder: String? = nil) {
-        guard TellurionSettings.isOn(.environment) else { return }
+        guard OperatorSettings.isOn(.environment) else { return }
         AgentToolWindows.show(id: windowID, title: "Environment", size: NSSize(width: 900, height: 640)) {
             EnvironmentWindowView(folder: folder ?? NSHomeDirectory())
         }
@@ -27,7 +27,7 @@ final class FolderEnvironmentModel: ObservableObject {
     @Published private(set) var loading = false
     @Published var notice: String?
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.environment", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.environment", qos: .userInitiated)
 
     init(folder: String) {
         self.folder = folder
@@ -91,7 +91,7 @@ struct EnvironmentWindowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center) {
-                TellurionWindowTitle(icon: .environment, title: "Environment", subtitle: subtitle)
+                OperatorWindowTitle(icon: .environment, title: "Environment", subtitle: subtitle)
                 Spacer()
                 Picker("", selection: $tab) {
                     ForEach(Tab.allCases, id: \.self) { Text($0.rawValue).tag($0) }
@@ -103,7 +103,7 @@ struct EnvironmentWindowView: View {
             .padding(.horizontal, 20)
             .padding(.top, 34)
             .padding(.bottom, 14)
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             ScrollView {
                 Group {
                     switch tab {
@@ -116,7 +116,7 @@ struct EnvironmentWindowView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .background(Tellurion.ink)
+        .background(Operator.ink)
         .onAppear { folderModel.load(); start(tab) }
         .onChange(of: tab) { start($0) }
         .onDisappear { containers.stop(); models.stop() }
@@ -146,7 +146,7 @@ private struct FolderPane: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 8) {
-                Text(model.folder).font(Tellurion.mono(11)).foregroundColor(Tellurion.muted).lineLimit(1).truncationMode(.head)
+                Text(model.folder).font(Operator.mono(11)).foregroundColor(Operator.muted).lineLimit(1).truncationMode(.head)
                 Spacer()
                 if model.loading { ProgressView().controlSize(.small) }
                 Button("Refresh") { model.load() }
@@ -154,17 +154,17 @@ private struct FolderPane: View {
             }
             if let env = model.environment, env.missing {
                 Text("This folder doesn't exist anymore. Choose another one.")
-                    .font(Tellurion.font(12)).foregroundColor(Tellurion.warn)
+                    .font(Operator.font(12)).foregroundColor(Operator.warn)
             } else if let env = model.environment {
                 miseNotices(env)
                 if env.isEmpty {
                     Text("Nothing here sets up tools or environment variables: no mise or asdf config, no version files, no .envrc.")
-                        .font(Tellurion.font(12)).foregroundColor(Tellurion.muted).fixedSize(horizontal: false, vertical: true)
+                        .font(Operator.font(12)).foregroundColor(Operator.muted).fixedSize(horizontal: false, vertical: true)
                 }
                 if !env.tools.isEmpty { toolsSection(env) }
                 if !env.variables.isEmpty || env.direnvFile != nil { variablesSection(env) }
             } else {
-                Text("Reading…").font(Tellurion.font(12)).foregroundColor(Tellurion.dim)
+                Text("Reading…").font(Operator.font(12)).foregroundColor(Operator.dim)
             }
         }
     }
@@ -174,49 +174,49 @@ private struct FolderPane: View {
         switch env.mise {
         case .untrusted(let files):
             banner("mise won't read \(files.count == 1 ? "this folder's config" : "\(files.count) config files here") until you trust it.",
-                   color: Tellurion.warn) {
+                   color: Operator.warn) {
                 Button("Trust") { model.trust(files) }.help("mise trust")
             }
         case .failed(let message):
-            banner("mise couldn't read this folder: \(message)", color: Tellurion.danger) { EmptyView() }
+            banner("mise couldn't read this folder: \(message)", color: Operator.danger) { EmptyView() }
         default:
             EmptyView()
         }
         if env.tools.contains(where: { $0.installed == false }) {
-            banner("Some versions this folder asks for aren't installed yet.", color: Tellurion.warn) {
+            banner("Some versions this folder asks for aren't installed yet.", color: Operator.warn) {
                 Button("Install with mise") { model.installMissing() }.help("Runs mise install in a new tab")
             }
         }
         if env.mise == .active && !env.miseActivated {
             banner("Your shell doesn't run mise activate, so terminals here don't switch to these versions on their own "
                    + "(agents included). Add eval \"$(mise activate zsh)\" to ~/.zshrc, or run commands with mise exec.",
-                   color: Tellurion.warn) { EmptyView() }
+                   color: Operator.warn) { EmptyView() }
         }
     }
 
     private func toolsSection(_ env: FolderEnvironment) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            TellurionSectionLabel("Tool versions")
+            OperatorSectionLabel("Tool versions")
             ForEach(env.tools) { tool in
                 HStack(spacing: 10) {
-                    Text(tool.name).font(Tellurion.mono(12)).foregroundColor(Tellurion.text).frame(width: 90, alignment: .leading)
-                    Text(tool.requested.isEmpty ? "any" : tool.requested).font(Tellurion.mono(12)).foregroundColor(Tellurion.gold)
+                    Text(tool.name).font(Operator.mono(12)).foregroundColor(Operator.text).frame(width: 90, alignment: .leading)
+                    Text(tool.requested.isEmpty ? "any" : tool.requested).font(Operator.mono(12)).foregroundColor(Operator.gold)
                     if let resolved = tool.resolved, resolved != tool.requested {
-                        Text("→ \(resolved)").font(Tellurion.mono(11)).foregroundColor(Tellurion.muted)
+                        Text("→ \(resolved)").font(Operator.mono(11)).foregroundColor(Operator.muted)
                     }
                     if tool.installed == false {
-                        Text("not installed").font(Tellurion.font(11)).foregroundColor(Tellurion.warn)
+                        Text("not installed").font(Operator.font(11)).foregroundColor(Operator.warn)
                     } else if tool.installed == true {
-                        Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundColor(Tellurion.live)
+                        Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundColor(Operator.live)
                     }
                     Spacer(minLength: 8)
                     if let onPath = tool.onPath {
-                        Text("terminal has \(onPath)").font(Tellurion.font(11))
-                            .foregroundColor(tool.mismatch ? Tellurion.warn : Tellurion.dim)
+                        Text("terminal has \(onPath)").font(Operator.font(11))
+                            .foregroundColor(tool.mismatch ? Operator.warn : Operator.dim)
                             .help(tool.mismatch ? "Without something switching versions, commands here run \(tool.name) \(onPath)" : "")
                     }
                     Button(tool.source) { model.open(tool.source) }
-                        .buttonStyle(.plain).font(Tellurion.font(11)).foregroundColor(Tellurion.bronze)
+                        .buttonStyle(.plain).font(Operator.font(11)).foregroundColor(Operator.bronze)
                         .help("Show in Finder")
                 }
                 .padding(.vertical, 3)
@@ -226,46 +226,46 @@ private struct FolderPane: View {
 
     private func variablesSection(_ env: FolderEnvironment) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            TellurionSectionLabel("Environment variables")
+            OperatorSectionLabel("Environment variables")
             if let path = env.direnvFile {
                 HStack(spacing: 8) {
-                    Text("direnv").font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text)
+                    Text("direnv").font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text)
                     switch env.direnv {
                     case .allowed:
-                        Text("allowed").font(Tellurion.font(11)).foregroundColor(Tellurion.live)
+                        Text("allowed").font(Operator.font(11)).foregroundColor(Operator.live)
                         Button("Block") { model.direnv("deny", path) }.help("direnv deny")
                     case .notAllowed:
-                        Text("not allowed, so it isn't loaded").font(Tellurion.font(11)).foregroundColor(Tellurion.warn)
+                        Text("not allowed, so it isn't loaded").font(Operator.font(11)).foregroundColor(Operator.warn)
                         if ToolPath.find("direnv") != nil {
                             Button("Allow") { confirmAllow(path) }.help("direnv allow")
                         }
                     case .denied:
-                        Text("blocked").font(Tellurion.font(11)).foregroundColor(Tellurion.danger)
+                        Text("blocked").font(Operator.font(11)).foregroundColor(Operator.danger)
                         Button("Allow") { confirmAllow(path) }.help("direnv allow")
                     default:
                         EmptyView()
                     }
                     Spacer()
                     Button(FolderEnvironmentProbe.display(path, in: model.folder)) { model.open(path) }
-                        .buttonStyle(.plain).font(Tellurion.font(11)).foregroundColor(Tellurion.bronze)
+                        .buttonStyle(.plain).font(Operator.font(11)).foregroundColor(Operator.bronze)
                 }
                 if ToolPath.find("direnv") == nil {
                     Text("There's an .envrc here, but direnv isn't installed, so nothing loads it.")
-                        .font(Tellurion.font(11)).foregroundColor(Tellurion.warn)
+                        .font(Operator.font(11)).foregroundColor(Operator.warn)
                 } else if !env.direnvHooked {
                     Text("Your shell doesn't run direnv hook, so the terminal won't load it on its own.")
-                        .font(Tellurion.font(11)).foregroundColor(Tellurion.warn)
+                        .font(Operator.font(11)).foregroundColor(Operator.warn)
                 }
             }
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), alignment: .leading)], alignment: .leading, spacing: 6) {
                 ForEach(env.variables) { variable in
                     HStack(spacing: 6) {
-                        Text(variable.name).font(Tellurion.mono(11.5)).foregroundColor(Tellurion.text).lineLimit(1)
-                        Text(variable.source).font(Tellurion.font(10)).foregroundColor(Tellurion.dim).lineLimit(1)
+                        Text(variable.name).font(Operator.mono(11.5)).foregroundColor(Operator.text).lineLimit(1)
+                        Text(variable.source).font(Operator.font(10)).foregroundColor(Operator.dim).lineLimit(1)
                     }
                 }
             }
-            Text("Names only: values are never read or shown.").font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim)
+            Text("Names only: values are never read or shown.").font(Operator.font(10.5)).foregroundColor(Operator.dim)
         }
     }
 
@@ -299,27 +299,27 @@ private struct ContainersPane: View {
         VStack(alignment: .leading, spacing: 16) {
             switch model.runtime {
             case .unknown:
-                Text("Asking Docker…").font(Tellurion.font(12)).foregroundColor(Tellurion.dim)
+                Text("Asking Docker…").font(Operator.font(12)).foregroundColor(Operator.dim)
             case .notInstalled:
                 Text("Docker isn't installed. Install Docker Desktop, OrbStack, or Colima (brew install colima docker) to run containers.")
-                    .font(Tellurion.font(12)).foregroundColor(Tellurion.muted).fixedSize(horizontal: false, vertical: true)
+                    .font(Operator.font(12)).foregroundColor(Operator.muted).fixedSize(horizontal: false, vertical: true)
             case .stopped(let context):
-                banner("\(name(context)) isn't running, so there are no containers to show.", color: Tellurion.warn) {
+                banner("\(name(context)) isn't running, so there are no containers to show.", color: Operator.warn) {
                     if model.canStartRuntime { Button("Start \(name(context))") { model.startRuntime() } }
                 }
             case .running(let context):
                 HStack {
                     Text("\(name(context)) · \(model.containers.filter(\.isRunning).count) running, \(model.containers.count) in all")
-                        .font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                        .font(Operator.font(12)).foregroundColor(Operator.muted)
                     Spacer()
                 }
-                if let error = model.error { banner(error, color: Tellurion.danger) { EmptyView() } }
+                if let error = model.error { banner(error, color: Operator.danger) { EmptyView() } }
                 if model.containers.isEmpty {
-                    Text("No containers.").font(Tellurion.font(12)).foregroundColor(Tellurion.dim)
+                    Text("No containers.").font(Operator.font(12)).foregroundColor(Operator.dim)
                 }
                 ForEach(model.groups, id: \.project) { group in
                     VStack(alignment: .leading, spacing: 4) {
-                        TellurionSectionLabel(group.project.isEmpty ? "Other containers" : group.project)
+                        OperatorSectionLabel(group.project.isEmpty ? "Other containers" : group.project)
                         ForEach(group.containers) { container in row(container) }
                     }
                 }
@@ -338,20 +338,20 @@ private struct ContainersPane: View {
 
     private func row(_ container: ContainerEntry) -> some View {
         HStack(spacing: 10) {
-            Circle().fill(container.unhealthy ? Tellurion.danger : container.isRunning ? Tellurion.live : Tellurion.dim)
+            Circle().fill(container.unhealthy ? Operator.danger : container.isRunning ? Operator.live : Operator.dim)
                 .frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 1) {
-                Text(container.name).font(Tellurion.mono(12)).foregroundColor(Tellurion.text).lineLimit(1)
-                Text("\(container.image) · \(container.status)").font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim).lineLimit(1)
+                Text(container.name).font(Operator.mono(12)).foregroundColor(Operator.text).lineLimit(1)
+                Text("\(container.image) · \(container.status)").font(Operator.font(10.5)).foregroundColor(Operator.dim).lineLimit(1)
             }
             Spacer(minLength: 8)
             ForEach(container.publishedPorts.prefix(3), id: \.self) { port in
                 Button(":\(String(port))") { if let url = URL(string: "http://localhost:\(port)") { NSWorkspace.shared.open(url) } }
-                    .buttonStyle(.plain).font(Tellurion.mono(11)).foregroundColor(Tellurion.gold)
+                    .buttonStyle(.plain).font(Operator.mono(11)).foregroundColor(Operator.gold)
                     .help("Open localhost:\(port)")
             }
             if let cpu = container.cpu, let memory = container.memory {
-                Text("\(cpu) · \(memory)").font(Tellurion.mono(10.5)).foregroundColor(Tellurion.muted).frame(width: 130, alignment: .trailing)
+                Text("\(cpu) · \(memory)").font(Operator.mono(10.5)).foregroundColor(Operator.muted).frame(width: 130, alignment: .trailing)
             }
             if model.busy.contains(container.id) {
                 ProgressView().controlSize(.small)
@@ -368,7 +368,7 @@ private struct ContainersPane: View {
                     Divider()
                     Button("Remove…") { confirmRemove(container) }
                 } label: {
-                    Image(systemName: "ellipsis.circle").foregroundColor(Tellurion.muted)
+                    Image(systemName: "ellipsis.circle").foregroundColor(Operator.muted)
                 }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
@@ -401,16 +401,16 @@ private struct ModelsPane: View {
         VStack(alignment: .leading, spacing: 16) {
             hostRow("Ollama", model.ollama, start: model.startOllama)
             hostRow("LM Studio", model.lmStudio, start: model.startLMStudio)
-            if let error = model.error { banner(error, color: Tellurion.danger) { EmptyView() } }
+            if let error = model.error { banner(error, color: Operator.danger) { EmptyView() } }
             if model.loadedMemory > 0 {
                 Text("Loaded models are using \(bytes(model.loadedMemory)) of this Mac's \(bytes(LocalModelsModel.memory)) memory.")
-                    .font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                    .font(Operator.font(12)).foregroundColor(Operator.muted)
             }
             ForEach([LocalModel.Host.ollama, .lmStudio], id: \.self) { host in
                 let list = model.models.filter { $0.host == host }
                 if !list.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
-                        TellurionSectionLabel(host.rawValue)
+                        OperatorSectionLabel(host.rawValue)
                         ForEach(list) { row($0) }
                     }
                 }
@@ -418,7 +418,7 @@ private struct ModelsPane: View {
             if case .running = model.ollama {
                 HStack(spacing: 8) {
                     TextField("Model to download, e.g. qwen3:8b", text: $pullName, onCommit: pull)
-                        .textFieldStyle(.roundedBorder).font(Tellurion.mono(11.5)).frame(maxWidth: 320)
+                        .textFieldStyle(.roundedBorder).font(Operator.mono(11.5)).frame(maxWidth: 320)
                     Button("Pull", action: pull).disabled(pullName.trimmingCharacters(in: .whitespaces).isEmpty)
                         .help("ollama pull, in a new tab")
                 }
@@ -428,16 +428,16 @@ private struct ModelsPane: View {
 
     private func hostRow(_ title: String, _ state: LocalModelsModel.HostState, start: @escaping () -> Void) -> some View {
         HStack(spacing: 8) {
-            Circle().fill(state == .notInstalled ? Tellurion.dim : state == .stopped ? Tellurion.warn : Tellurion.live).frame(width: 7, height: 7)
-            Text(title).font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text)
+            Circle().fill(state == .notInstalled ? Operator.dim : state == .stopped ? Operator.warn : Operator.live).frame(width: 7, height: 7)
+            Text(title).font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text)
             switch state {
             case .notInstalled:
-                Text("not installed").font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
+                Text("not installed").font(Operator.font(11)).foregroundColor(Operator.dim)
             case .stopped:
-                Text("not running").font(Tellurion.font(11)).foregroundColor(Tellurion.warn)
+                Text("not running").font(Operator.font(11)).foregroundColor(Operator.warn)
                 Button("Start", action: start)
             case .running(let version):
-                Text(version.map { "running · \($0)" } ?? "running").font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                Text(version.map { "running · \($0)" } ?? "running").font(Operator.font(11)).foregroundColor(Operator.muted)
             }
             Spacer()
         }
@@ -445,20 +445,20 @@ private struct ModelsPane: View {
 
     private func row(_ item: LocalModel) -> some View {
         HStack(spacing: 10) {
-            Text(item.name).font(Tellurion.mono(12)).foregroundColor(Tellurion.text).lineLimit(1)
+            Text(item.name).font(Operator.mono(12)).foregroundColor(Operator.text).lineLimit(1)
             if item.loaded {
-                Text("LOADED").font(Tellurion.font(9, weight: .bold)).foregroundColor(Tellurion.ink)
+                Text("LOADED").font(Operator.font(9, weight: .bold)).foregroundColor(Operator.ink)
                     .padding(.horizontal, 5).padding(.vertical, 1)
-                    .background(RoundedRectangle(cornerRadius: 3).fill(Tellurion.live))
+                    .background(RoundedRectangle(cornerRadius: 3).fill(Operator.live))
             }
-            Text(item.detail).font(Tellurion.font(11)).foregroundColor(Tellurion.dim).lineLimit(1)
+            Text(item.detail).font(Operator.font(11)).foregroundColor(Operator.dim).lineLimit(1)
             Spacer(minLength: 8)
             if let memory = item.memory {
                 let gpu = Int(((item.gpuShare ?? 0) * 100).rounded())
                 Text("\(bytes(memory)) in memory · \(gpu == 100 ? "all on GPU" : "\(gpu)% GPU")")
-                    .font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                    .font(Operator.font(11)).foregroundColor(Operator.muted)
             } else if let size = item.size {
-                Text(bytes(size)).font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
+                Text(bytes(size)).font(Operator.font(11)).foregroundColor(Operator.dim)
             }
             if model.busy.contains(item.id) {
                 ProgressView().controlSize(.small)
@@ -500,7 +500,7 @@ private struct ModelsPane: View {
 private func banner<Actions: View>(_ text: String, color: Color, @ViewBuilder actions: () -> Actions) -> some View {
     HStack(alignment: .center, spacing: 10) {
         Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 11)).foregroundColor(color)
-        Text(text).font(Tellurion.font(12)).foregroundColor(Tellurion.text).fixedSize(horizontal: false, vertical: true)
+        Text(text).font(Operator.font(12)).foregroundColor(Operator.text).fixedSize(horizontal: false, vertical: true)
         Spacer(minLength: 8)
         actions()
     }

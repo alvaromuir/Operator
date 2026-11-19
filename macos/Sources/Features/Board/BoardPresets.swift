@@ -2,7 +2,7 @@
 import AppKit
 
 /// A group you can start again in one go: its name, role, agents (one per slot), first task
-/// and whether its agents skip permission prompts. Saved in ~/.ghostty-extreme/presets.json.
+/// and whether its agents skip permission prompts. Saved in ~/.operator/presets.json.
 struct BoardPreset: Codable, Identifiable, Equatable {
     var id = UUID()
     var name: String

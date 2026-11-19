@@ -12,8 +12,8 @@ struct ReleaseNotesTests {
 
         #expect(notes != nil)
         if case .tagged(let url) = notes {
-            // Tellurion links to its own releases.
-            #expect(url.absoluteString == "https://github.com/steventsvik/Tellurion/releases/tag/extreme-1.2.3")
+            // Operator links to its own releases.
+            #expect(url.absoluteString == "https://github.com/alvaromuir/Operator/releases/tag/extreme-1.2.3")
             #expect(notes?.label == "View Release Notes")
         } else {
             Issue.record("Expected tagged case")
@@ -110,9 +110,9 @@ struct ReleaseNotesTests {
             currentCommit: nil
         )
 
-        // Tellurion has four-part versions (1.5.5.1), each with its own release.
+        // Operator has four-part versions (1.5.5.1), each with its own release.
         if case .tagged(let url) = notes {
-            #expect(url.absoluteString == "https://github.com/steventsvik/Tellurion/releases/tag/extreme-1.2.3.4")
+            #expect(url.absoluteString == "https://github.com/alvaromuir/Operator/releases/tag/extreme-1.2.3.4")
         } else {
             Issue.record("Expected tagged case")
         }

@@ -40,16 +40,16 @@ enum LayoutBox: String, CaseIterable, Identifiable {
 
     var tint: Color {
         switch self {
-        case .tabs: return Tellurion.bronze
-        case .terminal: return Tellurion.core
-        case .editor: return Tellurion.gold
-        case .visualFix: return Tellurion.live
-        case .history: return Tellurion.muted
+        case .tabs: return Operator.bronze
+        case .terminal: return Operator.core
+        case .editor: return Operator.gold
+        case .visualFix: return Operator.live
+        case .history: return Operator.muted
         }
     }
 
     /// The setting that turns it on, for the parts that can be off.
-    var feature: TellurionFeature? {
+    var feature: OperatorFeature? {
         switch self {
         case .tabs, .terminal: return nil
         case .editor: return .editor

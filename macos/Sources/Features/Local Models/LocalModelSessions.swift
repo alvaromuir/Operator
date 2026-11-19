@@ -2,7 +2,7 @@
 import AppKit
 import UniformTypeIdentifiers
 
-/// A chat with a model: `tellurion local <model>` typed into a shell runs Tellurion's own chat
+/// A chat with a model: `operator local <model>` typed into a shell runs Operator's own chat
 /// (agent-hooks/local-chat.py). For a model on this Mac nothing leaves it; a model on Venice goes
 /// through VeniceProxy, so the shell never has the key. The chat reports to the sidebar itself,
 /// naming its model, so the pane shows its status.
@@ -11,7 +11,7 @@ enum LocalModelSessions {
     /// What's typed into the shell: the screen is cleared first, so the pane starts with the
     /// chat rather than the command line (the leading space keeps it out of shell history).
     static func command(_ model: LocalModel) -> String {
-        let cli = HookInstaller.binFolder.appendingPathComponent("tellurion").path
+        let cli = HookInstaller.binFolder.appendingPathComponent("operator").path
         var provider = model.host == .ollama ? "" : " --provider \(model.host.provider)"
         if model.host == .llamaCpp || model.host == .mlx {
             provider += " --base \(LocalModelsModel.modelServerBase.absoluteString)"
@@ -72,8 +72,8 @@ enum LocalModelSessions {
         TerminalWindows.newTerminal(owner.ghostty, from: owner, config: config)
     }
 
-    /// The `tellurion` command has to be installed (and current) to launch it.
-    /// Apple's model is served by Tellurion itself, so that starts too.
+    /// The `operator` command has to be installed (and current) to launch it.
+    /// Apple's model is served by Operator itself, so that starts too.
     private static func prepare(_ model: LocalModel) -> Bool {
         do {
             if model.host == .apple { try AppleModelServer.shared.start() }
@@ -88,13 +88,13 @@ enum LocalModelSessions {
 }
 
 /// Starting Codex on a model on this Mac: the variables a pane carries, and the lines typed into
-/// it. Typed lines name `tellurion local codex` outright, so they work whatever the shell; in zsh a
-/// plain `codex` in such a pane goes the same way (see ghostty-extreme.zsh). The pane's backend
+/// it. Typed lines name `operator local codex` outright, so they work whatever the shell; in zsh a
+/// plain `codex` in such a pane goes the same way (see operator.zsh). The pane's backend
 /// variable is the one Venice panes carry, with "local" in it.
 enum LocalCodex {
     static let backend = "local"
-    static let modelVariable = "TELLURION_LOCAL_MODEL"
-    static let providerVariable = "TELLURION_LOCAL_PROVIDER"
+    static let modelVariable = "OPERATOR_LOCAL_MODEL"
+    static let providerVariable = "OPERATOR_LOCAL_PROVIDER"
     /// What Codex records as the provider in a session on a model here: its own names for them.
     static let providers: Set<String> = ["ollama", "lmstudio"]
 
@@ -108,7 +108,7 @@ enum LocalCodex {
         name.range(of: #"^[A-Za-z0-9_.][A-Za-z0-9_.:/-]{0,199}$"#, options: .regularExpression) != nil
     }
 
-    private static var cli: String { AgentTools.shellQuote(HookInstaller.binFolder.appendingPathComponent("tellurion").path) }
+    private static var cli: String { AgentTools.shellQuote(HookInstaller.binFolder.appendingPathComponent("operator").path) }
 
     /// The command, with Codex's own arguments after it: "resume <id>".
     static func command(_ arguments: String = "") -> String {
@@ -116,7 +116,7 @@ enum LocalCodex {
     }
 
     /// Resumes a session (its id already quoted) on the model and provider it ran on. Without a
-    /// known model, `tellurion local codex` picks one that's here; it never goes to another provider.
+    /// known model, `operator local codex` picks one that's here; it never goes to another provider.
     static func resumeLine(_ id: String, provider: String?, model: String?) -> String {
         var chosen = ""
         if let provider, providers.contains(provider) { chosen += "\(providerVariable)=\(provider) " }
@@ -150,7 +150,7 @@ enum LocalCodex {
 }
 
 /// What a Codex session on a model on this Mac may use beyond coding tools: a file
-/// `tellurion local codex` looks for, so every way of starting a session agrees.
+/// `operator local codex` looks for, so every way of starting a session agrees.
 enum LocalCodexOption: String {
     case webSearch = "use-web-search"
 
@@ -171,6 +171,6 @@ enum LocalCodexOption: String {
 
 extension UTType {
     /// A local model ("<host>\t<name>"), dragged from the sidebar onto a terminal pane.
-    static let tellurionLocalModel = UTType(exportedAs: "com.steventsvik.tellurion.localModel")
+    static let operatorLocalModel = UTType(exportedAs: "com.alvaromuir.operator.localModel")
 }
 #endif

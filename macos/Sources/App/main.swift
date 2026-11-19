@@ -2,7 +2,7 @@ import AppKit
 import Cocoa
 import GhosttyKit
 
-// Tellurion: the secret this launch's hooks prove their events with (see EventToken),
+// Operator: the secret this launch's hooks prove their events with (see EventToken),
 // set before any terminal starts so they all inherit it.
 EventToken.install()
 // Also set by Info.plist's LSEnvironment, which only applies to launches through Launch
@@ -20,7 +20,7 @@ if ghostty_init(UInt(CommandLine.argc), CommandLine.unsafeArgv) != GHOSTTY_SUCCE
     case .cli, .zig_run:
         let stderrHandle = FileHandle.standardError
         stderrHandle.write(
-            "Tellurion failed to initialize! If you're executing it from the command line\n" +
+            "Operator failed to initialize! If you're executing it from the command line\n" +
             "then this is usually because an invalid action or multiple actions were specified.\n" +
             "Actions start with the `+` character.\n\n" +
             "View all available actions by running `ghostty +help`.\n")

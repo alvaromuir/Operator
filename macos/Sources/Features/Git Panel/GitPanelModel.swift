@@ -42,7 +42,7 @@ final class GitPanelModel: ObservableObject {
     /// The Graphite stack the current branch is in, top first; empty without Graphite.
     @Published private(set) var stack: [Graphite.Branch] = []
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.gitpanel", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.gitpanel", qos: .userInitiated)
 
     init(root: String) {
         self.root = root
@@ -114,7 +114,7 @@ final class GitPanelModel: ObservableObject {
 
     /// Stashes uncommitted changes, including new files.
     func stashChanges() {
-        run(["stash", "push", "--include-untracked", "-m", "Tellurion \(AgentTools.timestamp())"], done: "Changes stashed")
+        run(["stash", "push", "--include-untracked", "-m", "Operator \(AgentTools.timestamp())"], done: "Changes stashed")
     }
 
     func apply(_ stash: Stash) { run(["stash", "apply", stash.ref], done: "Applied \(stash.ref)") }

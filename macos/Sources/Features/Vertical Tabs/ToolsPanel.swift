@@ -14,23 +14,23 @@ struct ToolsButton: View {
         let lit = open || hovering
         Button { open.toggle() } label: {
             HStack(spacing: 3) {
-                Text("Tools").font(Tellurion.font(11.5, weight: .semibold))
+                Text("Tools").font(Operator.font(11.5, weight: .semibold))
                 Image(systemName: "chevron.down").font(.system(size: 7, weight: .bold))
                     .rotationEffect(.degrees(open ? 180 : 0))
             }
             .fixedSize()
-            .foregroundColor(lit ? Tellurion.gold : Tellurion.text.opacity(0.85))
+            .foregroundColor(lit ? Operator.gold : Operator.text.opacity(0.85))
             .padding(.horizontal, 7)
             .frame(minHeight: 28)
-            .background(shape.fill(lit ? Tellurion.raised : Tellurion.panel))
-            .overlay(shape.strokeBorder(lit ? Tellurion.gold.opacity(0.55) : Tellurion.line, lineWidth: 1))
+            .background(shape.fill(lit ? Operator.raised : Operator.panel))
+            .overlay(shape.strokeBorder(lit ? Operator.gold.opacity(0.55) : Operator.line, lineWidth: 1))
             .contentShape(shape)
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .animation(.easeOut(duration: 0.15), value: lit)
         .help("Every tool, with its shortcut")
-#if TELLURION_TEST_HOOKS
+#if OPERATOR_TEST_HOOKS
         .onReceive(NotificationCenter.default.publisher(for: VerticalTabsTestSupport.showOverlay)) { _ in
             if VerticalTabsTestSupport.overlayMode == "tools", owner.window?.isKeyWindow ?? false { open = true }
         }
@@ -49,10 +49,10 @@ private struct ToolsPanel: View {
     let owner: BaseTerminalController
     @Binding var condensed: Bool
     let run: (@escaping () -> Void) -> Void
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
 
     private struct Tool: Identifiable {
-        let feature: TellurionFeature?
+        let feature: OperatorFeature?
         let symbol: String
         let title: String
         let detail: String
@@ -74,7 +74,7 @@ private struct ToolsPanel: View {
         let board = owner as? BoardController
         var group: [Tool] = []
         var all: [Section] = []
-        func add(_ feature: TellurionFeature, _ symbol: String, _ title: String, _ detail: String,
+        func add(_ feature: OperatorFeature, _ symbol: String, _ title: String, _ detail: String,
                  _ action: @escaping () -> Void) {
             guard settings.isOn(feature) else { return }
             group.append(Tool(feature: feature, symbol: symbol, title: title, detail: detail,
@@ -134,7 +134,7 @@ private struct ToolsPanel: View {
                               detail: condense ? "Show agent details on each tab" : "One line per tab") { condensed.toggle() })
         }
         group.append(Tool(feature: nil, symbol: "gearshape", title: "Settings", detail: "Turn tools on or off",
-                          shortcut: "⌃⌘,", action: TellurionSettingsWindow.show))
+                          shortcut: "⌃⌘,", action: OperatorSettingsWindow.show))
         section("View")
         return all
     }
@@ -144,9 +144,9 @@ private struct ToolsPanel: View {
         VStack(alignment: .leading, spacing: 1) {
             ForEach(sections) { section in
                 Text(section.title.uppercased())
-                    .font(Tellurion.font(9.5, weight: .semibold))
+                    .font(Operator.font(9.5, weight: .semibold))
                     .kerning(1.1)
-                    .foregroundColor(Tellurion.muted)
+                    .foregroundColor(Operator.muted)
                     .padding(.horizontal, 8)
                     .padding(.top, section.id == sections.first?.id ? 4 : 10)
                     .padding(.bottom, 3)
@@ -159,12 +159,12 @@ private struct ToolsPanel: View {
         .padding(6)
         .frame(width: 300)
         .onAppear {
-            // `TELLURION_TEST_TOOL=<title>`: choose that tool once the panel is open.
+            // `OPERATOR_TEST_TOOL=<title>`: choose that tool once the panel is open.
             guard let title = TestHooks.tool,
                   let tool = sections.flatMap(\.tools).first(where: { $0.title == title }) else { return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { run(tool.action) }
         }
-        .background(Tellurion.panel)
+        .background(Operator.panel)
         .environment(\.colorScheme, .dark)
     }
 }
@@ -182,25 +182,25 @@ private struct ToolsPanelRow: View {
             HStack(spacing: 10) {
                 Image(systemName: symbol)
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(hovering ? Tellurion.gold : Tellurion.text.opacity(0.85))
+                    .foregroundColor(hovering ? Operator.gold : Operator.text.opacity(0.85))
                     .frame(width: 26, height: 26)
-                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Tellurion.ink))
+                    .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(Operator.ink))
                     .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .strokeBorder(hovering ? Tellurion.gold.opacity(0.5) : Tellurion.line, lineWidth: 1))
+                        .strokeBorder(hovering ? Operator.gold.opacity(0.5) : Operator.line, lineWidth: 1))
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(title).font(Tellurion.font(11.5, weight: .semibold))
-                        .foregroundColor(hovering ? Tellurion.gold : Tellurion.text)
-                    Text(detail).font(Tellurion.font(10)).foregroundColor(Tellurion.muted)
+                    Text(title).font(Operator.font(11.5, weight: .semibold))
+                        .foregroundColor(hovering ? Operator.gold : Operator.text)
+                    Text(detail).font(Operator.font(10)).foregroundColor(Operator.muted)
                         .lineLimit(1)
                 }
                 Spacer(minLength: 6)
                 if let shortcut {
-                    Text(shortcut).font(Tellurion.mono(10)).foregroundColor(Tellurion.dim)
+                    Text(shortcut).font(Operator.mono(10)).foregroundColor(Operator.dim)
                 }
             }
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
-            .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(hovering ? Tellurion.raised : .clear))
+            .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(hovering ? Operator.raised : .clear))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

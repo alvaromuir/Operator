@@ -9,7 +9,7 @@ struct LocalModelDropDelegate: DropDelegate {
     let surface: Ghostty.SurfaceView
 
     func validateDrop(info: DropInfo) -> Bool {
-        info.hasItemsConforming(to: [.tellurionLocalModel])
+        info.hasItemsConforming(to: [.operatorLocalModel])
     }
 
     func dropEntered(info: DropInfo) { over = true }
@@ -20,8 +20,8 @@ struct LocalModelDropDelegate: DropDelegate {
 
     func performDrop(info: DropInfo) -> Bool {
         over = false
-        guard let provider = info.itemProviders(for: [.tellurionLocalModel]).first else { return false }
-        _ = provider.loadDataRepresentation(forTypeIdentifier: UTType.tellurionLocalModel.identifier) { [weak surface] data, _ in
+        guard let provider = info.itemProviders(for: [.operatorLocalModel]).first else { return false }
+        _ = provider.loadDataRepresentation(forTypeIdentifier: UTType.operatorLocalModel.identifier) { [weak surface] data, _ in
             guard let data, let dragged = String(bytes: data, encoding: .utf8), !dragged.isEmpty else { return }
             DispatchQueue.main.async {
                 guard let surface, let controller = surface.window?.windowController as? BaseTerminalController else { return }
@@ -45,11 +45,11 @@ struct LocalModelDropPreview: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
                 ZStack {
-                    Rectangle().fill(Tellurion.gold.opacity(0.16))
-                    Rectangle().strokeBorder(Tellurion.gold.opacity(0.7), style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
+                    Rectangle().fill(Operator.gold.opacity(0.16))
+                    Rectangle().strokeBorder(Operator.gold.opacity(0.7), style: StrokeStyle(lineWidth: 1.5, dash: [6, 4]))
                     Label("Open below this chat", systemImage: "rectangle.split.1x2")
-                        .font(Tellurion.font(12, weight: .semibold))
-                        .foregroundColor(Tellurion.gold)
+                        .font(Operator.font(12, weight: .semibold))
+                        .foregroundColor(Operator.gold)
                 }
                 .frame(height: geometry.size.height / 2)
             }
@@ -60,7 +60,7 @@ struct LocalModelDropPreview: View {
 
 #if os(macOS)
 /// Makes a sidebar model row clickable and draggable onto a terminal pane. AppKit, not
-/// SwiftUI's onDrag: in Tellurion's windows a press on the sidebar would otherwise go to the
+/// SwiftUI's onDrag: in Operator's windows a press on the sidebar would otherwise go to the
 /// window's drag-to-move handler before SwiftUI sees it (the same reason Ghostty's pane grab
 /// handle is an AppKit view).
 struct LocalModelDragSource: NSViewRepresentable {
@@ -104,7 +104,7 @@ struct LocalModelDragSource: NSViewRepresentable {
             guard !dragged else { return }
             dragged = true
             let item = NSPasteboardItem()
-            item.setData(Data(payload.utf8), forType: NSPasteboard.PasteboardType(UTType.tellurionLocalModel.identifier))
+            item.setData(Data(payload.utf8), forType: NSPasteboard.PasteboardType(UTType.operatorLocalModel.identifier))
             let dragging = NSDraggingItem(pasteboardWriter: item)
             let image = Self.chip(title)
             let point = convert(event.locationInWindow, from: nil)

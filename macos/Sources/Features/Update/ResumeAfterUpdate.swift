@@ -1,7 +1,7 @@
 #if os(macOS)
 import AppKit
 
-/// Brings back what was running when Tellurion restarts to install an update.
+/// Brings back what was running when Operator restarts to install an update.
 ///
 /// Right before the relaunch, every pane's Claude Code or Codex session and every localhost
 /// server is written to a small file, and macOS is told to keep the windows for this one
@@ -42,7 +42,7 @@ enum ResumeAfterUpdate {
     static func entries() -> [Entry] {
         var result: [Entry] = []
         for controller in TerminalController.all {
-            if TellurionSettings.isOn(.localhost), let session = LocalhostSessions.shared.session(for: controller),
+            if OperatorSettings.isOn(.localhost), let session = LocalhostSessions.shared.session(for: controller),
                let surface = controller.surfaceTree.first {
                 result.append(Entry(kind: .localhost, surface: surface.id.uuidString, cwd: session.cwd, value: session.command))
                 continue

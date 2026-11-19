@@ -34,7 +34,7 @@ struct BoardTile: Codable, Identifiable, Equatable {
 }
 
 /// A board: its tiles, where you were looking, and its window. Saved as versioned JSON in
-/// ~/.ghostty-extreme/boards/<id>.json on every change.
+/// ~/.operator/boards/<id>.json on every change.
 struct BoardWorkspace: Codable, Identifiable, Equatable {
     struct Camera: Codable, Equatable {
         /// The top-left corner of the visible part of the board, in board points.
@@ -65,7 +65,7 @@ struct BoardWorkspace: Codable, Identifiable, Equatable {
     /// Tiles that left for classic windows with the switch to Classic, and where they were. Their
     /// ink, groups and wires stay with the board until they come back (see BoardController.releaseForClassic).
     var released: [BoardTile]?
-    /// Open when Tellurion last quit; reopened at launch.
+    /// Open when Operator last quit; reopened at launch.
     var open = true
     var updated = Date()
 

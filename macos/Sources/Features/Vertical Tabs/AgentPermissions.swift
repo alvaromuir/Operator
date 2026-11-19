@@ -13,9 +13,9 @@ import UserNotifications
 enum AgentPermissions {
     enum Answer { case allow, deny }
 
-    nonisolated static let notificationCategory = "com.steventsvik.ghostty-extreme.permission"
-    nonisolated static let allowAction = "com.steventsvik.ghostty-extreme.permission.allow"
-    nonisolated static let denyAction = "com.steventsvik.ghostty-extreme.permission.deny"
+    nonisolated static let notificationCategory = "com.alvaromuir.operator.permission"
+    nonisolated static let allowAction = "com.alvaromuir.operator.permission.allow"
+    nonisolated static let denyAction = "com.alvaromuir.operator.permission.deny"
 
     /// The notification category with Allow and Deny buttons.
     nonisolated static var category: UNNotificationCategory {
@@ -118,14 +118,14 @@ struct AgentPermissionButtons: View {
                 Button { AgentPermissions.answer(.allow, on: surface) } label: {
                     Label("Allow", systemImage: "checkmark").labelStyle(.titleAndIcon)
                 }
-                .buttonStyle(TellurionButtonStyle(prominent: true))
+                .buttonStyle(OperatorButtonStyle(prominent: true))
                 .help("Choose \"Yes\" in the agent's prompt (Enter)")
             }
             if prompt.canDeny {
                 Button { AgentPermissions.answer(.deny, on: surface) } label: {
                     Label("Deny", systemImage: "xmark").labelStyle(.titleAndIcon)
                 }
-                .buttonStyle(TellurionButtonStyle())
+                .buttonStyle(OperatorButtonStyle())
                 .help("Choose \"No, and tell it what to do differently\" (Esc)")
             }
         }

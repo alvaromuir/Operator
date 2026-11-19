@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Builds a Tellurion release, checks it, and creates a draft release on GitHub.
+# Builds a Operator release, checks it, and creates a draft release on GitHub.
 #
 #   ./release.sh check 1.5.0    build and check everything; nothing leaves this Mac
 #   ./release.sh draft 1.5.0    the same, then a *draft* release (nobody is notified)
@@ -19,13 +19,13 @@ setopt pipefail
 
 MODE=${1:-}
 VERSION=${2:-}
-REPO=steventsvik/Tellurion
+REPO=alvaromuir/Operator
 # The update key's name in the keychain, the Developer ID certificate, and the notarytool
-# profile (saved with: xcrun notarytool store-credentials GhosttyEXTREME --apple-id … --team-id …).
-KEY_ACCOUNT=GhosttyEXTREME
+# profile (saved with: xcrun notarytool store-credentials Operator --apple-id … --team-id …).
+KEY_ACCOUNT=Operator
 TEAM_ID=2N6Q8XFTLZ
 SIGN_ID="Developer ID Application: Steven Tsvik ($TEAM_ID)"
-NOTARY_PROFILE=GhosttyEXTREME
+NOTARY_PROFILE=Operator
 # Ghostty's own update key: an app that still trusts it would accept official Ghostty builds.
 GHOSTTY_ED_KEY="wsNcGf5hirwtdXMVnYoxRIX/SqZQLMOsYlD3q3imeok="
 sparkle_tool() {
@@ -33,7 +33,7 @@ sparkle_tool() {
 }
 TAG="extreme-$VERSION"
 ROOT=${0:A:h}
-OUT=/private/tmp/ghostty-extreme-release/$VERSION
+OUT=/private/tmp/operator-release/$VERSION
 ZIG=/opt/homebrew/opt/zig/bin/zig
 
 step() { print -P "\n%F{yellow}▸ $1%f"; }
@@ -52,7 +52,7 @@ if [[ $MODE == keys ]]; then
   PUBLIC=$($GENERATE --account $KEY_ACCOUNT -p) || fail "couldn't read the update key"
   /usr/libexec/PlistBuddy -c "Set :SUPublicEDKey $PUBLIC" macos/Ghostty-Info.plist
   pass "key \"$KEY_ACCOUNT\" in your keychain; its public half is now in Ghostty-Info.plist (commit that)"
-  print "  Back the private key up: $GENERATE --account $KEY_ACCOUNT -x ~/ghostty-extreme-update-key.txt"
+  print "  Back the private key up: $GENERATE --account $KEY_ACCOUNT -x ~/operator-update-key.txt"
   print "  (keep that file somewhere safe and offline; without the key, installed copies can't update)"
   step "Developer ID and notarization"
   security find-identity -v -p codesigning | grep -q "\"$SIGN_ID\"" \
@@ -108,7 +108,7 @@ fi
 pass "no paths to your home folder added"
 # Words that must never appear in the repo or the release notes, one per line, kept
 # outside the repo so the list itself isn't published.
-BLOCKLIST=~/.ghostty-extreme/release-blocklist
+BLOCKLIST=~/.operator/release-blocklist
 if [[ -s $BLOCKLIST ]]; then
   while IFS= read -r word || [[ -n $word ]]; do
     word=${word%$'\r'}
@@ -135,9 +135,9 @@ rm -rf macos/build/ReleaseLocal/Ghostty.app \
 # The hooks folder is copied into the app whole: Python's caches from running the scripts
 # locally (ignored by git) would ship, with home-folder paths in them.
 rm -rf agent-hooks/__pycache__
-# TELLURION_TEST_HOOKS= : the test and demo switches (TestHooks.swift) stay out of the release.
+# OPERATOR_TEST_HOOKS= : the test and demo switches (TestHooks.swift) stay out of the release.
 (cd macos && xcodebuild -project Ghostty.xcodeproj -scheme Ghostty -configuration ReleaseLocal \
-  SYMROOT="$PWD/build" ARCHS=arm64 ONLY_ACTIVE_ARCH=YES TELLURION_TEST_HOOKS= build > $OUT/xcode.log 2>&1) \
+  SYMROOT="$PWD/build" ARCHS=arm64 ONLY_ACTIVE_ARCH=YES OPERATOR_TEST_HOOKS= build > $OUT/xcode.log 2>&1) \
   || { grep -E "error:" $OUT/xcode.log | head -10; fail "app build failed (log: $OUT/xcode.log)"; }
 pass "app"
 LINT=$(cd macos && swiftlint lint --quiet 2>/dev/null | grep -c ' error: ')
@@ -148,8 +148,8 @@ pass "editor scripts parse"
 
 # ── Package ─────────────────────────────────────────────────────────────
 step "Package"
-APP=$OUT/Tellurion.app
-rm -rf $APP $OUT/Tellurion-agent-hooks $OUT/*.zip(N)
+APP=$OUT/Operator.app
+rm -rf $APP $OUT/Operator-agent-hooks $OUT/*.zip(N)
 ditto macos/build/ReleaseLocal/Ghostty.app $APP
 # Files built under ~/Desktop carry com.apple.provenance; dropped here, and the archives below
 # are made without extended attributes, so no `._` AppleDouble files ride along.
@@ -159,22 +159,22 @@ xattr -cr $APP 2>/dev/null || true
 /usr/libexec/PlistBuddy -c "Delete :GhosttyExtremeRelease" $APP/Contents/Info.plist 2>/dev/null
 /usr/libexec/PlistBuddy -c "Add :GhosttyExtremeRelease bool true" $APP/Contents/Info.plist
 # The menu bar shows CFBundleName, which Xcode sets from the target name ("Ghostty").
-/usr/libexec/PlistBuddy -c "Set :CFBundleName Tellurion" $APP/Contents/Info.plist
+/usr/libexec/PlistBuddy -c "Set :CFBundleName Operator" $APP/Contents/Info.plist
 # Debug info carries the build machine's paths; the release doesn't need it.
 find $APP -type f -perm +111 -exec sh -c 'file "$1" | grep -q Mach-O && strip -S -x "$1" 2>/dev/null; true' _ {} \;
 LEAKS=$(LC_ALL=C grep -rl -a "/Users/$USER" $APP | wc -l | xargs)
 [[ $LEAKS == 0 ]] || { LC_ALL=C grep -rl -a "/Users/$USER" $APP | head -5; fail "$LEAKS files in the app contain your home path"; }
 pass "no home-folder paths in the app"
 # The test and demo switches were compiled out above; the binary shows whether that held.
-# TELLURION_TEST_HOME is the one that stays: the launch test below and test copies need it.
+# OPERATOR_TEST_HOME is the one that stays: the launch test below and test copies need it.
 BIN=$APP/Contents/MacOS/ghostty
-SWITCHES=$(./release-checks.sh test-switches $BIN macos/Sources 2>&1) || fail "the app contains test hooks (built with TELLURION_TEST_HOOKS set), or the check couldn't run: ${SWITCHES//$'\n'/ }"
-LC_ALL=C grep -a -q 'TELLURION_TEST_HOME' $BIN || fail "the app lost TELLURION_TEST_HOME, which test copies and the launch test need"
-pass "no test or demo switches in the app (TELLURION_TEST_HOME kept)"
-# Ghostty's icons are its trademark; the only icon file in the app is Tellurion's.
-ICONS=$(cd $APP/Contents/Resources && ls *.icns(N) | grep -vx Tellurion.icns | xargs)
+SWITCHES=$(./release-checks.sh test-switches $BIN macos/Sources 2>&1) || fail "the app contains test hooks (built with OPERATOR_TEST_HOOKS set), or the check couldn't run: ${SWITCHES//$'\n'/ }"
+LC_ALL=C grep -a -q 'OPERATOR_TEST_HOME' $BIN || fail "the app lost OPERATOR_TEST_HOME, which test copies and the launch test need"
+pass "no test or demo switches in the app (OPERATOR_TEST_HOME kept)"
+# Ghostty's icons are its trademark; the only icon file in the app is Operator's.
+ICONS=$(cd $APP/Contents/Resources && ls *.icns(N) | grep -vx Operator.icns | xargs)
 [[ -z $ICONS ]] || fail "the app contains other icons: $ICONS"
-pass "only Tellurion's icon in the app"
+pass "only Operator's icon in the app"
 [[ -z $(find $APP -name "*.profraw" | head -1) ]] || fail "the app contains a profiling file (*.profraw)"
 # Signed inside out with the hardened runtime and a secure timestamp, as notarization requires:
 # Sparkle's helpers, the Dock plugin, then the app with its entitlements. The same certificate
@@ -215,16 +215,16 @@ pass "updates signed with your key ($KEY_ACCOUNT) will be accepted"
 [[ $(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" $APP/Contents/Info.plist) == $VERSION ]] || fail "version not set"
 pass "version $VERSION"
 
-HOOKS=$OUT/Tellurion-agent-hooks
+HOOKS=$OUT/Operator-agent-hooks
 mkdir -p $HOOKS
-for f in agent-hook.sh ghostty-extreme.zsh tellurion ghostty-extreme install.sh localhost localhost-run codex-hook.py memory_context.py install-codex.py agent-event.py opencode-plugin.js venice-catalog.py venice-search.py; do
+for f in agent-hook.sh operator.zsh operator operator install.sh localhost localhost-run codex-hook.py memory_context.py install-codex.py agent-event.py opencode-plugin.js venice-catalog.py venice-search.py; do
   git show HEAD:agent-hooks/$f > $HOOKS/$f || fail "agent-hooks/$f missing"
 done
-chmod +x $HOOKS/{agent-hook.sh,tellurion,ghostty-extreme,install.sh,localhost,localhost-run,codex-hook.py,install-codex.py,agent-event.py}
+chmod +x $HOOKS/{agent-hook.sh,operator,operator,install.sh,localhost,localhost-run,codex-hook.py,install-codex.py,agent-event.py}
 grep -rqE "/Users/|$USER" $HOOKS && fail "the hooks contain a personal path or name"
-for f in $HOOKS/*.sh $HOOKS/localhost $HOOKS/localhost-run $HOOKS/tellurion $HOOKS/ghostty-extreme; do bash -n $f || fail "$f has a syntax error"; done
+for f in $HOOKS/*.sh $HOOKS/localhost $HOOKS/localhost-run $HOOKS/operator $HOOKS/operator; do bash -n $f || fail "$f has a syntax error"; done
 # The app installs these itself (welcome window, Check Setup).
-for f in agent-hook.sh ghostty-extreme.zsh tellurion ghostty-extreme codex-hook.py memory_context.py localhost localhost-run agent-event.py opencode-plugin.js venice-catalog.py venice-search.py; do
+for f in agent-hook.sh operator.zsh operator operator codex-hook.py memory_context.py localhost localhost-run agent-event.py opencode-plugin.js venice-catalog.py venice-search.py; do
   cmp -s $HOOKS/$f $APP/Contents/Resources/agent-hooks/$f || fail "the app's bundled agent-hooks/$f doesn't match the repo"
 done
 # Parse only: py_compile would leave a __pycache__ folder in the release.
@@ -235,7 +235,7 @@ pass "agent hooks (checked, no personal paths)"
 step "Launch test"
 TEST=$OUT/LaunchTest.app
 rm -rf $TEST && ditto $APP $TEST
-/usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.steventsvik.ghostty-extreme.releasetest" $TEST/Contents/Info.plist
+/usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.alvaromuir.operator.releasetest" $TEST/Contents/Info.plist
 # Signed like the release (hardened runtime, library validation), so the test catches what
 # that would break. Ad hoc can't pass library validation, so without the certificate it's off.
 if [[ $SIGNED == 1 ]]; then
@@ -248,7 +248,7 @@ CRASHES_BEFORE=$(ls ~/Library/Logs/DiagnosticReports 2>/dev/null | grep -ci ghos
 # Its boards, prompts and hooks go to a folder of its own, not yours.
 TEST_HOME=$OUT/launch-test-home
 rm -rf $TEST_HOME && mkdir -p $TEST_HOME
-env -i HOME=$HOME USER=$USER PATH=/usr/bin:/bin:/usr/sbin:/sbin TELLURION_TEST_HOME=$TEST_HOME \
+env -i HOME=$HOME USER=$USER PATH=/usr/bin:/bin:/usr/sbin:/sbin OPERATOR_TEST_HOME=$TEST_HOME \
   /usr/bin/open -gna $TEST --args --window-save-state=never
 sleep 12
 PID=$(pgrep -f "^$TEST/Contents/MacOS/ghostty" | head -1)
@@ -275,10 +275,10 @@ if [[ $SIGNED == 1 ]]; then
   xcrun stapler staple $APP > $OUT/staple.log 2>&1 || { cat $OUT/staple.log; fail "couldn't attach the notarization ticket"; }
   pass "ticket attached, so it opens even offline"
   # What a downloaded copy goes through: quarantined, then judged by Gatekeeper.
-  GK=$OUT/gatekeeper && rm -rf $GK && mkdir -p $GK && ditto $APP $GK/Tellurion.app
-  xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" $GK/Tellurion.app
-  spctl --assess --type execute -vv $GK/Tellurion.app 2>&1 | grep -q 'source=Notarized Developer ID' \
-    || { spctl --assess --type execute -vv $GK/Tellurion.app; fail "Gatekeeper wouldn't open a downloaded copy"; }
+  GK=$OUT/gatekeeper && rm -rf $GK && mkdir -p $GK && ditto $APP $GK/Operator.app
+  xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" $GK/Operator.app
+  spctl --assess --type execute -vv $GK/Operator.app 2>&1 | grep -q 'source=Notarized Developer ID' \
+    || { spctl --assess --type execute -vv $GK/Operator.app; fail "Gatekeeper wouldn't open a downloaded copy"; }
   rm -rf $GK
   pass "Gatekeeper opens a downloaded copy (Notarized Developer ID)"
 else
@@ -287,20 +287,20 @@ fi
 
 # ── Archives and notes ──────────────────────────────────────────────────
 step "Archives"
-APPZIP=Tellurion-$VERSION-macos-arm64.zip
-HOOKZIP=Tellurion-$VERSION-agent-hooks.zip
+APPZIP=Operator-$VERSION-macos-arm64.zip
+HOOKZIP=Operator-$VERSION-agent-hooks.zip
 # --norsrc --noextattr: a zip with AppleDouble (`._`) entries opens fine in Archive Utility, but
 # other unarchivers (The Unarchiver, Keka, unzip) leave them inside the bundle, which breaks the
 # signature, and macOS then refuses the app as unverifiable. 1.7.1 shipped that way.
-(cd $OUT && ditto -c -k --keepParent --norsrc --noextattr Tellurion.app $APPZIP && ditto -c -k --keepParent --norsrc --noextattr Tellurion-agent-hooks $HOOKZIP)
+(cd $OUT && ditto -c -k --keepParent --norsrc --noextattr Operator.app $APPZIP && ditto -c -k --keepParent --norsrc --noextattr Operator-agent-hooks $HOOKZIP)
 ! unzip -l $OUT/$APPZIP | grep -q '/\._' || fail "the app zip carries AppleDouble files; third-party unarchivers would break the signature"
 if [[ $SIGNED == 1 ]]; then
   # What a third-party unarchiver produces: a plain unzip, quarantined, judged by Gatekeeper.
   GK=$OUT/gatekeeper-unzip && rm -rf $GK && mkdir -p $GK && (cd $GK && unzip -q $OUT/$APPZIP)
-  xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" $GK/Tellurion.app
-  codesign --verify --deep --strict $GK/Tellurion.app 2>/dev/null || fail "the app zip, unpacked with unzip, has a broken signature"
-  spctl --assess --type execute -vv $GK/Tellurion.app 2>&1 | grep -q 'source=Notarized Developer ID' \
-    || { spctl --assess --type execute -vv $GK/Tellurion.app; fail "Gatekeeper wouldn't open the zip as a third-party unarchiver unpacks it"; }
+  xattr -w com.apple.quarantine "0081;$(printf %x $(date +%s));Safari;" $GK/Operator.app
+  codesign --verify --deep --strict $GK/Operator.app 2>/dev/null || fail "the app zip, unpacked with unzip, has a broken signature"
+  spctl --assess --type execute -vv $GK/Operator.app 2>&1 | grep -q 'source=Notarized Developer ID' \
+    || { spctl --assess --type execute -vv $GK/Operator.app; fail "Gatekeeper wouldn't open the zip as a third-party unarchiver unpacks it"; }
   rm -rf $GK
   pass "the zip opens whichever unarchiver unpacks it (no AppleDouble files, Notarized Developer ID)"
 fi
@@ -315,10 +315,10 @@ cat > $OUT/appcast.xml <<APPCAST
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
-    <title>Tellurion</title>
+    <title>Operator</title>
     <link>https://github.com/$REPO/releases</link>
     <item>
-      <title>Tellurion $VERSION</title>
+      <title>Operator $VERSION</title>
       <pubDate>$(LC_ALL=C date -u "+%a, %d %b %Y %H:%M:%S +0000")</pubDate>
       <sparkle:version>$VERSION</sparkle:version>
       <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
@@ -350,7 +350,7 @@ Apple silicon Macs only, macOS 13 or newer. Based on **Ghostty $UPSTREAM**.
 curl -fsSL https://raw.githubusercontent.com/$REPO/custom/install.sh | bash
 \`\`\`
 
-It downloads \`$APPZIP\`, checks it against \`SHA256SUMS\`, and puts it in \`/Applications\`. Or by hand: download the zip, open it, and move \`Tellurion.app\` to \`/Applications\`. The app is notarized by Apple, so it opens like any other download.
+It downloads \`$APPZIP\`, checks it against \`SHA256SUMS\`, and puts it in \`/Applications\`. Or by hand: download the zip, open it, and move \`Operator.app\` to \`/Applications\`. The app is notarized by Apple, so it opens like any other download.
 
 Then open it. The welcome window connects Claude Code and Codex and runs a live test (the hooks are inside the app). \`$HOOKZIP\` has the same hooks for setting up by hand; see the [README](https://github.com/$REPO#agent-status-setup).
 
@@ -376,7 +376,7 @@ fi
 
 # ── Draft ───────────────────────────────────────────────────────────────
 step "Draft release"
-URL=$(gh release create $TAG -R $REPO --draft --target $(git rev-parse HEAD) --title "Tellurion $VERSION" \
+URL=$(gh release create $TAG -R $REPO --draft --target $(git rev-parse HEAD) --title "Operator $VERSION" \
   --notes-file $OUT/notes.md $OUT/$APPZIP $OUT/$HOOKZIP $OUT/SHA256SUMS $OUT/appcast.xml) || fail "couldn't create the draft"
 pass "draft created (not visible to anyone else yet)"
 print -P "\n%F{green}Review it here, then press Publish:%f\n  $URL"

@@ -26,7 +26,7 @@ struct UsageEntry: Equatable, Identifiable {
 /// Live usage of the user's AI subscriptions, from data the tools themselves record:
 ///
 /// - Claude: `rate_limits` from Claude Code's status line input (Pro/Max plans), which the
-///   status line script saves to ~/.claude/ghostty-extreme/claude-usage.json.
+///   status line script saves to ~/.claude/operator/claude-usage.json.
 /// - ChatGPT plan (Codex, and Hermes when it uses the Codex provider): the `rate_limits`
 ///   Codex writes into its session files under ~/.codex/sessions.
 ///
@@ -37,7 +37,7 @@ final class UsageMonitor: ObservableObject {
 
     @Published private(set) var entries: [UsageEntry] = []
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.usage", qos: .utility)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.usage", qos: .utility)
     private var timer: Timer?
     private var cancellables: Set<AnyCancellable> = []
 
@@ -74,7 +74,7 @@ final class UsageMonitor: ObservableObject {
     private static var lastClaudeWindows: [String: UsageWindow] = [:]
 
     private static func claude() -> UsageEntry? {
-        let path = NSHomeDirectory() + "/.claude/ghostty-extreme/claude-usage.json"
+        let path = NSHomeDirectory() + "/.claude/operator/claude-usage.json"
         guard let data = FileManager.default.contents(atPath: path),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let limits = json["rate_limits"] as? [String: Any] else {
@@ -193,14 +193,14 @@ struct UsagePanel: View {
     var body: some View {
         if !monitor.entries.isEmpty {
             VStack(alignment: .leading, spacing: 9) {
-                TellurionSectionLabel("Usage") {
+                OperatorSectionLabel("Usage") {
                     Button(action: ActivityDashboard.toggle) {
                         HStack(spacing: 5) {
-                            PixelIconView(icon: .chart, color: Tellurion.gold, pixel: 1.1)
+                            PixelIconView(icon: .chart, color: Operator.gold, pixel: 1.1)
                             Text("Graphs")
                         }
                     }
-                    .buttonStyle(TellurionButtonStyle())
+                    .buttonStyle(OperatorButtonStyle())
                     .help("Agent activity, usage graphs and API value (⌃⌘A)")
                 }
                 ForEach(monitor.entries) { entry in
@@ -229,11 +229,11 @@ private struct UsageRow: View {
                 AgentSprite(kind: entry.agent == .codex ? .codex : entry.agent, pixel: 1.5)
                     .frame(width: 20, height: 14)
                 Text(entry.name)
-                    .font(Tellurion.font(11.5, weight: .semibold))
-                    .foregroundColor(Tellurion.text)
+                    .font(Operator.font(11.5, weight: .semibold))
+                    .foregroundColor(Operator.text)
                 Text(entry.windows.isEmpty ? "no usage yet" : entry.shortDetail)
-                    .font(Tellurion.font(10.5))
-                    .foregroundColor(Tellurion.dim)
+                    .font(Operator.font(10.5))
+                    .foregroundColor(Operator.dim)
                     .lineLimit(1)
             }
             ForEach(entry.windows, id: \.label) { window in
@@ -270,18 +270,18 @@ private struct UsageBar: View {
     }
 
     private var color: Color {
-        used >= 90 ? Tellurion.danger : used >= 70 ? Tellurion.warn : Tellurion.gold
+        used >= 90 ? Operator.danger : used >= 70 ? Operator.warn : Operator.gold
     }
 
     var body: some View {
         HStack(spacing: 8) {
             Text(window.label)
-                .font(Tellurion.font(10.5))
-                .foregroundColor(Tellurion.muted)
+                .font(Operator.font(10.5))
+                .foregroundColor(Operator.muted)
                 .frame(width: 38, alignment: .leading)
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Tellurion.line.opacity(0.8))
+                    Capsule().fill(Operator.line.opacity(0.8))
                     Capsule()
                         .fill(LinearGradient(colors: [color.opacity(0.75), color], startPoint: .leading, endPoint: .trailing))
                         .frame(width: max(used > 0 ? 6 : 0, geometry.size.width * used / 100))
@@ -290,9 +290,9 @@ private struct UsageBar: View {
             }
             .frame(height: hovering ? 8 : 6)
             Text(hovering ? "resets \(resetText)" : showsPercent ? "\(Int(used.rounded()))%" : resetText)
-                .font(Tellurion.font(10.5, weight: .semibold))
+                .font(Operator.font(10.5, weight: .semibold))
                 .monospacedDigit()
-                .foregroundColor(used >= 70 ? color : hovering ? Tellurion.text : Tellurion.muted)
+                .foregroundColor(used >= 70 ? color : hovering ? Operator.text : Operator.muted)
                 .frame(width: hovering ? 70 : 38, alignment: .trailing)
         }
         .contentShape(Rectangle())

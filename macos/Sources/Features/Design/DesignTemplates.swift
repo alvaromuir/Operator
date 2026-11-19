@@ -1,10 +1,10 @@
 #if os(macOS)
 import Foundation
 
-/// The designs Tellurion ships: each a terminal theme, an accent and an AI color, and a
+/// The designs Operator ships: each a terminal theme, an accent and an AI color, and a
 /// window to match the vibe. The chrome follows the terminal's colors.
 enum DesignTemplates {
-    static let all: [TellurionDesign] = [
+    static let all: [OperatorDesign] = [
         .standard,
         template("mocha", "Catppuccin Mocha", "Pastel night: soft lavender on a deep blue-black", theme: "Catppuccin Mocha",
                  accent: 0xCBA6F7, ai: 0x89DCEB, padding: 12),
@@ -47,12 +47,12 @@ enum DesignTemplates {
     ]
 
     static func template(_ id: String, _ name: String, _ tagline: String, theme: String, accent: UInt32, ai: UInt32,
-                         opacity: Double = 1, blur: Int = 0, padding: Int = 10, cursor: DesignCursorStyle = .block) -> TellurionDesign {
-        TellurionDesign(id: id, name: name, tagline: tagline, terminal: .theme(theme),
+                         opacity: Double = 1, blur: Int = 0, padding: Int = 10, cursor: DesignCursorStyle = .block) -> OperatorDesign {
+        OperatorDesign(id: id, name: name, tagline: tagline, terminal: .theme(theme),
                         chrome: .auto(accent: DesignColor(rgb: accent), ai: DesignColor(rgb: ai)),
                         window: WindowLook(opacity: opacity, blur: blur, padding: padding, cursor: cursor), builtIn: true)
     }
 
-    static func named(_ id: String) -> TellurionDesign? { all.first { $0.id == id } }
+    static func named(_ id: String) -> OperatorDesign? { all.first { $0.id == id } }
 }
 #endif

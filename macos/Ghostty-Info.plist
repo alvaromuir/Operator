@@ -130,9 +130,9 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Tellurion Local Model</string>
+			<string>Operator Local Model</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.steventsvik.tellurion.localModel</string>
+			<string>com.alvaromuir.operator.localModel</string>
 			<key>UTTypeTagSpecification</key>
 			<dict/>
 		</dict>

@@ -135,7 +135,7 @@ class UpdateViewModel: ObservableObject {
         case .checking:
             return .secondary
         case .updateAvailable:
-            return Tellurion.ink
+            return Operator.ink
         case .downloading, .extracting, .installing:
             return .secondary
         case .notFound:
@@ -151,7 +151,7 @@ class UpdateViewModel: ObservableObject {
         case .permissionRequest:
             return Color(nsColor: NSColor.systemBlue.blended(withFraction: 0.3, of: .black) ?? .systemBlue)
         case .updateAvailable:
-            return Tellurion.gold
+            return Operator.gold
         case .notFound:
             return Color(nsColor: NSColor.systemBlue.blended(withFraction: 0.5, of: .black) ?? .systemBlue)
         case .error:
@@ -167,7 +167,7 @@ class UpdateViewModel: ObservableObject {
         case .permissionRequest:
             return .white
         case .updateAvailable:
-            return Tellurion.ink
+            return Operator.ink
         case .notFound:
             return .white
         case .error:
@@ -198,7 +198,7 @@ enum UpdateState: Equatable {
         }
     }
 
-    /// Tellurion: nothing's going on, so a quiet check can start and the update window closes.
+    /// Operator: nothing's going on, so a quiet check can start and the update window closes.
     var isIdle: Bool { self == .idle }
 
     var isHidden: Bool {
@@ -334,8 +334,8 @@ enum UpdateState: Equatable {
 
             // Check for semantic version (x.y.z)
             if let semver = Self.extractSemanticVersion(from: version) {
-                // Tellurion: its own release notes, not official Ghostty's.
-                if let url = URL(string: "https://github.com/steventsvik/Tellurion/releases/tag/extreme-\(semver)") {
+                // Operator: its own release notes, not official Ghostty's.
+                if let url = URL(string: "https://github.com/alvaromuir/Operator/releases/tag/extreme-\(semver)") {
                     self = .tagged(url)
                     return
                 }

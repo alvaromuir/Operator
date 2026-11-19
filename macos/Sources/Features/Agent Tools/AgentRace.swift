@@ -55,7 +55,7 @@ final class AgentRaces: ObservableObject {
     /// Contestant terminals (tabs, or tiles on a board) opened in this run of the app, by race
     /// id + contestant id.
     private var tabs: [String: Weak<Ghostty.SurfaceView>] = [:]
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.races", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.races", qos: .userInitiated)
 
     static var directory: URL { AgentTools.root.appendingPathComponent("races", isDirectory: true) }
 
@@ -158,7 +158,7 @@ final class AgentRaces: ObservableObject {
                 }
                 // Commit the starting point so each agent's diff shows only its own work.
                 AgentTools.git(["add", "-A"], in: worktree)
-                AgentTools.git(["-c", "user.name=Tellurion", "-c", "user.email=race@ghostty-extreme.local",
+                AgentTools.git(["-c", "user.name=Operator", "-c", "user.email=race@operator.local",
                                 "commit", "-q", "--no-verify", "--allow-empty", "-m", "Race baseline"], in: worktree)
                 let baseline = AgentTools.git(["rev-parse", "HEAD"], in: worktree).output
                     .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -316,14 +316,14 @@ enum AgentToolWindows {
                               backing: .buffered, defer: false)
         window.title = title
         window.titlebarAppearsTransparent = true
-        window.appearance = NSAppearance(named: Tellurion.chrome.isLight ? .aqua : .darkAqua)
-        window.backgroundColor = Tellurion.chrome.ink.nsColor
+        window.appearance = NSAppearance(named: Operator.chrome.isLight ? .aqua : .darkAqua)
+        window.backgroundColor = Operator.chrome.ink.nsColor
         window.isReleasedWhenClosed = false
         // Open over a full-screen terminal instead of switching to another Space.
         window.collectionBehavior = [.fullScreenAuxiliary, .moveToActiveSpace]
         let root = content()
         if followsDesign {
-            window.contentView = NSHostingView(rootView: DesignRoot { root.tellurionWindow() })
+            window.contentView = NSHostingView(rootView: DesignRoot { root.operatorWindow() })
         } else {
             let hosting = NSHostingView(rootView: DesignSkin { root })
             hosting.sizingOptions = []  // the window keeps its size; the content scrolls
@@ -349,8 +349,8 @@ enum AgentToolWindows {
     /// The design changed: the open windows' backing color follows (their views rebuild themselves).
     static func designDidChange() {
         for window in windows.values {
-            window.appearance = NSAppearance(named: Tellurion.chrome.isLight ? .aqua : .darkAqua)
-            window.backgroundColor = Tellurion.chrome.ink.nsColor
+            window.appearance = NSAppearance(named: Operator.chrome.isLight ? .aqua : .darkAqua)
+            window.backgroundColor = Operator.chrome.ink.nsColor
         }
     }
 
@@ -361,7 +361,7 @@ enum AgentToolWindows {
 
 extension AgentRaces {
     static func showSetup(from owner: BaseTerminalController) {
-        guard TellurionSettings.isOn(.races) else { return }
+        guard OperatorSettings.isOn(.races) else { return }
         AgentToolWindows.show(id: "race-setup", title: "Race Agents", size: NSSize(width: 520, height: 430)) {
             AgentRaceSetupView(owner: owner, folder: owner.focusedSurface?.pwd)
         }
@@ -392,32 +392,32 @@ private struct AgentRaceSetupView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
-                Image(systemName: "flag.checkered.2.crossed").font(Tellurion.font(22)).foregroundColor(.purple)
+                Image(systemName: "flag.checkered.2.crossed").font(Operator.font(22)).foregroundColor(.purple)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Race agents").font(Tellurion.font(17))
+                    Text("Race agents").font(Operator.font(17))
                     Text("Each agent gets its own copy of the project. Compare the results and keep the best.")
-                        .font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                        .font(Operator.font(12)).foregroundColor(Operator.muted)
                 }
             }
             VStack(alignment: .leading, spacing: 5) {
-                Text("Task").font(Tellurion.font(12))
+                Text("Task").font(Operator.font(12))
                 TextEditor(text: $task)
-                    .font(Tellurion.font(13))
+                    .font(Operator.font(13))
                     .frame(height: 110)
                     .padding(4)
-                    .background(Rectangle().fill(Tellurion.text.opacity(0.05)))
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous)).overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).stroke(Tellurion.text.opacity(0.15)))
+                    .background(Rectangle().fill(Operator.text.opacity(0.05)))
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous)).overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).stroke(Operator.text.opacity(0.15)))
             }
             HStack(spacing: 18) {
                 contestantStepper(.claude, value: $claude)
                 contestantStepper(.codex, value: $codex)
             }
             Toggle("Include my uncommitted changes", isOn: $includeChanges)
-                .font(Tellurion.font(12))
+                .font(Operator.font(12))
             Text("Project: \(folder.map { ($0 as NSString).abbreviatingWithTildeInPath } ?? "unknown folder")")
-                .font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                .font(Operator.font(11)).foregroundColor(Operator.muted)
             if let error {
-                Text(error).font(Tellurion.font(12)).foregroundColor(.red).fixedSize(horizontal: false, vertical: true)
+                Text(error).font(Operator.font(12)).foregroundColor(.red).fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
             HStack {
@@ -437,7 +437,7 @@ private struct AgentRaceSetupView: View {
         HStack(spacing: 7) {
             AgentBadge(kind: kind, size: 20)
             Stepper("\(kind.displayName) × \(value.wrappedValue)", value: value, in: 0...3)
-                .font(Tellurion.font(12))
+                .font(Operator.font(12))
         }
     }
 
@@ -481,7 +481,7 @@ private struct AgentRaceView: View {
                     column(contestant)
                 }
             }
-            .background(Tellurion.text.opacity(0.08))
+            .background(Operator.text.opacity(0.08))
         }
         .frame(minWidth: 700, minHeight: 420)
         .onAppear(perform: refresh)
@@ -493,13 +493,13 @@ private struct AgentRaceView: View {
 
     private var header: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "flag.checkered.2.crossed").font(Tellurion.font(20)).foregroundColor(.purple)
+            Image(systemName: "flag.checkered.2.crossed").font(Operator.font(20)).foregroundColor(.purple)
             VStack(alignment: .leading, spacing: 3) {
-                Text(race.task).font(Tellurion.font(14)).lineLimit(2)
+                Text(race.task).font(Operator.font(14)).lineLimit(2)
                 Text("\(race.repoName) · started \(RelativeDateTimeFormatter().localizedString(for: race.created, relativeTo: tick))")
-                    .font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                    .font(Operator.font(11)).foregroundColor(Operator.muted)
                 if let message {
-                    Text(message).font(Tellurion.font(12)).foregroundColor(.orange)
+                    Text(message).font(Operator.font(12)).foregroundColor(.orange)
                         .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
                 }
             }
@@ -523,14 +523,14 @@ private struct AgentRaceView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     AgentBadge(kind: contestant.kind, size: 22)
-                    Text(contestant.name).font(Tellurion.font(13))
+                    Text(contestant.name).font(Operator.font(13))
                     Spacer()
                     AgentStatusPill(activity: info?.activity, closed: races.surface(for: race, contestant) == nil)
                 }
                 if let diff {
                     Text(diff.files.isEmpty ? "No changes yet" :
                             "\(diff.files.count) file\(diff.files.count == 1 ? "" : "s") · +\(diff.added) −\(diff.removed)")
-                        .font(Tellurion.font(11).monospacedDigit()).foregroundColor(Tellurion.muted)
+                        .font(Operator.font(11).monospacedDigit()).foregroundColor(Operator.muted)
                 }
                 HStack(spacing: 8) {
                     Button("Keep this one") { keep(contestant) }
@@ -548,7 +548,7 @@ private struct AgentRaceView: View {
             AgentDiffView(text: diff?.text ?? "", error: diff?.error)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Tellurion.ink)
+        .background(Operator.ink)
     }
 
     private func refresh() {
@@ -606,9 +606,9 @@ struct AgentDiffView: View {
             ScrollView([.vertical, .horizontal]) {
                 Group {
                     if let error {
-                        Text(error).font(Tellurion.font(12)).foregroundColor(Tellurion.muted).padding(12)
+                        Text(error).font(Operator.font(12)).foregroundColor(Operator.muted).padding(12)
                     } else if text.isEmpty {
-                        Text("Nothing changed yet.").font(Tellurion.font(12)).foregroundColor(Tellurion.muted).padding(12)
+                        Text("Nothing changed yet.").font(Operator.font(12)).foregroundColor(Operator.muted).padding(12)
                     } else {
                         LazyVStack(alignment: .leading, spacing: 0) {
                             ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
@@ -633,11 +633,11 @@ struct AgentDiffView: View {
         if line.hasPrefix("diff --git") {
             let path = line.split(separator: " ").last.map { String($0.dropFirst(2)) } ?? String(line)
             Text(path)
-                .font(Tellurion.font(11.5))
+                .font(Operator.font(11.5))
                 .fixedSize()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 10).padding(.vertical, 5)
-                .background(Tellurion.text.opacity(0.08))
+                .background(Operator.text.opacity(0.08))
                 .padding(.top, 6)
         } else if line.hasPrefix("index ") || line.hasPrefix("--- ") || line.hasPrefix("+++ ")
                     || line.hasPrefix("new file") || line.hasPrefix("deleted file") {
@@ -645,7 +645,7 @@ struct AgentDiffView: View {
         } else {
             let color: Color? = line.hasPrefix("+") ? .green : line.hasPrefix("-") ? .red : nil
             Text(line.isEmpty ? " " : String(line))
-                .font(Tellurion.font(11))
+                .font(Operator.font(11))
                 .foregroundColor(line.hasPrefix("@@") ? .purple : color ?? .primary.opacity(0.85))
                 .fixedSize()
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -664,7 +664,7 @@ struct AgentStatusPill: View {
 
     var body: some View {
         Text(caps ? label.uppercased() : label)
-            .font(Tellurion.font(caps ? 9.5 : 10.5, weight: caps ? .bold : .regular))
+            .font(Operator.font(caps ? 9.5 : 10.5, weight: caps ? .bold : .regular))
             .foregroundColor(color)
             .padding(.horizontal, 7).padding(.vertical, 2)
             .background(Rectangle().fill(color.opacity(0.15)))

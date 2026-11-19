@@ -93,7 +93,7 @@ private struct TerminalSplitLeaf: View {
 
     @State private var dropState: DropState = .idle
     @State private var isSelfDragging: Bool = false
-    /// Tellurion: a local model from the sidebar is over this pane; it opens underneath.
+    /// Operator: a local model from the sidebar is over this pane; it opens underneath.
     @State private var localModelOver = false
 
     var body: some View {
@@ -106,10 +106,10 @@ private struct TerminalSplitLeaf: View {
                 // it so that a released drop animates back to its source properly
                 // so it is a proper invalid drop zone.
                 if !isSelfDragging {
-                    // Tellurion: one drop area for both panes and local models (two would
+                    // Operator: one drop area for both panes and local models (two would
                     // shadow each other), each drag passed to its own handler.
                     Color.clear
-                        .onDrop(of: [.ghosttySurfaceId, .tellurionLocalModel], delegate: PaneOrModelDropDelegate(
+                        .onDrop(of: [.ghosttySurfaceId, .operatorLocalModel], delegate: PaneOrModelDropDelegate(
                             pane: SplitDropDelegate(
                                 dropState: $dropState,
                                 viewSize: geometry.size,
@@ -141,12 +141,12 @@ private struct TerminalSplitLeaf: View {
         }
     }
 
-    /// Tellurion: a pane goes to Ghostty's split handler, a local model to ours.
+    /// Operator: a pane goes to Ghostty's split handler, a local model to ours.
     private struct PaneOrModelDropDelegate: DropDelegate {
         let pane: SplitDropDelegate
         let model: LocalModelDropDelegate
 
-        private func isModel(_ info: DropInfo) -> Bool { info.hasItemsConforming(to: [.tellurionLocalModel]) }
+        private func isModel(_ info: DropInfo) -> Bool { info.hasItemsConforming(to: [.operatorLocalModel]) }
 
         func validateDrop(info: DropInfo) -> Bool { isModel(info) ? model.validateDrop(info: info) : pane.validateDrop(info: info) }
         func dropEntered(info: DropInfo) { isModel(info) ? model.dropEntered(info: info) : pane.dropEntered(info: info) }

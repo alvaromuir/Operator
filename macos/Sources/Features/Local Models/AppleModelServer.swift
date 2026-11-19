@@ -5,11 +5,11 @@ import Network
 import FoundationModels
 #endif
 
-/// Serves Apple's on-device model (Apple Intelligence, macOS 26) to Tellurion's local chat,
+/// Serves Apple's on-device model (Apple Intelligence, macOS 26) to Operator's local chat,
 /// which runs in a terminal and can't call the framework itself.
 ///
 /// It answers OpenAI-style chat requests on 127.0.0.1 only, on a port chosen at start, and
-/// only with this launch's key. The port and key are in ~/.ghostty-extreme/apple-model.json,
+/// only with this launch's key. The port and key are in ~/.operator/apple-model.json,
 /// readable only by the user. It starts the first time an Apple chat is opened.
 final class AppleModelServer {
     static let shared = AppleModelServer()
@@ -23,10 +23,10 @@ final class AppleModelServer {
     }()
 
     static var infoFile: URL {
-        URL(fileURLWithPath: NSHomeDirectory() + "/.ghostty-extreme/apple-model.json")
+        URL(fileURLWithPath: NSHomeDirectory() + "/.operator/apple-model.json")
     }
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.apple-model")
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.apple-model")
     private var listener: NWListener?
     private let key = UUID().uuidString + UUID().uuidString
 

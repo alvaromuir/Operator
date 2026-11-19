@@ -47,7 +47,7 @@ final class ContainersModel: ObservableObject {
     @Published private(set) var busy: Set<String> = []
     @Published var error: String?
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.containers", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.containers", qos: .userInitiated)
     private var timer: Timer?
     private var loading = false
 

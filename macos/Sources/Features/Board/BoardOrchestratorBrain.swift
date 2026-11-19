@@ -371,7 +371,7 @@ struct OrchestratorAction: Codable, Equatable {
 
 enum OrchestratorPrompt {
     static let instructions = """
-    You are an orchestrator on the user's Tellurion board, a canvas of terminals in a macOS \
+    You are an orchestrator on the user's Operator board, a canvas of terminals in a macOS \
     app. Several coding agents (Claude Code, Codex and others, each in its own terminal) are \
     wired to you. The user gives you a command; you split it into tasks, hand them to the \
     agents, read what they answer when they finish, and hand out the next steps until the \

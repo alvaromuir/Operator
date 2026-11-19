@@ -3,9 +3,9 @@ import AppKit
 import GhosttyKit
 import SwiftUI
 
-// A design is everything about how Tellurion looks: the terminal's colors, the chrome
+// A design is everything about how Operator looks: the terminal's colors, the chrome
 // around it (sidebar, panels, tool windows), the font, the window, and the logo. It is
-// saved as JSON under ~/.ghostty-extreme and, for the terminal's part, written as a
+// saved as JSON under ~/.operator and, for the terminal's part, written as a
 // Ghostty config fragment that the main config includes.
 
 // MARK: - Colors
@@ -95,8 +95,8 @@ struct TerminalColors: Codable, Equatable {
     /// The sixteen ANSI colors.
     var palette: [DesignColor]
 
-    /// Tellurion's own: ink, parchment text and warm ANSI colors around the gold and cyan.
-    static let tellurion = TerminalColors(
+    /// Operator's own: ink, parchment text and warm ANSI colors around the gold and cyan.
+    static let operator = TerminalColors(
         background: DesignColor(rgb: 0x0B0A09), foreground: DesignColor(rgb: 0xD8CFBF),
         cursor: DesignColor(rgb: 0xDEB86E), cursorText: DesignColor(rgb: 0x0B0A09),
         selectionBackground: DesignColor(rgb: 0x2E271D), selectionForeground: DesignColor(rgb: 0xF2EAD8),
@@ -178,7 +178,7 @@ struct TerminalColors: Codable, Equatable {
 
 /// Where the terminal's colors come from.
 enum TerminalColorSource: Codable, Equatable {
-    /// Whatever the Ghostty config says: Tellurion leaves the terminal's colors alone.
+    /// Whatever the Ghostty config says: Operator leaves the terminal's colors alone.
     case mine
     /// One of Ghostty's built-in themes (or one in the user's themes folder), by name.
     case theme(String)
@@ -264,7 +264,7 @@ struct FontLook: Codable, Equatable {
 
 // MARK: - The chrome
 
-/// The colors of everything Tellurion draws around the terminal.
+/// The colors of everything Operator draws around the terminal.
 struct ChromeColors: Codable, Equatable {
     var ink: DesignColor
     var panel: DesignColor
@@ -281,8 +281,8 @@ struct ChromeColors: Codable, Equatable {
     var warn: DesignColor
     var danger: DesignColor
 
-    /// Tellurion as shipped: near-black, bronze hairlines, gold for what matters, cyan for the AI.
-    static let tellurion = ChromeColors(
+    /// Operator as shipped: near-black, bronze hairlines, gold for what matters, cyan for the AI.
+    static let operator = ChromeColors(
         ink: DesignColor(rgb: 0x0B0A09), panel: DesignColor(rgb: 0x100E0C), raised: DesignColor(rgb: 0x17140F),
         line: DesignColor(rgb: 0x2E271D), lineStrong: DesignColor(rgb: 0x4A3C28),
         bronze: DesignColor(rgb: 0x967446), gold: DesignColor(rgb: 0xDEB86E), core: DesignColor(rgb: 0x78DCEB),
@@ -365,7 +365,7 @@ struct DesignLogo: Codable, Equatable {
 
     /// One character per pixel; `.` is empty.
     var rows: [String]
-    /// Also drawn as the Dock icon while Tellurion runs.
+    /// Also drawn as the Dock icon while Operator runs.
     var dockIcon = false
 
     enum Role: Character, CaseIterable, Identifiable {
@@ -444,8 +444,8 @@ struct DesignLogo: Codable, Equatable {
 
     var isEmpty: Bool { rows.allSatisfy { $0.allSatisfy { $0 == "." } } }
 
-    /// The Tellurion sigil: a T with a glowing core on its stem, sealed in a hexagonal cell.
-    static let tellurion = DesignLogo(rows: [
+    /// The Operator sigil: a T with a glowing core on its stem, sealed in a hexagonal cell.
+    static let operator = DesignLogo(rows: [
         "...............gg...............",
         "..............bbbb..............",
         "............bb....bb............",
@@ -481,7 +481,7 @@ struct DesignLogo: Codable, Equatable {
 
     /// Just the cell, for drawing your own mark inside.
     static var cell: DesignLogo {
-        var logo = tellurion
+        var logo = operator
         for y in 8...23 { for x in 7...24 { logo.set(x, y, to: ".") } }
         return logo
     }
@@ -525,33 +525,33 @@ struct DesignLogo: Codable, Equatable {
     }
 
     static let starters: [(title: String, logo: DesignLogo)] = [
-        ("Tellurion", .tellurion), ("Empty cell", .cell), ("Prompt", .prompt), ("Bolt", .bolt), ("Blank", .blank),
+        ("Operator", .operator), ("Empty cell", .cell), ("Prompt", .prompt), ("Bolt", .bolt), ("Blank", .blank),
     ]
 }
 
 // MARK: - A design
 
-struct TellurionDesign: Codable, Equatable, Identifiable {
+struct OperatorDesign: Codable, Equatable, Identifiable {
     var id: String
     var name: String
     /// One line on its card: the vibe.
     var tagline: String = ""
     var terminal: TerminalColorSource = .mine
-    var chrome: ChromeSource = .fixed(.tellurion)
+    var chrome: ChromeSource = .fixed(.operator)
     var font = FontLook()
     /// Nil leaves opacity, padding and the cursor to the Ghostty config.
     var window: WindowLook?
-    var logo: DesignLogo = .tellurion
-    /// True for the designs Tellurion ships; false for the user's own.
+    var logo: DesignLogo = .operator
+    /// True for the designs Operator ships; false for the user's own.
     var builtIn = false
 
-    /// What a fresh install looks like: Tellurion's chrome around whatever the Ghostty config says.
-    static let standard = TellurionDesign(id: "tellurion", name: "Tellurion", tagline: "As shipped: ink, bronze and gold around your own terminal colors",
-                                          terminal: .mine, chrome: .fixed(.tellurion), builtIn: true)
+    /// What a fresh install looks like: Operator's chrome around whatever the Ghostty config says.
+    static let standard = OperatorDesign(id: "operator", name: "Operator", tagline: "As shipped: ink, bronze and gold around your own terminal colors",
+                                          terminal: .mine, chrome: .fixed(.operator), builtIn: true)
 
-    /// Whether this design is the one Tellurion ships with, ignoring the name.
+    /// Whether this design is the one Operator ships with, ignoring the name.
     var isStandardLook: Bool {
-        terminal == .mine && chrome == .fixed(.tellurion) && font == FontLook() && window == nil && logo == .tellurion
+        terminal == .mine && chrome == .fixed(.operator) && font == FontLook() && window == nil && logo == .operator
     }
 }
 #endif

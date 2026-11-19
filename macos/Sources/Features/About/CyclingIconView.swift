@@ -26,7 +26,7 @@ struct CyclingIconView: View {
                 }
             }
         }
-        .accessibilityLabel("Tellurion Application Icon")
+        .accessibilityLabel("Operator Application Icon")
         .accessibilityHint("Click to cycle through icon variants")
     }
 

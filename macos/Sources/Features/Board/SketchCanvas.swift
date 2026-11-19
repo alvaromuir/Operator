@@ -84,7 +84,7 @@ final class SketchCanvasView: NSView, NSTextViewDelegate, NSServicesMenuRequesto
         case erasing(original: [SketchElement])
     }
 
-    static let pasteboardType = NSPasteboard.PasteboardType("com.steventsvik.ghostty-extreme.sketch-elements")
+    static let pasteboardType = NSPasteboard.PasteboardType("com.alvaromuir.operator.sketch-elements")
 
     private(set) var elements: [SketchElement]
     var tool: Tool = .pen { didSet { if tool != .select { selection = [] }; onToolChange?(); window?.invalidateCursorRects(for: self) } }
@@ -890,7 +890,7 @@ final class SketchCanvasView: NSView, NSTextViewDelegate, NSServicesMenuRequesto
         panel.allowsMultipleSelection = true
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let self else { return }
-            let pasteboard = NSPasteboard(name: .init("com.steventsvik.ghostty-extreme.sketch-insert"))
+            let pasteboard = NSPasteboard(name: .init("com.alvaromuir.operator.sketch-insert"))
             pasteboard.clearContents()
             pasteboard.writeObjects(panel.urls as [NSURL])
             self.read(from: pasteboard, at: nil)

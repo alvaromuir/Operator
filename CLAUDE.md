@@ -1,6 +1,6 @@
-# Working on Tellurion
+# Working on Operator
 
-Tellurion is a fork of Ghostty for macOS, built for watching coding agents
+Operator is a fork of Ghostty for macOS, built for watching coding agents
 work. Most of what's ours is Swift in `macos/Sources/Features/` plus the editor's web
 code in `macos/EditorWeb/`. `AGENTS.md` and `macos/AGENTS.md` are upstream Ghostty's
 files; where they disagree with this one, follow this one.
@@ -40,29 +40,29 @@ New Swift files are picked up automatically (synchronized folders); no project e
 
 ## Testing without disturbing the maintainer
 
-The maintainer runs Tellurion all day with live agent sessions.
+The maintainer runs Operator all day with live agent sessions.
 
-- Never quit, restart or replace `/Applications/Tellurion.app` (named `GhosttyEXTREME.app`
+- Never quit, restart or replace `/Applications/Operator.app` (named `Operator.app`
   until its first quit after updating to 1.5.9) while it's running.
   Installing happens only after they say they've quit it.
-- Test with a copy: change its bundle id to `com.steventsvik.ghostty-extreme.test` and
+- Test with a copy: change its bundle id to `com.alvaromuir.operator.test` and
   ad-hoc sign it. Launch it with a clean environment:
   `env -i HOME=$HOME USER=$USER PATH=/usr/bin:/bin:/usr/sbin:/sbin /usr/bin/open -na <copy>`.
 - Anything that brings a window to the front, clicks, or records the screen needs the
   maintainer's go-ahead first; they may be using the Mac. Screenshots and recordings
   capture a single window (`screencapture -l <window id>`), never the whole screen.
-- Test-only switches: `TELLURION_TEST_TABS=N`, `TELLURION_DEMO=<script>`
-  (see `DemoDirector.swift`), `TELLURION_TEST_BOARD=<script>` (see `BoardTest.swift`),
-  `TELLURION_TEST_LOG=<file>`, `TELLURION_TEST_VENICE=<url>` (a mock in place of Venice),
-  `TELLURION_PHONE_DEV=1` (phone access on this Mac only, without Tailscale). They're read through `TestHooks.swift` and exist only
-  in builds made with the `TELLURION_TEST_HOOKS` flag: Debug, and ReleaseLocal as built
+- Test-only switches: `OPERATOR_TEST_TABS=N`, `OPERATOR_DEMO=<script>`
+  (see `DemoDirector.swift`), `OPERATOR_TEST_BOARD=<script>` (see `BoardTest.swift`),
+  `OPERATOR_TEST_LOG=<file>`, `OPERATOR_TEST_VENICE=<url>` (a mock in place of Venice),
+  `OPERATOR_PHONE_DEV=1` (phone access on this Mac only, without Tailscale). They're read through `TestHooks.swift` and exist only
+  in builds made with the `OPERATOR_TEST_HOOKS` flag: Debug, and ReleaseLocal as built
   above. `release.sh` builds without it and checks that the shipped app has none of them.
-- Always set `TELLURION_TEST_HOME=<empty folder>` on a test copy: it moves
-  `~/.ghostty-extreme` (boards, prompts, hooks) there. It works in every build, the release
+- Always set `OPERATOR_TEST_HOME=<empty folder>` on a test copy: it moves
+  `~/.operator` (boards, prompts, hooks) there. It works in every build, the release
   included. Setting `HOME` alone does nothing,
   since an app's `NSHomeDirectory()` ignores it, and the copy would then write into the
   maintainer's boards. The copy's preferences are its own bundle id's domain:
-  `defaults write com.steventsvik.ghostty-extreme.test ExtremeEdition board` picks its edition.
+  `defaults write com.alvaromuir.operator.test ExtremeEdition board` picks its edition.
 
 ## Performance rules
 
@@ -70,8 +70,8 @@ The sidebar and chrome are in every tab's window, so small costs multiply.
 
 - No SwiftUI `repeatForever` animations and no continuous `TimelineView`s in the
   chrome: each one re-lays out the whole window every frame. Endless motion uses Core
-  Animation (`TellurionMotion.swift`, `TellurionFilm.swift`), capped at `Motion.chromeRate`.
-- Gate any remaining timeline on `@Environment(\.tellurionMotion)` (false while the
+  Animation (`OperatorMotion.swift`, `OperatorFilm.swift`), capped at `Motion.chromeRate`.
+- Gate any remaining timeline on `@Environment(\.operatorMotion)` (false while the
   window or tab is off screen).
 - Glows get a `shadowPath`. Hidden pages and windows do no work.
 - Measure before and after: `ps -M -p <pid>` (main thread), `/usr/bin/sample`, `footprint`.

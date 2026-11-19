@@ -68,7 +68,7 @@ final class VeniceSpendMeter: @unchecked Sendable {
 
     /// What an agent or chat is told when the day's limit stops a request.
     var limitMessage: String {
-        "Today's Venice spending limit of $\(String(format: "%.2f", limit)) is reached. Raise it in Tools → Local models in Tellurion, or wait until tomorrow."
+        "Today's Venice spending limit of $\(String(format: "%.2f", limit)) is reached. Raise it in Tools → Local models in Operator, or wait until tomorrow."
     }
 
     private static var dayNow: String {

@@ -249,11 +249,11 @@ struct StudioDiagramsPanel: View {
                 ForEach(HeadlessAgent.Engine.allCases) { engine in
                     Button { diagrams.engine = engine } label: {
                         HStack(spacing: 5) {
-                            VerticalTabAgentLogo(kind: engine.kind, tint: Tellurion.text).frame(width: 12, height: 12)
-                            Text(engine.title).font(Tellurion.font(11.5, weight: .medium)).foregroundColor(Tellurion.text)
+                            VerticalTabAgentLogo(kind: engine.kind, tint: Operator.text).frame(width: 12, height: 12)
+                            Text(engine.title).font(Operator.font(11.5, weight: .medium)).foregroundColor(Operator.text)
                         }
                         .padding(.horizontal, 9).frame(height: 26)
-                        .background(Capsule().strokeBorder(diagrams.engine == engine ? Tellurion.core : Tellurion.line))
+                        .background(Capsule().strokeBorder(diagrams.engine == engine ? Operator.core : Operator.line))
                     }
                     .buttonStyle(.plain)
                 }
@@ -271,28 +271,28 @@ struct StudioDiagramsPanel: View {
                         diagrams.generate(preset.ask, title: preset.title)
                         close()
                     } label: {
-                        Text(preset.title).font(Tellurion.font(11.5, weight: .medium)).foregroundColor(Tellurion.text)
+                        Text(preset.title).font(Operator.font(11.5, weight: .medium)).foregroundColor(Operator.text)
                             .frame(maxWidth: .infinity).frame(height: 28)
-                            .background(RoundedRectangle(cornerRadius: 7).fill(Tellurion.raised))
+                            .background(RoundedRectangle(cornerRadius: 7).fill(Operator.raised))
                     }
                     .buttonStyle(.plain)
                     .disabled(diagrams.drawing != nil)
                 }
             }
             HStack(spacing: 6) {
-                TextField("Describe a diagram…", text: $diagrams.describe).textFieldStyle(.plain).font(Tellurion.font(12))
+                TextField("Describe a diagram…", text: $diagrams.describe).textFieldStyle(.plain).font(Operator.font(12))
                     .padding(.horizontal, 8).frame(height: 28)
-                    .background(RoundedRectangle(cornerRadius: 7).fill(Tellurion.raised))
+                    .background(RoundedRectangle(cornerRadius: 7).fill(Operator.raised))
                 Button("Generate") {
                     let ask = diagrams.describe.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !ask.isEmpty else { return }
                     diagrams.generate(ask, title: "Diagram")
                     close()
                 }
-                .buttonStyle(TellurionButtonStyle(prominent: true))
+                .buttonStyle(OperatorButtonStyle(prominent: true))
                 .disabled(diagrams.describe.trimmingCharacters(in: .whitespaces).isEmpty || diagrams.drawing != nil)
             }
-            if let error = diagrams.error { Text(error).font(Tellurion.font(11)).foregroundColor(.red) }
+            if let error = diagrams.error { Text(error).font(Operator.font(11)).foregroundColor(.red) }
             label("Starter shapes")
             HStack(spacing: 6) {
                 ForEach(["Flow", "Steps", "Decision branch", "Mind map"], id: \.self) { name in
@@ -300,9 +300,9 @@ struct StudioDiagramsPanel: View {
                         diagrams.starter(name)
                         close()
                     } label: {
-                        Text(name).font(Tellurion.font(11)).foregroundColor(Tellurion.text)
+                        Text(name).font(Operator.font(11)).foregroundColor(Operator.text)
                             .padding(.horizontal, 8).frame(height: 26)
-                            .background(RoundedRectangle(cornerRadius: 7).fill(Tellurion.raised))
+                            .background(RoundedRectangle(cornerRadius: 7).fill(Operator.raised))
                     }
                     .buttonStyle(.plain)
                 }
@@ -313,7 +313,7 @@ struct StudioDiagramsPanel: View {
     }
 
     private func label(_ text: String) -> some View {
-        Text(text.uppercased()).font(Tellurion.font(9.5, weight: .bold)).foregroundColor(Tellurion.dim).tracking(0.6)
+        Text(text.uppercased()).font(Operator.font(9.5, weight: .bold)).foregroundColor(Operator.dim).tracking(0.6)
     }
 }
 
@@ -324,17 +324,17 @@ struct StudioDrawingPill: View {
     var body: some View {
         if diagrams.drawing != nil {
             HStack(spacing: 8) {
-                Circle().fill(Tellurion.core).frame(width: 7, height: 7)
-                Text("\(diagrams.engine == .claude ? "Claude" : "Codex") is drawing").font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text)
+                Circle().fill(Operator.core).frame(width: 7, height: 7)
+                Text("\(diagrams.engine == .claude ? "Claude" : "Codex") is drawing").font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text)
                 Button { diagrams.cancel() } label: {
-                    Image(systemName: "xmark").font(.system(size: 9, weight: .bold)).foregroundColor(Tellurion.muted)
+                    Image(systemName: "xmark").font(.system(size: 9, weight: .bold)).foregroundColor(Operator.muted)
                 }
                 .buttonStyle(.plain)
                 .help("Stop drawing")
             }
             .padding(.horizontal, 12).frame(height: 30)
-            .background(Capsule().fill(Tellurion.panel.opacity(0.97)))
-            .overlay(Capsule().strokeBorder(Tellurion.lineStrong))
+            .background(Capsule().fill(Operator.panel.opacity(0.97)))
+            .overlay(Capsule().strokeBorder(Operator.lineStrong))
             .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
         }
     }

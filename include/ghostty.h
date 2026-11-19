@@ -1240,17 +1240,17 @@ GHOSTTY_API bool ghostty_surface_read_text(ghostty_surface_t,
                                               ghostty_selection_s,
                                               ghostty_text_s*);
 GHOSTTY_API void ghostty_surface_free_text(ghostty_surface_t, ghostty_text_s*);
-// Tellurion: the last command line and its output (output text may be NULL).
+// Operator: the last command line and its output (output text may be NULL).
 GHOSTTY_API bool ghostty_surface_read_last_command(ghostty_surface_t,
                                        ghostty_text_s*,
                                        ghostty_text_s*);
 GHOSTTY_API void ghostty_surface_free_last_command(ghostty_text_s*, ghostty_text_s*);
-// Tellurion: finds the lowest viewport row starting with `prompt` (one Unicode
+// Operator: finds the lowest viewport row starting with `prompt` (one Unicode
 // scalar, after any blanks) and reports the text after it: 0 = no such row, 1 = empty or
 // all drawn faint (a placeholder or suggestion), 2 = has normal text (typed by the user).
 GHOSTTY_API int ghostty_surface_prompt_text_style(ghostty_surface_t, uint32_t);
 
-// Tellurion: the active screen as VT (colors and styles; rows separated by \r\n,
+// Operator: the active screen as VT (colors and styles; rows separated by \r\n,
 // trailing blank rows left out), with the grid size and cursor, for mirroring it on
 // another device. Free with ghostty_surface_free_mirror.
 typedef struct {

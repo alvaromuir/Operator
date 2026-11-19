@@ -410,7 +410,7 @@ extension BoardController {
     /// What an agent the orchestrator starts is told first.
     static func memberIntro(role: String?, orchestrator: String) -> String {
         "You're " + (role.map { "the \($0)" } ?? "an agent") + " working for \(orchestrator), which coordinates several coding "
-            + "agents on the user's Tellurion board. It sees your final answer each turn, so end each turn with a short "
+            + "agents on the user's Operator board. It sees your final answer each turn, so end each turn with a short "
             + "summary of what you did and anything you need."
     }
 

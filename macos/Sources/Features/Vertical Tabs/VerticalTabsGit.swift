@@ -38,7 +38,7 @@ final class VerticalTabsGit: ObservableObject {
     private var inFlight: Set<String> = []
 
     private let pollInterval: TimeInterval = 10
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.git", qos: .utility)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.git", qos: .utility)
     private var timer: Timer?
     private var cancellables: Set<AnyCancellable> = []
     private let gitPath: String = ["/opt/homebrew/bin/git", "/usr/local/bin/git"]
@@ -144,7 +144,7 @@ final class VerticalTabsGit: ObservableObject {
                 }
                 let (added, removed) = Self.diffStats(repo: root, gitPath: gitPath)
                 // Ahead/behind is for the Git panel's badge; skipped when that's turned off.
-                let counts = TellurionSettings.isOn(.git) ? Self.aheadBehind(repo: root, gitPath: gitPath) : nil
+                let counts = OperatorSettings.isOn(.git) ? Self.aheadBehind(repo: root, gitPath: gitPath) : nil
                 result = VerticalTabsGitInfo(branch: branch, added: added, removed: removed,
                                              ahead: counts?.ahead, behind: counts?.behind)
             }

@@ -3,7 +3,7 @@ import AppKit
 import SwiftUI
 
 /// The Setup Check window: whether agent status is set up and working, with a fix for
-/// each problem. Also available as `tellurion doctor` in a terminal.
+/// each problem. Also available as `operator doctor` in a terminal.
 enum SetupCheckWindow {
     static func show() {
         AgentToolWindows.show(id: SetupChecks.windowID, title: "Setup Check", size: NSSize(width: 640, height: 640)) {
@@ -19,10 +19,10 @@ enum SetupCheckWindow {
 extension SetupCheck.Status {
     var color: Color {
         switch self {
-        case .ok: return Tellurion.live
-        case .info: return Tellurion.muted
-        case .warning: return Tellurion.warn
-        case .problem: return Tellurion.danger
+        case .ok: return Operator.live
+        case .info: return Operator.muted
+        case .warning: return Operator.warn
+        case .problem: return Operator.danger
         }
     }
 
@@ -43,39 +43,39 @@ private struct SetupCheckView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     if store.checks.isEmpty {
-                        Text("Checking…").font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                        Text("Checking…").font(Operator.font(12)).foregroundColor(Operator.muted)
                     }
                     ForEach(SetupCheck.Section.allCases, id: \.self) { section in
                         let checks = store.checks.filter { $0.section == section }
                         if !checks.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
-                                TellurionSectionLabel(section.rawValue)
+                                OperatorSectionLabel(section.rawValue)
                                 ForEach(checks) { SetupCheckRow(check: $0) }
                             }
                         }
                     }
                     if let error = store.fixError {
                         Label(error, systemImage: "exclamationmark.triangle.fill")
-                            .font(Tellurion.font(11.5)).foregroundColor(Tellurion.danger)
+                            .font(Operator.font(11.5)).foregroundColor(Operator.danger)
                             .textSelection(.enabled)
                     }
                 }
                 .padding(16)
             }
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             footer
         }
-        .tellurionWindow()
+        .operatorWindow()
         .onAppear { store.refresh() }
     }
 
     private var header: some View {
         HStack(spacing: 14) {
-            TellurionWindowTitle(icon: .bolt, title: "Setup Check", subtitle: summary)
+            OperatorWindowTitle(icon: .bolt, title: "Setup Check", subtitle: summary)
             Spacer()
             Button { store.refresh() } label: {
                 Label(store.running ? "Checking…" : "Check again", systemImage: "arrow.clockwise")
@@ -98,8 +98,8 @@ private struct SetupCheckView: View {
 
     private var footer: some View {
         HStack(spacing: 10) {
-            Text("In a terminal: tellurion doctor")
-                .font(Tellurion.mono(11)).foregroundColor(Tellurion.dim)
+            Text("In a terminal: operator doctor")
+                .font(Operator.mono(11)).foregroundColor(Operator.dim)
                 .textSelection(.enabled)
             Spacer()
             Button(copied ? "Copied" : "Copy report") { copyReport() }
@@ -111,7 +111,7 @@ private struct SetupCheckView: View {
     }
 
     private func copyReport() {
-        var lines = ["Tellurion \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") setup check"]
+        var lines = ["Operator \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") setup check"]
         for section in SetupCheck.Section.allCases {
             let checks = store.checks.filter { $0.section == section }
             guard !checks.isEmpty else { continue }
@@ -147,11 +147,11 @@ struct SetupCheckRow: View {
                 .frame(width: 16)
                 .padding(.top, 1)
             VStack(alignment: .leading, spacing: 2) {
-                Text(check.title).font(Tellurion.font(12.5, weight: .semibold)).foregroundColor(Tellurion.text)
+                Text(check.title).font(Operator.font(12.5, weight: .semibold)).foregroundColor(Operator.text)
                 if !check.detail.isEmpty {
                     Text(check.detail)
-                        .font(Tellurion.font(11.5, weight: .regular))
-                        .foregroundColor(Tellurion.muted)
+                        .font(Operator.font(11.5, weight: .regular))
+                        .foregroundColor(Operator.muted)
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
                 }
@@ -159,15 +159,15 @@ struct SetupCheckRow: View {
             Spacer(minLength: 8)
             if let alternative = check.alternative {
                 Button(alternative.title) { SetupChecks.shared.apply(alternative) }
-                    .buttonStyle(TellurionButtonStyle())
+                    .buttonStyle(OperatorButtonStyle())
             }
             if let fix = check.fix {
                 Button(fix.title) { SetupChecks.shared.apply(fix) }
-                    .buttonStyle(TellurionButtonStyle(prominent: check.status >= .warning && fix != .liveTest))
+                    .buttonStyle(OperatorButtonStyle(prominent: check.status >= .warning && fix != .liveTest))
             }
         }
         .padding(compact ? 8 : 10)
-        .tellurionPanel(fill: compact ? Tellurion.raised : Tellurion.panel)
+        .operatorPanel(fill: compact ? Operator.raised : Operator.panel)
     }
 }
 
@@ -179,10 +179,10 @@ struct SetupSidebarChip: View {
 
     var body: some View {
         if store.showLivePass {
-            chip(color: Tellurion.live, text: "Agent status works · test event arrived", symbol: "checkmark")
+            chip(color: Operator.live, text: "Agent status works · test event arrived", symbol: "checkmark")
         } else if let first = store.problems.first {
             let count = store.problems.count
-            chip(color: Tellurion.danger,
+            chip(color: Operator.danger,
                  text: count == 1 ? first.title : "Agent status: \(count) things to fix",
                  symbol: "chevron.right")
         }
@@ -193,13 +193,13 @@ struct SetupSidebarChip: View {
             HStack(spacing: 6) {
                 PixelDot(color: color, size: 5)
                 Text(text)
-                    .font(Tellurion.font(11, weight: .medium))
+                    .font(Operator.font(11, weight: .medium))
                     .lineLimit(1)
                     .truncationMode(.tail)
                 Spacer(minLength: 0)
                 Image(systemName: symbol).font(.system(size: 9, weight: .semibold))
             }
-            .foregroundColor(hovering ? Tellurion.gold : color)
+            .foregroundColor(hovering ? Operator.gold : color)
             .padding(.horizontal, 10).padding(.vertical, 6)
             .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(color.opacity(hovering ? 0.16 : 0.1)))
             .contentShape(Rectangle())

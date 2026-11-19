@@ -5,7 +5,7 @@ import Foundation
 /// config file; all of them run the same observer, `agent-event.py <agent> <event>`, which
 /// never approves, blocks or changes anything.
 ///
-/// Where the agent reads a folder of hook files, Tellurion writes a file of its own
+/// Where the agent reads a folder of hook files, Operator writes a file of its own
 /// there. Where hooks share a settings file with the user's, only our entries are added
 /// or removed, and the file is backed up first. OpenCode and Amp take a plugin instead.
 enum MoreAgent: String, CaseIterable, Identifiable {
@@ -95,23 +95,23 @@ enum MoreAgent: String, CaseIterable, Identifiable {
     func file(home: String) -> URL {
         let path: String
         switch self {
-        case .copilot: path = "/.copilot/hooks/ghostty-extreme.json"
+        case .copilot: path = "/.copilot/hooks/operator.json"
         case .droid:
             // A hooks.json replaces the settings file's hooks, so never create one.
             path = FileManager.default.fileExists(atPath: home + "/.factory/hooks.json") ? "/.factory/hooks.json" : "/.factory/settings.json"
-        case .kiro: path = "/.kiro/hooks/ghostty-extreme.json"
+        case .kiro: path = "/.kiro/hooks/operator.json"
         case .gemini: path = "/.gemini/settings.json"
         case .antigravity: path = "/.gemini/config/hooks.json"
         case .cursor: path = "/.cursor/hooks.json"
-        case .opencode: path = "/.config/opencode/plugins/ghostty-extreme.js"
+        case .opencode: path = "/.config/opencode/plugins/operator.js"
         case .qwen: path = "/.qwen/settings.json"
         case .kimi:
             // Kimi Code moved its folder from ~/.kimi; it migrates the old one itself.
             let fm = FileManager.default
             path = fm.fileExists(atPath: home + "/.kimi") && !fm.fileExists(atPath: home + "/.kimi-code")
                 ? "/.kimi/config.toml" : "/.kimi-code/config.toml"
-        case .goose: path = "/.agents/plugins/tellurion/hooks/hooks.json"
-        case .amp: path = "/.config/amp/plugins/tellurion.ts"
+        case .goose: path = "/.agents/plugins/operator/hooks/hooks.json"
+        case .amp: path = "/.config/amp/plugins/operator.ts"
         case .mistral: path = "/.vibe/hooks.toml"
         }
         return URL(fileURLWithPath: home + path)
@@ -175,7 +175,7 @@ enum MoreAgentConfig {
             return ["version": 1, "hooks": hooks]
         case .kiro:
             return ["version": "v1", "hooks": agent.events.map { event in
-                ["name": "ghostty-extreme-\(event.name)", "trigger": event.name, "timeout": 5, "enabled": true,
+                ["name": "operator-\(event.name)", "trigger": event.name, "timeout": 5, "enabled": true,
                  "action": ["type": "command", "command": agent.command(script: script, event: event.name)]] as [String: Any]
             }]
         case .goose:
@@ -191,7 +191,7 @@ enum MoreAgentConfig {
                 var handler: [String: Any] = ["type": "command", "command": agent.command(script: script, event: event.name)]
                 // Gemini counts milliseconds; Qwen's unit isn't documented, so it keeps its default.
                 if agent != .qwen { handler["timeout"] = agent == .gemini ? 5000 : 5 }
-                if agent == .gemini { handler["name"] = "ghostty-extreme" }
+                if agent == .gemini { handler["name"] = "operator" }
                 var groups = hooks[event.name] as? [[String: Any]] ?? []
                 groups.append(["matcher": event.matcher ?? "", "hooks": [handler]])
                 hooks[event.name] = groups
@@ -208,7 +208,7 @@ enum MoreAgentConfig {
                 ]]]
             }
             var result = config
-            result["ghostty-extreme"] = entry
+            result["operator"] = entry
             return result
         case .cursor:
             var result = config
@@ -233,7 +233,7 @@ enum MoreAgentConfig {
             return [:]
         case .antigravity:
             var result = config
-            result.removeValue(forKey: "ghostty-extreme")
+            result.removeValue(forKey: "operator")
             return result
         case .cursor:
             var result = config
@@ -274,8 +274,8 @@ enum MoreAgentConfig {
 /// the user's settings. Ours go in one marked block at the end, so taking them out never
 /// touches anything else.
 enum MoreAgentTOML {
-    static let begin = "# >>> Tellurion agent status (added by Tellurion; remove in its Settings) >>>"
-    static let end = "# <<< Tellurion agent status <<<"
+    static let begin = "# >>> Operator agent status (added by Operator; remove in its Settings) >>>"
+    static let end = "# <<< Operator agent status <<<"
 
     static func connected(_ agent: MoreAgent, text: String, script: String) -> String {
         var lines = [begin]
@@ -285,7 +285,7 @@ enum MoreAgentTOML {
             case .kimi:
                 lines += ["[[hooks]]", "event = \(tomlString(event.name))", "command = \(command)", "timeout = 5", ""]
             default:
-                lines += ["[[hooks]]", "name = \(tomlString("tellurion-" + event.name))", "type = \(tomlString(event.name))",
+                lines += ["[[hooks]]", "name = \(tomlString("operator-" + event.name))", "type = \(tomlString(event.name))",
                           "command = \(command)", ""]
             }
         }
@@ -342,7 +342,7 @@ extension HookInstaller {
         let url = agent.file(home: home)
         if let plugin = agent.plugin {
             guard let source = bundled?.appendingPathComponent(plugin) else {
-                throw Failure(message: "This build of Tellurion doesn't include the \(agent.title) plugin.")
+                throw Failure(message: "This build of Operator doesn't include the \(agent.title) plugin.")
             }
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
             try Data(contentsOf: source).write(to: url, options: .atomic)
@@ -356,8 +356,8 @@ extension HookInstaller {
         if agent == .goose {
             // A plugin folder of our own: its manifest, and the hooks beside it.
             let manifest = url.deletingLastPathComponent().deletingLastPathComponent().appendingPathComponent("plugin.json")
-            try writeJSON(["name": "tellurion", "version": "1.0.0",
-                           "description": "Live agent status for Tellurion's sidebar. Only observes."], to: manifest)
+            try writeJSON(["name": "operator", "version": "1.0.0",
+                           "description": "Live agent status for Operator's sidebar. Only observes."], to: manifest)
         }
         let config = agent.ownsFile ? [:] : try readJSON(url)
         try writeJSON(MoreAgentConfig.connected(agent, config: config, script: moreAgentScript,

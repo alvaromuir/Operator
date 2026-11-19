@@ -9,7 +9,7 @@ import Network
 /// requests `VeniceAPI.proxyAllows` names and no others. So the key stays in this process and the
 /// keychain: never in a terminal's environment, a command line or a file an agent can read.
 ///
-/// A program running as the user can read the token and use the account while Tellurion runs,
+/// A program running as the user can read the token and use the account while Operator runs,
 /// but can't learn the key or reach anything else it can do.
 final class VeniceProxy: @unchecked Sendable {
     struct Failure: LocalizedError {
@@ -22,7 +22,7 @@ final class VeniceProxy: @unchecked Sendable {
     /// How long a request waits for the keychain before it's told why nothing is happening.
     private static let keyPatience: TimeInterval = 15
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.venice-proxy")
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.venice-proxy")
     private let upstream: URL
     private let infoFile: URL
     /// Reads the key when the first request needs it, so that starting at launch doesn't touch
@@ -157,7 +157,7 @@ final class VeniceProxy: @unchecked Sendable {
             guard !answered else { return }
             answered = true
             self?.respond(connection, status: "503 Service Unavailable", code: "waiting_for_keychain",
-                          message: "Waiting for your Venice key. Look for a Keychain prompt from Tellurion and click Always Allow.")
+                          message: "Waiting for your Venice key. Look for a Keychain prompt from Operator and click Always Allow.")
         }
         withKey { [weak self] key in
             guard let self, !answered else { return }

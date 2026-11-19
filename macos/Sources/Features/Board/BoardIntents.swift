@@ -298,7 +298,7 @@ struct ArrangeBoardIntent: AppIntent {
 // MARK: - Spotlight and Siri
 
 @available(macOS 15.0, *)
-struct TellurionShortcuts: AppShortcutsProvider {
+struct OperatorShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: NewSketchIntent(), phrases: [
             "New sketch in \(.applicationName)",

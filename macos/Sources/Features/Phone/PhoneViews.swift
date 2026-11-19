@@ -8,7 +8,7 @@ enum PhoneSetup {
     static let windowID = "phone"
 
     static func show() {
-        guard TellurionSettings.isOn(.phone) else { return }
+        guard OperatorSettings.isOn(.phone) else { return }
         TailscaleMonitor.shared.watch()
         AgentToolWindows.show(id: windowID, title: "Phone", size: NSSize(width: 560, height: 600)) {
             PhoneSetupView()
@@ -45,30 +45,30 @@ struct PhoneCornerBadge: View {
     }
 
     private var color: Color {
-        guard server.running else { return Tellurion.dim }
-        if server.error != nil { return Tellurion.danger }
-        return server.connected.isEmpty ? Tellurion.gold : Tellurion.live
+        guard server.running else { return Operator.dim }
+        if server.error != nil { return Operator.danger }
+        return server.connected.isEmpty ? Operator.gold : Operator.live
     }
 
     var body: some View {
         Button(action: PhoneSetup.show) {
             HStack(spacing: 6) {
                 ZStack(alignment: .topTrailing) {
-                    PixelIconView(icon: .phone, color: server.running ? color : Tellurion.muted, pixel: 1.2)
+                    PixelIconView(icon: .phone, color: server.running ? color : Operator.muted, pixel: 1.2)
                     Circle().fill(color).frame(width: 5, height: 5).offset(x: 3, y: -2)
                 }
                 if hovering {
                     Text(label)
-                        .font(Tellurion.font(11, weight: .medium))
-                        .foregroundColor(Tellurion.text)
+                        .font(Operator.font(11, weight: .medium))
+                        .foregroundColor(Operator.text)
                         .lineLimit(1)
                         .fixedSize()
                 }
             }
             .padding(.horizontal, hovering ? 9 : 6)
             .frame(height: 22)
-            .background(Capsule().fill(Tellurion.panel.opacity(hovering ? 0.96 : 0.75)))
-            .overlay(Capsule().stroke(hovering ? Tellurion.lineStrong : Tellurion.line, lineWidth: 1))
+            .background(Capsule().fill(Operator.panel.opacity(hovering ? 0.96 : 0.75)))
+            .overlay(Capsule().stroke(hovering ? Operator.lineStrong : Operator.line, lineWidth: 1))
             .opacity(hovering || server.running ? 1 : 0.7)
             .contentShape(Capsule())
         }
@@ -96,12 +96,12 @@ private struct PhoneSetupView: View {
     var body: some View {
         let status = monitor.status
         VStack(alignment: .leading, spacing: 0) {
-            TellurionWindowTitle(icon: .phone, title: "Phone",
+            OperatorWindowTitle(icon: .phone, title: "Phone",
                                subtitle: "Use this Mac's terminal from your phone, over your own private Tailscale network")
                 .padding(.horizontal, 22)
                 .padding(.top, 34)
                 .padding(.bottom, 16)
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     if ready(status) {
@@ -114,13 +114,13 @@ private struct PhoneSetupView: View {
                     }
                     if let error = monitor.error {
                         Text(error)
-                            .font(Tellurion.font(11))
-                            .foregroundColor(Tellurion.danger)
+                            .font(Operator.font(11))
+                            .foregroundColor(Operator.danger)
                             .textSelection(.enabled)
                     }
-                    Text("Tellurion only uses Tailscale inside your own tailnet. It never turns on Funnel, which would put your terminal on the public internet.")
-                        .font(Tellurion.font(10.5))
-                        .foregroundColor(Tellurion.dim)
+                    Text("Operator only uses Tailscale inside your own tailnet. It never turns on Funnel, which would put your terminal on the public internet.")
+                        .font(Operator.font(10.5))
+                        .foregroundColor(Operator.dim)
                         .padding(.top, 4)
                 }
                 .padding(22)
@@ -142,28 +142,28 @@ private struct PhoneSetupView: View {
             step(1, "Install Tailscale", state: installState(status),
                  detail: "Free for personal use. It connects your Mac and phone privately, on Wi-Fi or cellular.") {
                 Button(ToolPath.find("brew") == nil ? "Download…" : "Install with Homebrew") { monitor.install() }
-                    .buttonStyle(TellurionButtonStyle(prominent: true))
+                    .buttonStyle(OperatorButtonStyle(prominent: true))
             }
             step(2, "Turn it on and sign in", state: connectState(status), detail: connectDetail(status)) {
                 if status.state == .appNotRunning {
-                    Button("Open Tailscale") { monitor.openApp() }.buttonStyle(TellurionButtonStyle(prominent: true))
+                    Button("Open Tailscale") { monitor.openApp() }.buttonStyle(OperatorButtonStyle(prominent: true))
                 } else {
                     Button(status.state == .needsLogin ? "Sign in…" : "Turn on") { monitor.connect() }
-                        .buttonStyle(TellurionButtonStyle(prominent: true))
+                        .buttonStyle(OperatorButtonStyle(prominent: true))
                         .disabled(monitor.busy)
                 }
             }
             step(3, "Turn on HTTPS for your tailnet", state: httpsState(status),
                  detail: "One switch on Tailscale's DNS page: MagicDNS and HTTPS Certificates. The phone app needs it to install to your home screen and notify you. This page notices when it's on.") {
-                Button("Open DNS settings…") { monitor.openHTTPSSettings() }.buttonStyle(TellurionButtonStyle(prominent: true))
+                Button("Open DNS settings…") { monitor.openHTTPSSettings() }.buttonStyle(OperatorButtonStyle(prominent: true))
             }
             step(4, "Add your phone", state: phoneState(status),
                  detail: "Install Tailscale on your phone and sign in with the same account.") {
                 HStack(alignment: .center, spacing: 14) {
                     QRCodeView(text: "https://tailscale.com/download", size: 104)
                     Text("Scan with your phone's camera")
-                        .font(Tellurion.font(11))
-                        .foregroundColor(Tellurion.muted)
+                        .font(Operator.font(11))
+                        .foregroundColor(Operator.muted)
                 }
             }
         }
@@ -174,14 +174,14 @@ private struct PhoneSetupView: View {
         VStack(alignment: .leading, spacing: 10) {
             Button { withAnimation(.easeOut(duration: 0.15)) { showSetup.toggle() } } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "checkmark.circle.fill").foregroundColor(Tellurion.live)
-                    Text("Tailscale is set up").font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text)
+                    Image(systemName: "checkmark.circle.fill").foregroundColor(Operator.live)
+                    Text("Tailscale is set up").font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text)
                     if let login = status.loginName {
-                        Text(login).font(Tellurion.font(11)).foregroundColor(Tellurion.muted).lineLimit(1)
+                        Text(login).font(Operator.font(11)).foregroundColor(Operator.muted).lineLimit(1)
                     }
                     Spacer()
                     Image(systemName: showSetup ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 10, weight: .semibold)).foregroundColor(Tellurion.muted)
+                        .font(.system(size: 10, weight: .semibold)).foregroundColor(Operator.muted)
                 }
                 .contentShape(Rectangle())
             }
@@ -228,25 +228,25 @@ private struct PhoneSetupView: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(state == .done ? Tellurion.live.opacity(0.18) : state == .current ? Tellurion.gold.opacity(0.18) : Tellurion.raised)
+                    .fill(state == .done ? Operator.live.opacity(0.18) : state == .current ? Operator.gold.opacity(0.18) : Operator.raised)
                 Circle()
-                    .strokeBorder(state == .done ? Tellurion.live : state == .current ? Tellurion.gold : Tellurion.line, lineWidth: 1)
+                    .strokeBorder(state == .done ? Operator.live : state == .current ? Operator.gold : Operator.line, lineWidth: 1)
                 if state == .done {
-                    Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundColor(Tellurion.live)
+                    Image(systemName: "checkmark").font(.system(size: 10, weight: .bold)).foregroundColor(Operator.live)
                 } else {
-                    Text("\(number)").font(Tellurion.font(11, weight: .semibold))
-                        .foregroundColor(state == .current ? Tellurion.gold : Tellurion.dim)
+                    Text("\(number)").font(Operator.font(11, weight: .semibold))
+                        .foregroundColor(state == .current ? Operator.gold : Operator.dim)
                 }
             }
             .frame(width: 22, height: 22)
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(Tellurion.font(13, weight: .semibold))
-                    .foregroundColor(state == .later ? Tellurion.dim : Tellurion.text)
+                    .font(Operator.font(13, weight: .semibold))
+                    .foregroundColor(state == .later ? Operator.dim : Operator.text)
                 if state != .done || number == 2 {
                     Text(detail)
-                        .font(Tellurion.font(11))
-                        .foregroundColor(state == .later ? Tellurion.dim : Tellurion.muted)
+                        .font(Operator.font(11))
+                        .foregroundColor(state == .later ? Operator.dim : Operator.muted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if state == .current { action().padding(.top, 2) }
@@ -254,27 +254,27 @@ private struct PhoneSetupView: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 10).fill(state == .current ? Tellurion.panel : Color.clear))
-        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(state == .current ? Tellurion.gold.opacity(0.35) : Tellurion.line.opacity(0.6)))
+        .background(RoundedRectangle(cornerRadius: 10).fill(state == .current ? Operator.panel : Color.clear))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(state == .current ? Operator.gold.opacity(0.35) : Operator.line.opacity(0.6)))
     }
 
     // MARK: Devices
 
     private func devices(_ s: TailscaleStatus) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            TellurionSectionLabel("On your tailnet")
+            OperatorSectionLabel("On your tailnet")
             HStack(spacing: 8) {
-                Image(systemName: "laptopcomputer").foregroundColor(Tellurion.gold)
-                Text("This Mac").font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text)
-                Text(s.dnsName ?? s.ip ?? "").font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                Image(systemName: "laptopcomputer").foregroundColor(Operator.gold)
+                Text("This Mac").font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text)
+                Text(s.dnsName ?? s.ip ?? "").font(Operator.font(11)).foregroundColor(Operator.muted)
                     .textSelection(.enabled).lineLimit(1)
             }
             ForEach(s.phones) { phone in
                 HStack(spacing: 8) {
-                    Image(systemName: "iphone").foregroundColor(phone.online ? Tellurion.live : Tellurion.dim)
-                    Text(phone.name).font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text)
-                    Text(phone.online ? "online" : "offline").font(Tellurion.font(11))
-                        .foregroundColor(phone.online ? Tellurion.live : Tellurion.dim)
+                    Image(systemName: "iphone").foregroundColor(phone.online ? Operator.live : Operator.dim)
+                    Text(phone.name).font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text)
+                    Text(phone.online ? "online" : "offline").font(Operator.font(11))
+                        .foregroundColor(phone.online ? Operator.live : Operator.dim)
                 }
             }
         }
@@ -285,38 +285,38 @@ private struct PhoneSetupView: View {
 
     private var access: some View {
         VStack(alignment: .leading, spacing: 10) {
-            TellurionSectionLabel("Phone access")
+            OperatorSectionLabel("Phone access")
             if !server.running {
                 Text("Turn it on to use this Mac's terminal from your paired phones. Only devices signed in to your own Tailscale account can reach it, and each phone has to be paired here first.")
-                    .font(Tellurion.font(11))
-                    .foregroundColor(Tellurion.muted)
+                    .font(Operator.font(11))
+                    .foregroundColor(Operator.muted)
                     .fixedSize(horizontal: false, vertical: true)
                 Button("Turn on phone access") { server.turnOn() }
-                    .buttonStyle(TellurionButtonStyle(prominent: true))
+                    .buttonStyle(OperatorButtonStyle(prominent: true))
                     .disabled(monitor.busy)
             } else {
                 HStack(alignment: .center, spacing: 10) {
-                    Circle().fill(server.connected.isEmpty ? Tellurion.gold : Tellurion.live).frame(width: 9, height: 9)
+                    Circle().fill(server.connected.isEmpty ? Operator.gold : Operator.live).frame(width: 9, height: 9)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(liveSummary).font(Tellurion.font(13, weight: .semibold)).foregroundColor(Tellurion.text)
+                        Text(liveSummary).font(Operator.font(13, weight: .semibold)).foregroundColor(Operator.text)
                         if let url = server.url {
-                            Text(url.absoluteString).font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                            Text(url.absoluteString).font(Operator.font(11)).foregroundColor(Operator.muted)
                                 .textSelection(.enabled)
                         } else {
                             Text(monitor.busy ? "Setting up Tailscale Serve…" : "Waiting for Tailscale Serve")
-                                .font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                                .font(Operator.font(11)).foregroundColor(Operator.muted)
                         }
                     }
                     Spacer()
                     Button("Turn off") { server.turnOff() }
                 }
                 .padding(12)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Tellurion.panel))
+                .background(RoundedRectangle(cornerRadius: 10).fill(Operator.panel))
                 pairing
                 pairedList
             }
             if let error = server.error {
-                Text(error).font(Tellurion.font(11)).foregroundColor(Tellurion.danger).textSelection(.enabled)
+                Text(error).font(Operator.font(11)).foregroundColor(Operator.danger).textSelection(.enabled)
             }
         }
         .padding(.top, 8)
@@ -336,22 +336,22 @@ private struct PhoneSetupView: View {
             HStack(alignment: .center, spacing: 16) {
                 QRCodeView(text: url.absoluteString + "#pair=" + code, size: 150)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Scan with your phone's camera").font(Tellurion.font(12.5, weight: .semibold)).foregroundColor(Tellurion.text)
+                    Text("Scan with your phone's camera").font(Operator.font(12.5, weight: .semibold)).foregroundColor(Operator.text)
                     Text(code)
                         .font(.system(size: 17, weight: .semibold, design: .monospaced))
-                        .foregroundColor(Tellurion.gold)
+                        .foregroundColor(Operator.gold)
                         .textSelection(.enabled)
                     Text("Or open \(url.host ?? "the address") on your phone and type this code. It works once, for 10 minutes. Your phone has to be on Tailscale.")
-                        .font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                        .font(Operator.font(11)).foregroundColor(Operator.muted)
                         .fixedSize(horizontal: false, vertical: true)
                     Button("Cancel") { phones.cancelPairing() }
                 }
             }
             .padding(12)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Tellurion.panel))
+            .background(RoundedRectangle(cornerRadius: 10).fill(Operator.panel))
         } else if server.url != nil {
             Button(phones.devices.isEmpty ? "Pair a phone…" : "Pair another phone…") { phones.newPairingCode() }
-                .buttonStyle(TellurionButtonStyle(prominent: phones.devices.isEmpty))
+                .buttonStyle(OperatorButtonStyle(prominent: phones.devices.isEmpty))
         }
     }
 
@@ -362,10 +362,10 @@ private struct PhoneSetupView: View {
                 ForEach(phones.devices) { device in
                     let online = server.connected[device.id] != nil
                     HStack(spacing: 8) {
-                        Image(systemName: "iphone").foregroundColor(online ? Tellurion.live : Tellurion.muted)
-                        Text(device.name).font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text)
+                        Image(systemName: "iphone").foregroundColor(online ? Operator.live : Operator.muted)
+                        Text(device.name).font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text)
                         Text(online ? "connected" : device.lastSeen.map { "last used " + RelativeDateTimeFormatter().localizedString(for: $0, relativeTo: Date()) } ?? "")
-                            .font(Tellurion.font(11)).foregroundColor(online ? Tellurion.live : Tellurion.dim)
+                            .font(Operator.font(11)).foregroundColor(online ? Operator.live : Operator.dim)
                         Spacer()
                         Button("Remove") { phones.remove(device.id) }
                     }

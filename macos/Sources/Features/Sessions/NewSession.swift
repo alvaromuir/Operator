@@ -70,16 +70,16 @@ struct NewSessionMenu: View {
         HStack(spacing: 0) {
             Button { NewSessionKind.terminal.open(from: owner) } label: {
                 HStack(spacing: 6) {
-                    PixelIconView(icon: .plus, color: hoveringMain ? Tellurion.gold : Tellurion.text.opacity(0.85), pixel: 1.5)
+                    PixelIconView(icon: .plus, color: hoveringMain ? Operator.gold : Operator.text.opacity(0.85), pixel: 1.5)
                     Text(compact ? "New" : "New tab")
-                        .font(Tellurion.font(11.5, weight: .semibold))
-                        .foregroundColor(hoveringMain ? Tellurion.gold : Tellurion.text.opacity(0.85))
+                        .font(Operator.font(11.5, weight: .semibold))
+                        .foregroundColor(hoveringMain ? Operator.gold : Operator.text.opacity(0.85))
                         .fixedSize()
                 }
                 .padding(.leading, 10)
                 .padding(.trailing, 8)
                 .frame(maxHeight: .infinity)
-                .background(hoveringMain ? Tellurion.raised : Color.clear)
+                .background(hoveringMain ? Operator.raised : Color.clear)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -88,14 +88,14 @@ struct NewSessionMenu: View {
             .accessibilityLabel("New terminal")
 
             Rectangle()
-                .fill(hovering ? Tellurion.gold.opacity(0.45) : Tellurion.line)
+                .fill(hovering ? Operator.gold.opacity(0.45) : Operator.line)
                 .frame(width: 1)
 
             Button { NewSessionMenuBuilder.popUp(for: owner) } label: {
-                PixelIconView(icon: .chevronDown, color: hoveringMenu ? Tellurion.gold : Tellurion.text.opacity(0.85), pixel: 1.1)
+                PixelIconView(icon: .chevronDown, color: hoveringMenu ? Operator.gold : Operator.text.opacity(0.85), pixel: 1.1)
                     .frame(width: 22)
                     .frame(maxHeight: .infinity)
-                    .background(hoveringMenu ? Tellurion.raised : Color.clear)
+                    .background(hoveringMenu ? Operator.raised : Color.clear)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -104,10 +104,10 @@ struct NewSessionMenu: View {
             .accessibilityLabel("More kinds of new session")
         }
         .frame(height: 28)
-        .background(Tellurion.panel)
+        .background(Operator.panel)
         .clipShape(shape)
-        .overlay(shape.strokeBorder(hovering ? Tellurion.gold.opacity(0.55) : Tellurion.line, lineWidth: 1))
-        .shadow(color: hovering ? Tellurion.gold.opacity(0.2) : .clear, radius: 6)
+        .overlay(shape.strokeBorder(hovering ? Operator.gold.opacity(0.55) : Operator.line, lineWidth: 1))
+        .shadow(color: hovering ? Operator.gold.opacity(0.2) : .clear, radius: 6)
         .animation(.easeOut(duration: 0.12), value: hovering)
         .fixedSize()
     }
@@ -121,7 +121,7 @@ enum NewSessionMenuBuilder {
             menu.addItem(ClosureMenuItem(kind.title, image: icon(for: kind)) { kind.open(from: owner) })
             if kind == .codex { menu.addItem(dockerItem(owner)) }
         }
-        if TellurionSettings.isOn(.localhost) {
+        if OperatorSettings.isOn(.localhost) {
             menu.addItem(.separator())
             menu.addItem(ClosureMenuItem("Localhost Server…", image: NSImage(systemSymbolName: "globe", accessibilityDescription: nil)) {
                 LocalhostManager.showNewServer(folder: owner.focusedSurface?.pwd, from: owner)

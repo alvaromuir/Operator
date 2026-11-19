@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Ghostty
 
-/// Tellurion's own files: written with their folder made, and a failed write reported (by
+/// Operator's own files: written with their folder made, and a failed write reported (by
 /// returning false and logging) rather than dropped.
 struct StoredFileTests {
     private let log = StoredFile.logger("Tests")

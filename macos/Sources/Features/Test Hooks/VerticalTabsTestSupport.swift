@@ -2,16 +2,16 @@
 import AppKit
 import SwiftUI
 
-#if TELLURION_TEST_HOOKS
-/// Test-only: `TELLURION_TEST_TABS=N` (set by a test launch, never in normal use)
+#if OPERATOR_TEST_HOOKS
+/// Test-only: `OPERATOR_TEST_TABS=N` (set by a test launch, never in normal use)
 /// opens N tabs at startup so the sidebar can be exercised without UI scripting.
 enum VerticalTabsTestSupport {
     private static var didOpen = false
 
-    /// `TELLURION_TEST_OVERLAY=hover|menu|git|tools`: the selected row opens its hover
+    /// `OPERATOR_TEST_OVERLAY=hover|menu|git|tools`: the selected row opens its hover
     /// card, ⋮ menu or Git panel, or the header opens Tools, shortly after launch.
-    static let overlayMode = TestHooks.value("TELLURION_TEST_OVERLAY")
-    static let showOverlay = Notification.Name("com.steventsvik.ghostty-extreme.testShowOverlay")
+    static let overlayMode = TestHooks.value("OPERATOR_TEST_OVERLAY")
+    static let showOverlay = Notification.Name("com.alvaromuir.operator.testShowOverlay")
 
     static func openTestTabsIfRequested(from controller: TerminalController) {
         guard !didOpen else { return }
@@ -22,21 +22,21 @@ enum VerticalTabsTestSupport {
                 NotificationCenter.default.post(name: showOverlay, object: nil)
             }
         }
-        if let name = TestHooks.value("TELLURION_TEST_COLOR"),
+        if let name = TestHooks.value("OPERATOR_TEST_COLOR"),
            let color = TerminalTabColor.allCases.first(where: { $0.localizedName.lowercased() == name }) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { (controller.window as? TerminalWindow)?.tabColor = color }
         }
-        if TestHooks.value("TELLURION_TEST_SESSION") == "hermes" {
+        if TestHooks.value("OPERATOR_TEST_SESSION") == "hermes" {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { NewSessionKind.hermes.open(from: controller) }
         }
-        // `TELLURION_TEST_SESSION=docker:<kind>`: open an isolated Docker session.
-        if let value = TestHooks.value("TELLURION_TEST_SESSION"), value.hasPrefix("docker:"),
+        // `OPERATOR_TEST_SESSION=docker:<kind>`: open an isolated Docker session.
+        if let value = TestHooks.value("OPERATOR_TEST_SESSION"), value.hasPrefix("docker:"),
            let kind = DockerSessionKind(rawValue: String(value.dropFirst("docker:".count))) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 4) { DockerSessions.open(kind, from: controller) }
         }
-        // `TELLURION_TEST_EDITOR_DELAY`: seconds before opening it (default 1.5).
-        if let file = TestHooks.value("TELLURION_TEST_EDITOR") {
-            let delay = Double(TestHooks.value("TELLURION_TEST_EDITOR_DELAY") ?? "") ?? 1.5
+        // `OPERATOR_TEST_EDITOR_DELAY`: seconds before opening it (default 1.5).
+        if let file = TestHooks.value("OPERATOR_TEST_EDITOR") {
+            let delay = Double(TestHooks.value("OPERATOR_TEST_EDITOR_DELAY") ?? "") ?? 1.5
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 // A folder (trailing slash) opens the editor the way a user does, with no file.
                 if file.hasSuffix("/") {
@@ -45,31 +45,31 @@ enum VerticalTabsTestSupport {
                     EditorPanel.shared.show(from: controller, folder: (file as NSString).deletingLastPathComponent)
                     EditorPanel.shared.session(for: controller).webView.openFile(file, line: 20)
                 }
-                // `TELLURION_TEST_EDITOR_JS`: script run in the editor once it's loaded.
-                if let script = TestHooks.value("TELLURION_TEST_EDITOR_JS") {
+                // `OPERATOR_TEST_EDITOR_JS`: script run in the editor once it's loaded.
+                if let script = TestHooks.value("OPERATOR_TEST_EDITOR_JS") {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                         EditorPanel.shared.session(for: controller).webView.evaluateJavaScript(script)
                     }
                 }
             }
         }
-        // `TELLURION_TEST_BACKGROUND=<seconds>`: open the Background window then.
-        if let value = TestHooks.value("TELLURION_TEST_BACKGROUND"), let delay = Double(value) {
+        // `OPERATOR_TEST_BACKGROUND=<seconds>`: open the Background window then.
+        if let value = TestHooks.value("OPERATOR_TEST_BACKGROUND"), let delay = Double(value) {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) { HousekeepingWindow.show() }
         }
-        // `TELLURION_TEST_VISUAL=<seconds>`: open Visual Fix on the best running app then.
-        if let value = TestHooks.value("TELLURION_TEST_VISUAL"), let delay = Double(value) {
+        // `OPERATOR_TEST_VISUAL=<seconds>`: open Visual Fix on the best running app then.
+        if let value = TestHooks.value("OPERATOR_TEST_VISUAL"), let delay = Double(value) {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) { VisualFixPanel.shared.show(from: controller) }
         }
-        // `TELLURION_TEST_PALETTE=1`: open the command palette in the visible tab after 11s.
-        if TestHooks.flag("TELLURION_TEST_PALETTE") {
+        // `OPERATOR_TEST_PALETTE=1`: open the command palette in the visible tab after 11s.
+        if TestHooks.flag("OPERATOR_TEST_PALETTE") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 11) {
                 let window = controller.window?.tabGroup?.selectedWindow ?? controller.window
                 (window?.windowController as? BaseTerminalController)?.toggleCommandPalette(nil)
             }
         }
-        // `TELLURION_TEST_TYPE=<command>`: types it (plus Enter) into the first tab after 3s.
-        if let command = TestHooks.value("TELLURION_TEST_TYPE") {
+        // `OPERATOR_TEST_TYPE=<command>`: types it (plus Enter) into the first tab after 3s.
+        if let command = TestHooks.value("OPERATOR_TEST_TYPE") {
             Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 3_000_000_000)
                 guard let model = controller.focusedSurface?.surfaceModel else { return }
@@ -78,9 +78,9 @@ enum VerticalTabsTestSupport {
                 model.sendKeyEvent(.init(key: .enter, action: .release))
             }
         }
-        // `TELLURION_TEST_REVIEW=comment,send,undo,commit`: acts on the first review item,
-        // one step every 3s starting at 24s, logging to `TELLURION_TEST_LOG`.
-        if let steps = TestHooks.value("TELLURION_TEST_REVIEW") {
+        // `OPERATOR_TEST_REVIEW=comment,send,undo,commit`: acts on the first review item,
+        // one step every 3s starting at 24s, logging to `OPERATOR_TEST_LOG`.
+        if let steps = TestHooks.value("OPERATOR_TEST_REVIEW") {
             let log: (String) -> Void = { TestHooks.note($0) }
             Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 24_000_000_000)
@@ -108,10 +108,10 @@ enum VerticalTabsTestSupport {
                 log("files now: \(inbox.items.first?.files.map(\.path) ?? [])")
             }
         }
-        // `TELLURION_TEST_OPEN=localhost,review,activity,blocks,setup,welcome,settings,shortcuts,update,localhost-session,skills`: open those after
-        // `TELLURION_TEST_OPEN_DELAY` seconds (default 10).
-        if let windows = TestHooks.value("TELLURION_TEST_OPEN") {
-            let delay = Double(TestHooks.value("TELLURION_TEST_OPEN_DELAY") ?? "") ?? 10
+        // `OPERATOR_TEST_OPEN=localhost,review,activity,blocks,setup,welcome,settings,shortcuts,update,localhost-session,skills`: open those after
+        // `OPERATOR_TEST_OPEN_DELAY` seconds (default 10).
+        if let windows = TestHooks.value("OPERATOR_TEST_OPEN") {
+            let delay = Double(TestHooks.value("OPERATOR_TEST_OPEN_DELAY") ?? "") ?? 10
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 for name in windows.split(separator: ",") {
                     switch name {
@@ -121,10 +121,10 @@ enum VerticalTabsTestSupport {
                     case "blocks": CommandBlocksPanel.shared.show(controller)
                     case "setup": SetupCheckWindow.show()
                     case "welcome": WelcomeWindow.show()
-                    case "settings": TellurionSettingsWindow.show()
+                    case "settings": OperatorSettingsWindow.show()
                     case "update": UpdateWindow.show()
-                    case "skills": SkillsWindow.show(folder: TestHooks.value("TELLURION_TEST_SKILLS_PROJECT"))
-                    case "environment": EnvironmentWindow.show(folder: TestHooks.value("TELLURION_TEST_SKILLS_PROJECT"))
+                    case "skills": SkillsWindow.show(folder: TestHooks.value("OPERATOR_TEST_SKILLS_PROJECT"))
+                    case "environment": EnvironmentWindow.show(folder: TestHooks.value("OPERATOR_TEST_SKILLS_PROJECT"))
                     case "localhost-session":
                         // A throwaway server in a temporary folder, for the sidebar's localhost cards.
                         _ = LocalhostSessions.shared.start(command: "python3 -m http.server 8791 --bind 127.0.0.1",
@@ -139,9 +139,9 @@ enum VerticalTabsTestSupport {
                 }
             }
         }
-        // `TELLURION_TEST_SETUP=1` (with `TELLURION_TEST_HOME=<scratch folder>`): after 4s,
+        // `OPERATOR_TEST_SETUP=1` (with `OPERATOR_TEST_HOME=<scratch folder>`): after 4s,
         // do what the welcome window's "Set up" does, logging the result.
-        if TestHooks.flag("TELLURION_TEST_SETUP"), TestHooks.home != nil {
+        if TestHooks.flag("OPERATOR_TEST_SETUP"), TestHooks.home != nil {
             DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                 let result: String
                 do { result = try HookInstaller.setUp(claude: true, codex: true, shell: true).joined(separator: ", ") } catch { result = "error: \(error)" }
@@ -149,9 +149,9 @@ enum VerticalTabsTestSupport {
                 SetupChecks.shared.refresh()
             }
         }
-        // `TELLURION_TEST_STOP_PORT=<port>`: after 12s, Stop whatever listens there (as the
+        // `OPERATOR_TEST_STOP_PORT=<port>`: after 12s, Stop whatever listens there (as the
         // Ports section's Stop does), logging what was listening before and after.
-        if let value = TestHooks.value("TELLURION_TEST_STOP_PORT"), let port = Int(value) {
+        if let value = TestHooks.value("OPERATOR_TEST_STOP_PORT"), let port = Int(value) {
             let log: (String) -> Void = { TestHooks.note($0) }
             DispatchQueue.main.asyncAfter(deadline: .now() + 12) {
                 let monitor = PortsMonitor.shared
@@ -165,9 +165,9 @@ enum VerticalTabsTestSupport {
                 }
             }
         }
-        // `TELLURION_TEST_DUMP_SCREEN=<seconds>`: write the focused pane's screen to
-        // `<TELLURION_TEST_LOG>.screen` then (to see exactly what an agent's idle screen looks like).
-        if let value = TestHooks.value("TELLURION_TEST_DUMP_SCREEN"), let delay = Double(value),
+        // `OPERATOR_TEST_DUMP_SCREEN=<seconds>`: write the focused pane's screen to
+        // `<OPERATOR_TEST_LOG>.screen` then (to see exactly what an agent's idle screen looks like).
+        if let value = TestHooks.value("OPERATOR_TEST_DUMP_SCREEN"), let delay = Double(value),
            let path = TestHooks.log {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 guard let surface = controller.focusedSurface else { return }
@@ -178,29 +178,29 @@ enum VerticalTabsTestSupport {
                     .write(toFile: path + ".screen", atomically: true, encoding: .utf8)
             }
         }
-        // `TELLURION_TEST_PRESENT=1`: after 8s, present the first tab's pane the way
+        // `OPERATOR_TEST_PRESENT=1`: after 8s, present the first tab's pane the way
         // Mission Control's Open does (while a later tab is selected).
-        if TestHooks.flag("TELLURION_TEST_PRESENT") {
+        if TestHooks.flag("OPERATOR_TEST_PRESENT") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
                 guard let surface = controller.surfaceTree.first else { return }
                 NotificationCenter.default.post(name: Ghostty.Notification.ghosttyPresentTerminal, object: surface)
             }
         }
-        // `TELLURION_TEST_MISSION=1`: open Mission Control after 12s.
-        if TestHooks.flag("TELLURION_TEST_MISSION") {
+        // `OPERATOR_TEST_MISSION=1`: open Mission Control after 12s.
+        if TestHooks.flag("OPERATOR_TEST_MISSION") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 12) { MissionControl.show() }
         }
-        // `TELLURION_TEST_HANDOFF=review|continue`: hand the first pane off to Claude Code after 6s.
-        if let mode = TestHooks.value("TELLURION_TEST_HANDOFF") {
+        // `OPERATOR_TEST_HANDOFF=review|continue`: hand the first pane off to Claude Code after 6s.
+        if let mode = TestHooks.value("OPERATOR_TEST_HANDOFF") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
                 guard let surface = controller.focusedSurface else { return }
                 AgentHandoff.handOff(from: surface, in: controller, to: .claude, mode: mode == "continue" ? .continue : .review)
             }
         }
-        // `TELLURION_TEST_RACE=<task>`: race one Claude and one Codex after 4s; with
-        // `TELLURION_TEST_RACE_KEEP=1`, keep claude-1's changes at 30s and clean up at 36s,
-        // logging to `TELLURION_TEST_LOG`.
-        if let task = TestHooks.value("TELLURION_TEST_RACE"), let folder = TestHooks.value("TELLURION_TEST_RACE_FOLDER") {
+        // `OPERATOR_TEST_RACE=<task>`: race one Claude and one Codex after 4s; with
+        // `OPERATOR_TEST_RACE_KEEP=1`, keep claude-1's changes at 30s and clean up at 36s,
+        // logging to `OPERATOR_TEST_LOG`.
+        if let task = TestHooks.value("OPERATOR_TEST_RACE"), let folder = TestHooks.value("OPERATOR_TEST_RACE_FOLDER") {
             let log: (String) -> Void = { TestHooks.note($0) }
             DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
                 AgentRaces.shared.start(task: task, folder: folder, counts: [.claude: 1, .codex: 1],
@@ -210,7 +210,7 @@ enum VerticalTabsTestSupport {
                     case .success(let race):
                         log("race \(race.id) " + race.contestants.map { "\($0.id)=\($0.worktree)" }.joined(separator: " "))
                         AgentRaces.show(race, from: controller)
-                        guard TestHooks.flag("TELLURION_TEST_RACE_KEEP") else { return }
+                        guard TestHooks.flag("OPERATOR_TEST_RACE_KEEP") else { return }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 26) {
                             AgentRaces.shared.keep(race.contestants[0], of: race) { error in
                                 log("keep: \(error ?? "ok")")
@@ -225,16 +225,16 @@ enum VerticalTabsTestSupport {
             }
         }
         // Report which window is the visible tab so a test can capture that one.
-        if let path = TestHooks.value("TELLURION_TEST_WINDOW_FILE") {
+        if let path = TestHooks.value("OPERATOR_TEST_WINDOW_FILE") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                 let window = controller.window?.tabGroup?.selectedWindow ?? controller.window
                 try? String(window?.windowNumber ?? 0).write(toFile: path, atomically: true, encoding: .utf8)
             }
         }
-        // `TELLURION_TEST_RESELECT=1`: switch back to the first tab after 9s and
+        // `OPERATOR_TEST_RESELECT=1`: switch back to the first tab after 9s and
         // report its window in <window file>.2.
-        if TestHooks.flag("TELLURION_TEST_RESELECT"),
-           let path = TestHooks.value("TELLURION_TEST_WINDOW_FILE") {
+        if TestHooks.flag("OPERATOR_TEST_RESELECT"),
+           let path = TestHooks.value("OPERATOR_TEST_WINDOW_FILE") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 9) {
                 VerticalTabsActions.select(controller)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -242,7 +242,7 @@ enum VerticalTabsTestSupport {
                 }
             }
         }
-        guard let value = TestHooks.value("TELLURION_TEST_TABS"),
+        guard let value = TestHooks.value("OPERATOR_TEST_TABS"),
               let count = Int(value), count > 1 else { return }
         for i in 1..<count {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6 * Double(i)) {

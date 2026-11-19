@@ -38,7 +38,7 @@ final class PhoneHTTPServer {
 
     let port: UInt16
     private var listener: NWListener?
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.phone", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.phone", qos: .userInitiated)
 
     init(port: UInt16) {
         self.port = port

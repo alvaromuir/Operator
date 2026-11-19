@@ -26,13 +26,13 @@ final class BoardDictation: ObservableObject {
         SFSpeechRecognizer.requestAuthorization { status in
             DispatchQueue.main.async {
                 guard status == .authorized else {
-                    failed("Turn on Speech Recognition for Tellurion in System Settings → Privacy & Security.")
+                    failed("Turn on Speech Recognition for Operator in System Settings → Privacy & Security.")
                     return
                 }
                 AVCaptureDevice.requestAccess(for: .audio) { granted in
                     DispatchQueue.main.async {
                         guard granted else {
-                            failed("Turn on the Microphone for Tellurion in System Settings → Privacy & Security.")
+                            failed("Turn on the Microphone for Operator in System Settings → Privacy & Security.")
                             return
                         }
                         guard self.wanted else { return }

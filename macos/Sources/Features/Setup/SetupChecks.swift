@@ -38,7 +38,7 @@ enum SetupFix: Equatable {
     case notifications
     /// Reinstall the hooks and repoint every agent at them.
     case repair
-    /// Open a tab running `tellurion doctor`, which sends a test event.
+    /// Open a tab running `operator doctor`, which sends a test event.
     case liveTest
 
     var title: String {
@@ -72,14 +72,14 @@ final class SetupChecks: ObservableObject {
     /// When a verified event from any agent last arrived (this launch). Not published:
     /// agents send many events, and every sidebar watches this object.
     private(set) var lastEventAt: Date?
-    /// When `tellurion doctor`'s test event last arrived (this launch).
+    /// When `operator doctor`'s test event last arrived (this launch).
     @Published private(set) var liveCheckAt: Date?
     /// True for a few seconds after a live test passes, for the sidebar's confirmation.
     @Published private(set) var showLivePass = false
     /// The last fix that failed, shown under the list.
     @Published var fixError: String?
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.setup", qos: .utility)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.setup", qos: .utility)
     private var pendingRefresh = false
     private var completions: [() -> Void] = []
 
@@ -102,7 +102,7 @@ final class SetupChecks: ObservableObject {
         Set((saved ?? []).compactMap(HookConfig.Agent.init(rawValue:)))
     }
 
-    /// Remembers the choice, mirrors it for `tellurion doctor`, and checks again.
+    /// Remembers the choice, mirrors it for `operator doctor`, and checks again.
     func setSkipped(_ agent: HookConfig.Agent, _ skip: Bool) {
         var set = Self.skipped
         if skip { set.insert(agent) } else { set.remove(agent) }
@@ -111,15 +111,15 @@ final class SetupChecks: ObservableObject {
         refresh()
     }
 
-    /// Mirrors the skipped agents into `~/.ghostty-extreme/features/<agent>-off`, which the
+    /// Mirrors the skipped agents into `~/.operator/features/<agent>-off`, which the
     /// doctor script reads. Called at launch and on every change.
     static func writeSkipFlags() {
-        writeSkipFlags(skipped, in: TellurionSettings.flagsFolder)
+        writeSkipFlags(skipped, in: OperatorSettings.flagsFolder)
     }
 
     static func writeSkipFlags(_ skipped: Set<HookConfig.Agent>, in folder: URL) {
         for agent in [HookConfig.Agent.claude, .codex] {
-            TellurionSettings.setFlag(agent.rawValue + "-off", on: skipped.contains(agent), in: folder)
+            OperatorSettings.setFlag(agent.rawValue + "-off", on: skipped.contains(agent), in: folder)
         }
     }
 
@@ -198,14 +198,14 @@ final class SetupChecks: ObservableObject {
         switch HookInstaller.filesState() {
         case .current:
             checks.append(.init(id: "hooks", section: .agentStatus, title: "Hooks installed", status: .ok,
-                                detail: "In ~/.ghostty-extreme, with the localhost and ghostty-extreme commands"))
+                                detail: "In ~/.operator, with the localhost and operator commands"))
         case .missing:
             checks.append(.init(id: "hooks", section: .agentStatus, title: "Hooks aren't installed", status: .problem,
-                                detail: "Agents report their status through small scripts in ~/.ghostty-extreme",
+                                detail: "Agents report their status through small scripts in ~/.operator",
                                 fix: .installHooks))
         case .outdated:
             checks.append(.init(id: "hooks", section: .agentStatus, title: "Hooks are out of date", status: .warning,
-                                detail: "Installed by a different build of Tellurion", fix: .installHooks))
+                                detail: "Installed by a different build of Operator", fix: .installHooks))
         case .unavailable:
             checks.append(.init(id: "hooks", section: .agentStatus, title: "Hooks not included in this build", status: .warning,
                                 detail: "Run ./agent-hooks/install.sh from the repository"))
@@ -228,12 +228,12 @@ final class SetupChecks: ObservableObject {
                 } else {
                     var parts: [String] = []
                     if report.isEmpty {
-                        parts.append("No Tellurion hooks in \(file) yet")
+                        parts.append("No Operator hooks in \(file) yet")
                     } else if !report.missing.isEmpty {
                         parts.append("Missing \(report.missing.joined(separator: ", "))")
                     }
                     if !report.elsewhere.isEmpty {
-                        parts.append("\(report.elsewhere.joined(separator: ", ")) run from outside ~/.ghostty-extreme, which macOS can block")
+                        parts.append("\(report.elsewhere.joined(separator: ", ")) run from outside ~/.operator, which macOS can block")
                     }
                     if agent == .codex { parts.append("Codex asks you to approve new hooks once") }
                     // Only its folder, no command: it may well not be used here, so say so.
@@ -257,7 +257,7 @@ final class SetupChecks: ObservableObject {
                                     status: .ok, detail: "Reports \(agent.reports) · \(file)"))
             } else {
                 checks.append(.init(id: "more-" + agent.rawValue, section: .agentStatus, title: "\(agent.title) can show live status",
-                                    status: .info, detail: "Adds Tellurion's hooks to \(file). It reports \(agent.reports).",
+                                    status: .info, detail: "Adds Operator's hooks to \(file). It reports \(agent.reports).",
                                     fix: .connectMore(agent)))
             }
         }
@@ -503,7 +503,7 @@ final class SetupChecks: ObservableObject {
                 }
             case .liveTest:
                 if HookInstaller.filesState() != .current { try HookInstaller.installFiles() }
-                Self.openTab(running: "~/.ghostty-extreme/bin/tellurion doctor")
+                Self.openTab(running: "~/.operator/bin/operator doctor")
             }
         } catch {
             fixError = error.localizedDescription
@@ -527,7 +527,7 @@ final class SetupChecks: ObservableObject {
                     center.getNotificationSettings { after in
                         DispatchQueue.main.async {
                             if !granted || after.authorizationStatus != .authorized {
-                                // System Settings lists apps by their name on disk ("Tellurion").
+                                // System Settings lists apps by their name on disk ("Operator").
                                 let name = FileManager.default.displayName(atPath: Bundle.main.bundlePath)
                                     .replacingOccurrences(of: ".app", with: "")
                                 self.fixError = "Notifications aren't on yet. In System Settings → Notifications, choose "

@@ -115,12 +115,12 @@ fi
 """
 
 
-class TellurionVeniceTests(unittest.TestCase):
+class OperatorVeniceTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.home = Path(temporary.name)
-        self.root = self.home / ".ghostty-extreme"
+        self.root = self.home / ".operator"
         self.root.mkdir()
         self.bin = self.home / "path"
         self.bin.mkdir()
@@ -142,7 +142,7 @@ class TellurionVeniceTests(unittest.TestCase):
     def run_cli(self, *args, **env):
         environment = {"HOME": str(self.home), "PATH": f"{self.bin}:/usr/bin:/bin:/opt/homebrew/bin", "TELLURION_TEST_HOME": str(self.home),
                        "FAKE_LOG": str(self.log), "FAKE_BUNDLED": str(self.home / "bundled.json"), **env}
-        return subprocess.run([str(HERE / "tellurion"), "venice", "codex", *args], env=environment, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=30)
+        return subprocess.run([str(HERE / "operator"), "venice", "codex", *args], env=environment, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=30)
 
     def argv(self):
         return Path(str(self.log) + ".argv").read_text().splitlines()
@@ -199,9 +199,9 @@ class TellurionVeniceTests(unittest.TestCase):
     def test_secret_files_are_out_of_reach_by_default(self):
         self.run_cli(TELLURION_VENICE_MODEL="chosen-model")
         argv = self.argv()
-        self.assertIn('default_permissions="tellurion-venice"', argv)
-        self.assertIn('permissions.tellurion-venice.extends=":workspace"', argv)
-        table = next(a for a in argv if a.startswith("permissions.tellurion-venice.filesystem="))
+        self.assertIn('default_permissions="operator-venice"', argv)
+        self.assertIn('permissions.operator-venice.extends=":workspace"', argv)
+        table = next(a for a in argv if a.startswith("permissions.operator-venice.filesystem="))
         for path in (".ssh", ".codex/auth.json", "**/.env", "**/*.pem"):
             self.assertIn(f'"{self.home}/{path}"="deny"', table)
         self.assertIn(f'"{self.root}/venice-proxy.json"="deny"', table)
@@ -213,21 +213,21 @@ class TellurionVeniceTests(unittest.TestCase):
             result = self.run_cli(*flag, "exec", "hi", TELLURION_VENICE_MODEL="chosen-model")
             self.assertEqual(result.returncode, 0, result.stderr)
             argv = self.argv()
-            self.assertIn('default_permissions="tellurion-venice"', argv, flag)
-            self.assertIn('permissions.tellurion-venice.extends=":workspace"', argv, flag)
+            self.assertIn('default_permissions="operator-venice"', argv, flag)
+            self.assertIn('permissions.operator-venice.extends=":workspace"', argv, flag)
             self.assertFalse({"--sandbox", "-s", "--sandbox=workspace-write", "-sworkspace-write"} & set(argv), flag)
             self.assertEqual(argv[-2:], ["exec", "hi"])
 
     def test_read_only_stays_read_only(self):
         self.run_cli("exec", "--sandbox", "read-only", "hi", TELLURION_VENICE_MODEL="chosen-model")
         argv = self.argv()
-        self.assertIn('permissions.tellurion-venice.extends=":read-only"', argv)
+        self.assertIn('permissions.operator-venice.extends=":read-only"', argv)
         self.assertEqual(argv[-2:], ["exec", "hi"])
 
     def test_what_would_remove_the_protection_is_refused(self):
         for flags in (["--sandbox", "danger-full-access"], ["-s", "danger-full-access"], ["--sandbox=danger-full-access"],
                       ["--dangerously-bypass-approvals-and-sandbox"], ["--yolo"], ["-c", 'default_permissions=":workspace"'],
-                      ["-c", 'permissions.tellurion-venice.extends=":danger-full-access"'], ["--config=default_permissions=x"], ["--sandbox", "nonsense"]):
+                      ["-c", 'permissions.operator-venice.extends=":danger-full-access"'], ["--config=default_permissions=x"], ["--sandbox", "nonsense"]):
             Path(str(self.log) + ".argv").unlink(missing_ok=True)
             result = self.run_cli(*flags, TELLURION_VENICE_MODEL="chosen-model")
             self.assertNotEqual(result.returncode, 0, flags)
@@ -259,19 +259,19 @@ class TellurionVeniceTests(unittest.TestCase):
         self.run_cli(TELLURION_VENICE_MODEL="chosen-model")
         joined = "\n".join(self.argv())
         self.assertNotIn('default_permissions', joined)
-        self.assertNotIn('tellurion-venice', joined)
+        self.assertNotIn('operator-venice', joined)
         self.assertIn('features.memories=false', joined, "each switch is its own")
 
     def test_web_search_is_off_by_default(self):
         self.run_cli(TELLURION_VENICE_MODEL="chosen-model")
-        self.assertNotIn("tellurion_search", "\n".join(self.argv()))
+        self.assertNotIn("operator_search", "\n".join(self.argv()))
 
     def test_web_search_can_be_turned_on(self):
         (self.root / "venice").mkdir(exist_ok=True)
         (self.root / "venice" / "use-web-search").touch()
         self.run_cli(TELLURION_VENICE_MODEL="chosen-model")
         argv = self.argv()
-        setting = next(a for a in argv if a.startswith("mcp_servers.tellurion_search="))
+        setting = next(a for a in argv if a.startswith("mcp_servers.operator_search="))
         self.assertIn('venice-search.py', setting)
         self.assertIn(f'"--folder","{self.root}/venice"', setting)
 
@@ -283,7 +283,7 @@ class TellurionVeniceTests(unittest.TestCase):
             (fake / name).chmod(0o755)
         environment = {"HOME": str(self.home), "PATH": f"{fake}:/usr/bin:/bin", "TELLURION_TEST_HOME": str(self.home),
                        "FAKE_DOCKER_LOG": str(self.log) + ".docker", **self.search_env}
-        return subprocess.run([str(HERE / "tellurion"), "venice", "search", *args], env=environment, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=30)
+        return subprocess.run([str(HERE / "operator"), "venice", "search", *args], env=environment, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=30)
 
     search_env = {}
 
@@ -308,7 +308,7 @@ class TellurionVeniceTests(unittest.TestCase):
         self.search_env = {"FAKE_EXISTS": "1"}
         self.search_cli("setup")
         self.assertEqual(path.read_text(), "mine")
-        self.assertIn("start tellurion-searxng", Path(str(self.log) + ".docker").read_text())
+        self.assertIn("start operator-searxng", Path(str(self.log) + ".docker").read_text())
 
     def test_search_use_needs_a_web_address(self):
         self.assertEqual(self.search_cli("use", "https://search.example").returncode, 0)
@@ -320,7 +320,7 @@ class TellurionVeniceTests(unittest.TestCase):
         self.assertIn("isn't set up", self.search_cli("stop").stdout)
         self.search_env = {"FAKE_EXISTS": "1"}
         self.assertIn("stopped and removed", self.search_cli("stop").stdout)
-        self.assertIn("rm -f tellurion-searxng", Path(str(self.log) + ".docker").read_text())
+        self.assertIn("rm -f operator-searxng", Path(str(self.log) + ".docker").read_text())
 
     def test_search_status_says_what_is_on(self):
         self.assertIn("Web search: off", self.search_cli("status").stdout)
@@ -397,25 +397,25 @@ class ZshWrapperTests(unittest.TestCase):
         fake.chmod(0o755)
 
     def install_cli(self):
-        bin_folder = self.home / ".ghostty-extreme/bin"
+        bin_folder = self.home / ".operator/bin"
         bin_folder.mkdir(parents=True)
-        cli = bin_folder / "tellurion"
-        cli.write_text(f'#!/bin/bash\nprintf "tellurion %s\\n" "$*" >> "{self.log}"\n')
+        cli = bin_folder / "operator"
+        cli.write_text(f'#!/bin/bash\nprintf "operator %s\\n" "$*" >> "{self.log}"\n')
         cli.chmod(0o755)
 
     def zsh(self, script, **env):
         environment = {"HOME": str(self.home), "PATH": f"{self.path}:/usr/bin:/bin", "TELLURION_TEST_HOME": str(self.home),
                        "GHOSTTY_EXTREME_AGENT_EVENTS": "1", "GHOSTTY_EXTREME_EVENT_TOKEN": "t", **env}
-        return subprocess.run(["/bin/zsh", "-f", "-c", f'source "{HERE}/ghostty-extreme.zsh"; {script}'], env=environment,
+        return subprocess.run(["/bin/zsh", "-f", "-c", f'source "{HERE}/operator.zsh"; {script}'], env=environment,
                               capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=20)
 
     def logged(self):
         return self.log.read_text() if self.log.exists() else ""
 
-    def test_a_pane_on_venice_goes_through_tellurion(self):
+    def test_a_pane_on_venice_goes_through_operator(self):
         self.install_cli()
         self.assertEqual(self.zsh("codex resume abc", TELLURION_CODEX_BACKEND="venice").returncode, 0)
-        self.assertEqual(self.logged(), "tellurion venice codex resume abc\n")
+        self.assertEqual(self.logged(), "operator venice codex resume abc\n")
 
     def test_any_other_pane_runs_plain_codex(self):
         self.install_cli()
@@ -429,10 +429,10 @@ class ZshWrapperTests(unittest.TestCase):
         self.assertIn("Check Setup", result.stderr)
         self.assertEqual(self.logged(), "")
 
-    def test_the_sidebar_sees_codex_when_started_through_tellurion(self):
-        marked = self.zsh("""_gc_agent_preexec "" "" "'/some where/tellurion' venice codex resume x"; print -r -- agent=$_gc_running_agent""")
+    def test_the_sidebar_sees_codex_when_started_through_operator(self):
+        marked = self.zsh("""_gc_agent_preexec "" "" "'/some where/operator' venice codex resume x"; print -r -- agent=$_gc_running_agent""")
         self.assertIn("agent=codex", marked.stdout)
-        for line in ("tellurion doctor", "tellurion venice", "tellurion local m"):
+        for line in ("operator doctor", "operator venice", "operator local m"):
             other = self.zsh(f"""_gc_agent_preexec "" "" "{line}"; print -r -- agent=$_gc_running_agent""")
             self.assertIn("agent=\n", other.stdout, line)
         plain = self.zsh("""_gc_agent_preexec "" "" "FOO=1 codex"; print -r -- agent=$_gc_running_agent""")
@@ -462,7 +462,7 @@ class VeniceChatTests(unittest.TestCase):
 
     def test_the_token_is_read_from_the_proxys_file(self):
         with tempfile.TemporaryDirectory() as folder:
-            root = Path(folder) / ".ghostty-extreme"
+            root = Path(folder) / ".operator"
             root.mkdir()
             (root / "venice-proxy.json").write_text('{"port":4242,"token":"tok"}')
             with unittest.mock.patch.dict(os.environ, {"TELLURION_TEST_HOME": folder}):

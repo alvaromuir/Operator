@@ -1,5 +1,5 @@
-// Tellurion: live status for Amp in the sidebar. Installed by Tellurion as
-// ~/.config/amp/plugins/tellurion.ts; does nothing outside Tellurion.
+// Operator: live status for Amp in the sidebar. Installed by Operator as
+// ~/.config/amp/plugins/operator.ts; does nothing outside Operator.
 //
 // Amp has no command hooks, so this plugin listens to its events and writes the same
 // OSC 777 notification the other agents' hooks send to the terminal. It only observes:
@@ -20,7 +20,7 @@ function sendRaw(body) {
     if (!path) continue
     try {
       const fd = openSync(path, "a")
-      writeSync(fd, `\x1b]777;notify;ghostty-extreme://agent;${JSON.stringify(body)}\x07`)
+      writeSync(fd, `\x1b]777;notify;operator://agent;${JSON.stringify(body)}\x07`)
       closeSync(fd)
       return
     } catch {}
@@ -28,8 +28,8 @@ function sendRaw(body) {
 }
 
 // The code editor's live feed: Claude Code's transcript format, which the editor reads,
-// under ~/.ghostty-extreme/feeds/ (see agent-event.py).
-const FEED = join(homedir(), ".ghostty-extreme", "feeds", `amp-${process.pid}.jsonl`)
+// under ~/.operator/feeds/ (see agent-event.py).
+const FEED = join(homedir(), ".operator", "feeds", `amp-${process.pid}.jsonl`)
 let fed = false
 
 function record(entry) {
@@ -86,7 +86,7 @@ function send(event: string, detail: unknown) {
     if (!path) continue
     try {
       const fd = openSync(path, "a")
-      writeSync(fd, `\x1b]777;notify;ghostty-extreme://agent;${body}\x07`)
+      writeSync(fd, `\x1b]777;notify;operator://agent;${body}\x07`)
       closeSync(fd)
       return
     } catch {}

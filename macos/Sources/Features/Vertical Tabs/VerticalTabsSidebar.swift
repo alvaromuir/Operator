@@ -16,7 +16,7 @@ struct VerticalTabsLayout<Content: View>: View {
     @ObservedObject private var visualFix = VisualFixPanel.shared
     /// Pauses the chrome's animations while this window (tab) isn't on screen.
     @StateObject private var motion = WindowMotion()
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
     @ObservedObject private var design = DesignStore.shared
     @AppStorage(EditorPanel.widthKey) private var editorWidth: Double = EditorPanel.defaultWidth
     @AppStorage(VisualFixPanel.widthKey) private var visualFixWidth: Double = VisualFixPanel.defaultWidth
@@ -52,7 +52,7 @@ struct VerticalTabsLayout<Content: View>: View {
             layout(maxEditorWidth: limits.editor, maxVisualFixWidth: limits.visualFix)
         }
         // "Status only" in Settings stops the decorative motion everywhere.
-        .environment(\.tellurionMotion, motion.active && settings.motion == .full)
+        .environment(\.operatorMotion, motion.active && settings.motion == .full)
         .onAppear { motion.attach(controller.window) }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in motion.attach(controller.window) }
     }
@@ -90,7 +90,7 @@ struct VerticalTabsLayout<Content: View>: View {
         .onChange(of: visible) { _ in overlay.dismissAll() }
         .onAppear {
             VerticalTabsMenu.shared.installIfNeeded()
-            TellurionLaunch.start()
+            OperatorLaunch.start()
             ReviewInbox.start()
             TurnCheckpoints.start()
             VerticalTabsTestSupport.openTestTabsIfRequested(from: controller)
@@ -104,7 +104,7 @@ struct VerticalTabsLayout<Content: View>: View {
             if visible && ghostty.readiness == .ready {
                 // The handle is on the side facing the terminal.
                 let left = layout.isLeftOfTerminal(.tabs)
-                let handle = ColumnResizeHandle(color: Tellurion.line, width: $width,
+                let handle = ColumnResizeHandle(color: Operator.line, width: $width,
                                                 range: VerticalTabs.widthRange, onTrailingEdge: left)
                 if !left { handle }
                 // Anything that still can't fit is cut on the side facing the terminal, so the
@@ -180,7 +180,7 @@ struct VerticalTabsSidebar: View {
     @ObservedObject private var collapse = VerticalTabsCollapse.shared
     @ObservedObject private var localhost = LocalhostSessions.shared
     @ObservedObject private var projects = VerticalTabsProjects.shared
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
 
     var body: some View {
         let palette = VerticalTabsPalette(config: config)
@@ -194,7 +194,7 @@ struct VerticalTabsSidebar: View {
 
         VStack(spacing: 0) {
             header
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             if let updates = (NSApp.delegate as? AppDelegate)?.updateViewModel {
                 UpdateCard(model: updates)
             }
@@ -203,9 +203,9 @@ struct VerticalTabsSidebar: View {
                 // Not lazy: a lazy stack estimates the height of rows scrolled out of view, so
                 // when agent rows change height it loses the scroll position and jumps.
                 VStack(alignment: .leading, spacing: 6) {
-                    TellurionSectionLabel("Sessions") {
+                    OperatorSectionLabel("Sessions") {
                         Text("\(model.tabs.count - localhostTabs.count)")
-                            .font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                            .font(Operator.font(10)).foregroundColor(Operator.dim)
                     }
                     .padding(.horizontal, 12)
                     .padding(.top, 10)
@@ -251,7 +251,7 @@ struct VerticalTabsSidebar: View {
 
             // Localhost sessions stay in view, whatever else is open.
             if !localhostTabs.isEmpty {
-                Rectangle().fill(Tellurion.line).frame(height: 1)
+                Rectangle().fill(Operator.line).frame(height: 1)
                 LocalhostSidebarSection(entries: localhostTabs, owner: owner)
             }
 
@@ -265,12 +265,12 @@ struct VerticalTabsSidebar: View {
 
             // Bottom left: live usage of the user's AI subscriptions.
             if settings.isOn(.usage) {
-                Rectangle().fill(Tellurion.line).frame(height: 1)
+                Rectangle().fill(Operator.line).frame(height: 1)
                 UsagePanel(palette: palette)
             }
         }
         .background(sidebarBackground)
-        .onAppear { Tellurion.registerFonts() }
+        .onAppear { Operator.registerFonts() }
     }
 
     /// What the list's layout depends on: which groups exist and how many tabs each holds.
@@ -328,7 +328,7 @@ struct VerticalTabsSidebar: View {
     private var sidebarBackground: some View {
         ZStack {
             config.backgroundColor.opacity(config.backgroundOpacity)
-            Color.black.opacity(Tellurion.chrome.isLight ? 0.05 : 0.28)
+            Color.black.opacity(Operator.chrome.isLight ? 0.05 : 0.28)
         }
     }
 
@@ -338,17 +338,17 @@ struct VerticalTabsSidebar: View {
             HStack(spacing: 9) {
                 LivingSigil(size: 30)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("TELLURION")
-                        .font(Tellurion.font(11.5))
+                    Text("OPERATOR")
+                        .font(Operator.font(11.5))
                         .kerning(3.6)
-                        .foregroundColor(Tellurion.gold)
+                        .foregroundColor(Operator.gold)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
-                        .tellurionGlint()
+                        .operatorGlint()
                     Text("Α Ι · ΣΥΣΤΗΜΑ")
-                        .font(Tellurion.font(9))
+                        .font(Operator.font(9))
                         .kerning(2.4)
-                        .foregroundColor(Tellurion.dim)
+                        .foregroundColor(Operator.dim)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                 }
@@ -379,10 +379,10 @@ struct VerticalTabsSidebar: View {
             if overflow.rawValue < Overflow.least.rawValue, settings.isOn(.localhost) { LocalhostHeaderButton() }
             if overflow.rawValue < Overflow.least.rawValue, settings.isOn(.review) { ReviewHeaderButton() }
             if overflow == .none, settings.isOn(.activity) {
-                TellurionIconButton(icon: .chart, help: "Agent activity and usage graphs (⌃⌘A)", action: ActivityDashboard.toggle)
+                OperatorIconButton(icon: .chart, help: "Agent activity and usage graphs (⌃⌘A)", action: ActivityDashboard.toggle)
             }
             if overflow.rawValue < Overflow.most.rawValue, settings.isOn(.skills) {
-                TellurionIconButton(icon: .skills, help: "Skills: what your agents have installed, updates, and what's trending (⌃⌘U)") {
+                OperatorIconButton(icon: .skills, help: "Skills: what your agents have installed, updates, and what's trending (⌃⌘U)") {
                     SkillsWindow.show(folder: owner.focusedSurface?.pwd)
                 }
             }
@@ -398,9 +398,9 @@ private struct ChipIcon: View {
     @State private var hovering = false
 
     var body: some View {
-        PixelIconView(icon: icon, color: hovering ? Tellurion.gold : Tellurion.muted, pixel: 1.1)
+        PixelIconView(icon: icon, color: hovering ? Operator.gold : Operator.muted, pixel: 1.1)
             .frame(width: 24, height: 20)
-            .background(RoundedRectangle(cornerRadius: 5, style: .continuous).fill(hovering ? Tellurion.raised : .clear))
+            .background(RoundedRectangle(cornerRadius: 5, style: .continuous).fill(hovering ? Operator.raised : .clear))
             .contentShape(Rectangle())
             .onHover { hovering = $0 }
     }
@@ -429,7 +429,7 @@ struct EditorHeaderButton: View {
 
     var body: some View {
         let open = panel.isVisible(owner)
-        TellurionIconButton(icon: open ? .close : .code,
+        OperatorIconButton(icon: open ? .close : .code,
                           help: open ? "Close the code editor (⌃⌘E)" : "Open the code editor: watch the agent live (⌃⌘E)",
                           active: open) {
             panel.toggle(from: owner)
@@ -441,7 +441,7 @@ struct EditorHeaderButton: View {
 /// Opens Mission Control (⌃⌘M); a dot shows when an agent is waiting.
 struct MissionControlButton: View {
     var body: some View {
-        TellurionIconButton(icon: .grid, help: "Mission Control (⌃⌘M)", action: MissionControl.toggle)
+        OperatorIconButton(icon: .grid, help: "Mission Control (⌃⌘M)", action: MissionControl.toggle)
     }
 }
 
@@ -471,16 +471,16 @@ struct VerticalTabAvatar: View {
                 }
             }
                 .frame(width: size, height: size)
-                .background(Tellurion.ink.opacity(0.6))
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous)).overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(Tellurion.line, lineWidth: 1))
+                .background(Operator.ink.opacity(0.6))
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous)).overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(Operator.line, lineWidth: 1))
             switch badge {
             case .none:
                 EmptyView()
             case .working:
-                PixelSpinner(color: Tellurion.core, pixel: size >= 22 ? 3 : 2.5)
+                PixelSpinner(color: Operator.core, pixel: size >= 22 ? 3 : 2.5)
                     .padding(2)
-                    .background(Tellurion.ink)
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous)).overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(Tellurion.core.opacity(0.4), lineWidth: 1))
+                    .background(Operator.ink)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous)).overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(Operator.core.opacity(0.4), lineWidth: 1))
                     .offset(x: 6, y: 6)
             default:
                 // Waiting on you blinks fast; finished or failed stays lit.
@@ -488,7 +488,7 @@ struct VerticalTabAvatar: View {
                 PixelDot(color: badge.color(palette), blinking: urgent, size: size >= 22 ? 7 : 5,
                          interval: urgent ? 0.3 : 0.5)
                     .padding(2)
-                    .background(Tellurion.ink)
+                    .background(Operator.ink)
                     .offset(x: 3, y: 3)
             }
         }
@@ -508,14 +508,14 @@ private struct VerticalTabKindLabel: View {
                 // Shortened in the middle when long (a local model's "publisher/model:tag"),
                 // so the row never grows wider than the sidebar.
                 Text(agent.name)
-                    .foregroundColor(agent.kind == .claude && agent.localModel == nil ? Tellurion.claude : Tellurion.text.opacity(0.8))
+                    .foregroundColor(agent.kind == .claude && agent.localModel == nil ? Operator.claude : Operator.text.opacity(0.8))
                     .lineLimit(1)
                     .truncationMode(.middle)
                 if agent.activity != .ready {
                     Text("·").fixedSize()
                     Text(agent.activity.label)
                         .foregroundColor(agent.activity.badge == .none
-                            ? Tellurion.muted : agent.activity.badge.color(palette))
+                            ? Operator.muted : agent.activity.badge.color(palette))
                         .fixedSize()
                 }
                 if let detail = agent.detail {
@@ -529,8 +529,8 @@ private struct VerticalTabKindLabel: View {
                 Text("Terminal")
             }
         }
-        .font(Tellurion.font(10.5))
-        .foregroundColor(Tellurion.muted)
+        .font(Operator.font(10.5))
+        .foregroundColor(Operator.muted)
         .lineLimit(1)
     }
 }
@@ -574,7 +574,7 @@ private struct VerticalTabGroup: View {
                 .padding(.bottom, 6)
             }
         }
-        .tellurionPanel(active: isSelected, fill: isSelected ? Tellurion.panel : Color.clear)
+        .operatorPanel(active: isSelected, fill: isSelected ? Operator.panel : Color.clear)
         .overlay(alignment: .leading) { colorCard }
         .padding(.leading, inProject ? 0 : 8)
         .padding(.trailing, 8)
@@ -590,35 +590,35 @@ private struct VerticalTabGroup: View {
     private var header: some View {
         HStack(spacing: 6) {
             if pins.isPinned(controller) {
-                PixelIconView(icon: .pin, color: Tellurion.bronze, pixel: 1)
+                PixelIconView(icon: .pin, color: Operator.bronze, pixel: 1)
             }
             Text(displayTitle)
-                .font(Tellurion.font(12, weight: .semibold))
-                .foregroundColor(isSelected ? Tellurion.gold : Tellurion.text.opacity(0.75))
+                .font(Operator.font(12, weight: .semibold))
+                .foregroundColor(isSelected ? Operator.gold : Operator.text.opacity(0.75))
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .help(snapshot.title)
             if snapshot.hasUnseen {
-                PixelDot(color: Tellurion.live, blinking: true, size: 6)
+                PixelDot(color: Operator.live, blinking: true, size: 6)
                     .help("Agent finished while you were away")
             }
             Spacer(minLength: 4)
             if snapshot.panes.count > 1 {
                 Text("\(snapshot.panes.count) panes")
-                    .font(Tellurion.font(10))
-                    .foregroundColor(Tellurion.dim)
+                    .font(Operator.font(10))
+                    .foregroundColor(Operator.dim)
                     .fixedSize()
             }
             if index <= 9 {
                 Text("⌘\(index)")
-                    .font(Tellurion.font(10, weight: .semibold))
-                    .foregroundColor(Tellurion.dim)
+                    .font(Operator.font(10, weight: .semibold))
+                    .foregroundColor(Operator.dim)
                     .padding(.horizontal, 5).padding(.vertical, 1)
-                    .background(Capsule().fill(Tellurion.raised))
+                    .background(Capsule().fill(Operator.raised))
                     .fixedSize()
             }
             Button(action: onToggleCollapse) {
-                PixelIconView(icon: collapsed ? .chevronRight : .chevronDown, color: Tellurion.muted, pixel: 1.25)
+                PixelIconView(icon: collapsed ? .chevronRight : .chevronDown, color: Operator.muted, pixel: 1.25)
                     .frame(width: 14, height: 14)
                     .contentShape(Rectangle())
             }
@@ -714,7 +714,7 @@ private struct VerticalTabPaneRow: View {
 
     @ObservedObject private var git = VerticalTabsGit.shared
     @ObservedObject private var pulls = GitHubPulls.shared
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
     @State private var trackedPwd: String?
     @State private var hovering = false
     @State private var frame: CGRect = .zero
@@ -730,22 +730,22 @@ private struct VerticalTabPaneRow: View {
         .padding(.vertical, condensed ? 5 : 8)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(isSelected ? Tellurion.raised : (hovering ? Tellurion.raised.opacity(0.6) : Color.clear)))
+                .fill(isSelected ? Operator.raised : (hovering ? Operator.raised.opacity(0.6) : Color.clear)))
         .overlay(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .strokeBorder(isSelected ? Tellurion.gold.opacity(0.35) : Color.clear, lineWidth: 1))
+                .strokeBorder(isSelected ? Operator.gold.opacity(0.35) : Color.clear, lineWidth: 1))
         .overlay(alignment: .leading) {
             if isSelected {
-                Capsule().fill(Tellurion.gold).frame(width: 3).padding(.vertical, 8).offset(x: -1)
-                    .shadow(color: Tellurion.gold.opacity(0.6), radius: 3)
+                Capsule().fill(Operator.gold).frame(width: 3).padding(.vertical, 8).offset(x: -1)
+                    .shadow(color: Operator.gold.opacity(0.6), radius: 3)
             }
         }
         .overlay(alignment: .bottom) {
             if pane.badge == .working {
-                PixelActivityBar(color: Tellurion.core).padding(.horizontal, 10).padding(.bottom, 2)
+                PixelActivityBar(color: Operator.core).padding(.horizontal, 10).padding(.bottom, 2)
             } else if pane.badge == .permission || pane.badge == .input {
-                Capsule().fill(Tellurion.warn).frame(height: 2).padding(.horizontal, 10).padding(.bottom, 2)
-                    .shadow(color: Tellurion.warn.opacity(0.6), radius: 3)
+                Capsule().fill(Operator.warn).frame(height: 2).padding(.horizontal, 10).padding(.bottom, 2)
+                    .shadow(color: Operator.warn.opacity(0.6), radius: 3)
             }
         }
         .animation(.easeOut(duration: 0.15), value: hovering)
@@ -769,7 +769,7 @@ private struct VerticalTabPaneRow: View {
             }
         }
         .onTapGesture(perform: focus)
-#if TELLURION_TEST_HOOKS
+#if OPERATOR_TEST_HOOKS
         .onReceive(NotificationCenter.default.publisher(for: VerticalTabsTestSupport.showOverlay)) { _ in
             guard isSelected else { return }
             if VerticalTabsTestSupport.overlayMode == "git", let pwd = pane.pwd, let root = git.root(for: pwd) {
@@ -825,8 +825,8 @@ private struct VerticalTabPaneRow: View {
             }
         }
         .padding(2)
-        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Tellurion.ink))
-        .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Tellurion.lineStrong, lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Operator.ink))
+        .overlay(RoundedRectangle(cornerRadius: 7, style: .continuous).strokeBorder(Operator.lineStrong, lineWidth: 1))
         .shadow(color: .black.opacity(0.4), radius: 4, y: 2)
         .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .topTrailing)))
     }
@@ -893,13 +893,13 @@ private struct VerticalTabPaneRow: View {
             if let action = agent.lastAction, !action.isEmpty {
                 Text("·")
                 Text(action)
-                    .font(Tellurion.mono(10))
+                    .font(Operator.mono(10))
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
         }
-        .font(Tellurion.font(10))
-        .foregroundColor(Tellurion.dim)
+        .font(Operator.font(10))
+        .foregroundColor(Operator.dim)
         .lineLimit(1)
     }
 
@@ -942,15 +942,15 @@ private struct VerticalTabPaneRow: View {
                 }
             }
         }
-        .font(Tellurion.font(11.5))
-        .foregroundColor(Tellurion.text)
+        .font(Operator.font(11.5))
+        .foregroundColor(Operator.text)
     }
 
     private func branchLabel(_ info: VerticalTabsGitInfo) -> some View {
         HStack(spacing: 5) {
-            PixelIconView(icon: .branch, color: Tellurion.bronze, pixel: 1)
+            PixelIconView(icon: .branch, color: Operator.bronze, pixel: 1)
             Text(info.branch)
-                .foregroundColor(Tellurion.bronze)
+                .foregroundColor(Operator.bronze)
                 .lineLimit(1)
                 .truncationMode(.tail)
         }
@@ -972,14 +972,14 @@ private struct VerticalTabPaneRow: View {
     private var primaryLine: some View {
         if let agent = pane.agent {
             Text(Self.doing(agent, title: pane.title))
-                .font(Tellurion.font(11))
-                .foregroundColor(Tellurion.muted)
+                .font(Operator.font(11))
+                .foregroundColor(Operator.muted)
                 .lineLimit(1)
                 .truncationMode(.tail)
         } else {
             Text(pane.title.isEmpty ? "Terminal" : pane.title)
-                .font(Tellurion.font(11))
-                .foregroundColor(Tellurion.muted)
+                .font(Operator.font(11))
+                .foregroundColor(Operator.muted)
                 .lineLimit(1)
                 .truncationMode(.tail)
         }
@@ -989,14 +989,14 @@ private struct VerticalTabPaneRow: View {
     private var diffChip: some View {
         if let gitInfo, gitInfo.added > 0 || gitInfo.removed > 0 {
             HStack(spacing: 3) {
-                if gitInfo.added > 0 { Text("+\(gitInfo.added)").foregroundColor(Tellurion.live) }
-                if gitInfo.removed > 0 { Text("-\(gitInfo.removed)").foregroundColor(Tellurion.danger) }
+                if gitInfo.added > 0 { Text("+\(gitInfo.added)").foregroundColor(Operator.live) }
+                if gitInfo.removed > 0 { Text("-\(gitInfo.removed)").foregroundColor(Operator.danger) }
             }
-            .font(Tellurion.mono(10.5))
+            .font(Operator.mono(10.5))
             .padding(.horizontal, 6)
             .padding(.vertical, 1.5)
-            .background(Capsule().fill(Tellurion.ink))
-            .overlay(Capsule().strokeBorder(Tellurion.line, lineWidth: 1))
+            .background(Capsule().fill(Operator.ink))
+            .overlay(Capsule().strokeBorder(Operator.line, lineWidth: 1))
             .fixedSize()
         }
     }

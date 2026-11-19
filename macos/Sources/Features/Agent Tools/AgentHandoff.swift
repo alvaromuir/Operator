@@ -89,7 +89,7 @@ enum AgentHandoff {
     /// running agent of the other kind needs them. A new one gets them when its session
     /// starts (shared memory, through the hooks) and one of the same kind has its own.
     static func needsMemory(from surface: Ghostty.SurfaceView, to destination: Destination) -> Bool {
-        guard TellurionSettings.isOn(.sharedMemory), case .existing(let target) = destination,
+        guard OperatorSettings.isOn(.sharedMemory), case .existing(let target) = destination,
               let source = VerticalTabsAgents.shared.info(for: surface)?.kind,
               let receiver = VerticalTabsAgents.shared.info(for: target)?.kind else { return false }
         return source != receiver
@@ -202,12 +202,12 @@ private struct HandoffView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                TellurionWindowTitle(icon: .branch, title: "Hand Off",
+                OperatorWindowTitle(icon: .branch, title: "Hand Off",
                                    subtitle: "Pass this pane's work to another agent, with the context it needs")
                 Spacer()
             }
             .padding(.horizontal, 16).padding(.top, 30).padding(.bottom, 12)
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     section("What to do") {
@@ -233,7 +233,7 @@ private struct HandoffView: View {
                             }
                             if existing != nil {
                                 Text("It's sent when that agent finishes its turn and its input box is empty.")
-                                    .font(Tellurion.font(10.5)).foregroundColor(Tellurion.dim)
+                                    .font(Operator.font(10.5)).foregroundColor(Operator.dim)
                             }
                         }
                     }
@@ -246,8 +246,8 @@ private struct HandoffView: View {
                                     gather()
                                 })) {
                                     VStack(alignment: .leading, spacing: 1) {
-                                        Text(part.title).font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text)
-                                        Text(part.detail).font(Tellurion.font(10.5)).foregroundColor(Tellurion.muted)
+                                        Text(part.title).font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text)
+                                        Text(part.detail).font(Operator.font(10.5)).foregroundColor(Operator.muted)
                                     }
                                 }
                                 .toggleStyle(.checkbox)
@@ -256,30 +256,30 @@ private struct HandoffView: View {
                     }
                     section(edited ? "Message (edited)" : "Message") {
                         TextEditor(text: Binding(get: { text }, set: { text = $0; edited = true }))
-                            .font(Tellurion.mono(11))
+                            .font(Operator.mono(11))
                             .frame(minHeight: 220)
                             .scrollContentBackground(.hidden)
                             .padding(6)
-                            .tellurionPanel(fill: Tellurion.raised)
+                            .operatorPanel(fill: Operator.raised)
                             .overlay { if loading { ProgressView().controlSize(.small) } }
                         Text("\(text.count) characters" + (edited ? " · your edits are kept until you change what's included" : ""))
-                            .font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                            .font(Operator.font(10)).foregroundColor(Operator.dim)
                     }
                 }
                 .padding(16)
             }
-            Rectangle().fill(Tellurion.line).frame(height: 1)
+            Rectangle().fill(Operator.line).frame(height: 1)
             HStack {
                 Spacer()
                 Button("Cancel") { AgentToolWindows.close(id: "handoff") }
                 Button(existing == nil ? "Hand off to \(target.displayName)" : "Send when ready") { handOff() }
-                    .buttonStyle(TellurionButtonStyle(prominent: true))
+                    .buttonStyle(OperatorButtonStyle(prominent: true))
                     .disabled(text.isEmpty || surface == nil || loading)
                     .keyboardShortcut(.defaultAction)
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
         }
-        .tellurionWindow()
+        .operatorWindow()
         .onAppear(perform: gather)
         .onChange(of: existing) { _ in chooseMemory() }
     }
@@ -326,7 +326,7 @@ private struct HandoffView: View {
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            TellurionSectionLabel(title)
+            OperatorSectionLabel(title)
             content()
         }
     }
@@ -334,13 +334,13 @@ private struct HandoffView: View {
     private func choice(_ title: String, _ detail: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(Tellurion.font(12, weight: .semibold)).foregroundColor(selected ? Tellurion.gold : Tellurion.text)
-                Text(detail).font(Tellurion.font(10.5)).foregroundColor(Tellurion.muted)
+                Text(title).font(Operator.font(12, weight: .semibold)).foregroundColor(selected ? Operator.gold : Operator.text)
+                Text(detail).font(Operator.font(10.5)).foregroundColor(Operator.muted)
                     .fixedSize(horizontal: false, vertical: true).multilineTextAlignment(.leading)
             }
             .frame(maxWidth: .infinity, minHeight: 54, alignment: .topLeading)
             .padding(10)
-            .tellurionPanel(active: selected)
+            .operatorPanel(active: selected)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -351,8 +351,8 @@ private struct HandoffView: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: selected ? "largecircle.fill.circle" : "circle")
-                    .foregroundColor(selected ? Tellurion.gold : Tellurion.dim)
-                Text(title).font(Tellurion.font(12)).foregroundColor(Tellurion.text)
+                    .foregroundColor(selected ? Operator.gold : Operator.dim)
+                Text(title).font(Operator.font(12)).foregroundColor(Operator.text)
                 Spacer(minLength: 0)
             }
             .contentShape(Rectangle())

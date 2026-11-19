@@ -93,7 +93,7 @@ enum DockerSessions {
     private static func installSupportFiles() -> String? {
         let fm = FileManager.default
         guard let support = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-        let dir = support.appendingPathComponent("GhosttyEXTREME/docker", isDirectory: true)
+        let dir = support.appendingPathComponent("Operator/docker", isDirectory: true)
         do {
             try fm.createDirectory(at: dir, withIntermediateDirectories: true)
             let script = dir.appendingPathComponent("sandbox.sh")
@@ -107,10 +107,10 @@ enum DockerSessions {
     }
 
     /// Image for the sandboxed agents. Bump the tag when this changes so it's rebuilt.
-    private static let agentImage = "ghostty-extreme/agent:1"
+    private static let agentImage = "operator/agent:1"
 
     private static let agentDockerfile = """
-    # Tellurion: image for sandboxed Claude Code and Codex sessions.
+    # Operator: image for sandboxed Claude Code and Codex sessions.
     FROM node:22-bookworm
     RUN apt-get update \\
      && apt-get install -y --no-install-recommends git ripgrep python3 python3-pip less curl ca-certificates \\
@@ -125,7 +125,7 @@ enum DockerSessions {
 
     private static let launcherScript = """
     #!/bin/bash
-    # Tellurion: starts an isolated Docker session.
+    # Operator: starts an isolated Docker session.
     # Usage: sandbox.sh <ubuntu|python|node|claude|codex> <folder to share | - | -home>
     # Always ends in a normal shell on the Mac, so errors stay readable.
     kind="$1"
@@ -143,7 +143,7 @@ enum DockerSessions {
         colima start || back_to_mac
         # Remember that this session started it, so it's stopped again afterwards.
         started_colima=1
-        mkdir -p "$HOME/.ghostty-extreme" && date +%s > "$HOME/.ghostty-extreme/colima-started"
+        mkdir -p "$HOME/.operator" && date +%s > "$HOME/.operator/colima-started"
       else
         echo "Docker isn't running. Start Docker Desktop, OrbStack or Colima, then try again."
         back_to_mac
@@ -164,7 +164,7 @@ enum DockerSessions {
         fi
         # Logins live in Docker volumes, so you sign in once and your Mac's
         # credentials are never shared with the container.
-        args+=(-v ghostty-extreme-claude:/home/node/.claude -v ghostty-extreme-codex:/home/node/.codex)
+        args+=(-v operator-claude:/home/node/.claude -v operator-codex:/home/node/.codex)
         cmd=("$kind") ;;
       *) echo "Unknown session type: $kind"; back_to_mac ;;
     esac
@@ -187,11 +187,11 @@ enum DockerSessions {
 
     printf '\\033[1;36m▣ Isolated %s session\\033[0m  %s\\n  Type exit to leave; the container is deleted.\\n\\n' "$kind" "$shared"
     docker run "${args[@]}" "$image" "${cmd[@]}"
-    # The VM uses gigabytes of memory: if a Tellurion session started it and no
+    # The VM uses gigabytes of memory: if a Operator session started it and no
     # containers are left running, stop it.
-    if [ -f "$HOME/.ghostty-extreme/colima-started" ] && [ -z "$(docker ps -q 2>/dev/null)" ]; then
+    if [ -f "$HOME/.operator/colima-started" ] && [ -z "$(docker ps -q 2>/dev/null)" ]; then
       echo "Stopping Docker (Colima); nothing else is using it…"
-      colima stop >/dev/null 2>&1 && rm -f "$HOME/.ghostty-extreme/colima-started"
+      colima stop >/dev/null 2>&1 && rm -f "$HOME/.operator/colima-started"
     fi
     back_to_mac
     """

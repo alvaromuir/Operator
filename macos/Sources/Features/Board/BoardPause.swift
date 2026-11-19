@@ -11,7 +11,7 @@ import Foundation
 enum BoardPause {
     static let surfaceKey = "GHOSTTY_EXTREME_SURFACE"
     /// In order, so a quick pause and resume can't swap.
-    static let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.board-pause", qos: .userInitiated)
+    static let queue = DispatchQueue(label: "com.alvaromuir.operator.board-pause", qos: .userInitiated)
 
     /// Stops (or continues) the processes of these terminals. Call off the main thread.
     static func set(_ paused: Bool, surfaces: Set<UUID>) {

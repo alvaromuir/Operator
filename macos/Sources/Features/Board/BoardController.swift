@@ -88,7 +88,7 @@ final class BoardController: BaseTerminalController {
     static let tileSize = CGSize(width: 720, height: 440)
     static let gap: CGFloat = 28
 
-    static let boardsDidChange = Notification.Name("com.steventsvik.ghostty-extreme.boardsDidChange")
+    static let boardsDidChange = Notification.Name("com.alvaromuir.operator.boardsDidChange")
 
     /// The boards that are open, in front or out of sight. A closed board's window can still be
     /// around (it isn't released on close), so it's left out by its flag.
@@ -309,8 +309,8 @@ final class BoardController: BaseTerminalController {
         window.tabbingMode = .disallowed
         window.collectionBehavior.insert(.fullScreenPrimary)
         window.minSize = NSSize(width: 640, height: 420)
-        window.appearance = NSAppearance(named: Tellurion.chrome.isLight ? .aqua : .darkAqua)
-        window.backgroundColor = Tellurion.chrome.ink.nsColor
+        window.appearance = NSAppearance(named: Operator.chrome.isLight ? .aqua : .darkAqua)
+        window.backgroundColor = Operator.chrome.ink.nsColor
         window.setFrame(frame, display: false)
         window.delegate = self
         self.window = window

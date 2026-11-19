@@ -35,7 +35,7 @@ final class AgentChangeWatcher {
     /// Called on the main queue.
     var onChange: ((Change) -> Void)?
 
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.agent-changes", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.agent-changes", qos: .userInitiated)
     private var stream: FSEventStreamRef?
     private(set) var root: String?
     private var repoRoot: String?

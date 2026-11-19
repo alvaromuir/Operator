@@ -16,7 +16,7 @@ struct PhoneDevice: Codable, Identifiable, Equatable {
 }
 
 /// Paired phones and the one-time code that pairs a new one. Saved (tokens hashed) in
-/// ~/Library/Application Support/Tellurion/phone-devices.json, readable only by the user.
+/// ~/Library/Application Support/Operator/phone-devices.json, readable only by the user.
 final class PhoneDevices: ObservableObject {
     static let shared = PhoneDevices()
 
@@ -31,7 +31,7 @@ final class PhoneDevices: ObservableObject {
     private static var file: URL {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         // Dev-mode test copies keep their own list.
-        return support.appendingPathComponent(PhoneServer.devMode ? "GhosttyEXTREME/phone-devices-dev.json" : "GhosttyEXTREME/phone-devices.json")
+        return support.appendingPathComponent(PhoneServer.devMode ? "Operator/phone-devices-dev.json" : "Operator/phone-devices.json")
     }
 
     private init() {

@@ -50,7 +50,7 @@ struct VerticalTabAgentInfo: Equatable {
     var lastAction: String?
     /// Codex's exact session identity; prevents cross-talk between same-folder panes.
     var codexSessionID: String?
-    /// The model, for Tellurion's local chat ("qwen3:4b").
+    /// The model, for Operator's local chat ("qwen3:4b").
     var localModel: String?
     /// The agent is on Venice, and the model it was started with ("" if given on its command line).
     var veniceModel: String?
@@ -71,17 +71,17 @@ struct VerticalTabAgentInfo: Equatable {
 
 /// Receives agent status events and remembers the latest state per pane.
 ///
-/// Events arrive as OSC 777 notifications titled `ghostty-extreme://agent` with a small
+/// Events arrive as OSC 777 notifications titled `operator://agent` with a small
 /// JSON body, emitted by the agents' hooks (see `agent-hooks/` in the repo root). The
 /// core forwards these without rate limiting; we consume them here so they never
 /// become desktop notifications.
 final class VerticalTabsAgents {
     static let shared = VerticalTabsAgents()
 
-    static let titlePrefix = "ghostty-extreme://"
+    static let titlePrefix = "operator://"
     /// Posted (object: the surface) whenever a pane's agent state changes.
-    static let didChange = Notification.Name("com.steventsvik.ghostty-extreme.agentDidChange")
-    static let agentTitle = "ghostty-extreme://agent"
+    static let didChange = Notification.Name("com.alvaromuir.operator.agentDidChange")
+    static let agentTitle = "operator://agent"
 
     private final class Box {
         var info: VerticalTabAgentInfo
@@ -149,7 +149,7 @@ final class VerticalTabsAgents {
             // Unknown or malformed custom event: swallow it rather than show raw JSON.
             return true
         }
-        // `tellurion doctor`'s test event: proves the hooks reach the app, changes nothing.
+        // `operator doctor`'s test event: proves the hooks reach the app, changes nothing.
         if event.event == "check" {
             SetupChecks.shared.liveCheckArrived()
             return true
@@ -261,7 +261,7 @@ final class VerticalTabsAgents {
             codexSessionID: kind == .codex ? event.session ?? existing?.codexSessionID : nil)
 
         var labeled = info
-        // Tellurion's local chat names its model.
+        // Operator's local chat names its model.
         labeled.localModel = event.agent == "local" ? event.session ?? existing?.localModel : nil
         if let box = states.object(forKey: surface) {
             box.info = labeled

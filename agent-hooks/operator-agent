@@ -1,0 +1,679 @@
+#!/bin/bash
+# Operator from the command line.
+#
+#   operator doctor          check the agent status setup and send a live test event
+#   operator phone [status]  can your phone reach this Mac? (Tailscale), in one line
+#   operator phone setup     walk through the Tailscale steps, asking before each one
+#   operator local <model>   chat with a model on this Mac (Ollama, LM Studio, llama.cpp,
+#                             MLX or Apple's own), where nothing leaves it; with
+#                             --provider venice, on your Venice account
+#   operator local codex …   Codex, with its usual setup, on a model on this Mac
+#                             (-m <model>; --provider ollama|lmstudio, Ollama by default)
+#   operator venice codex …  Codex, with its usual setup, on your Venice account
+#   operator venice search … SearXNG, the fallback for its web search: status, setup, use, stop
+#
+# Installed to ~/.operator/bin/ by the app (Setup Check, or the welcome window).
+# Paste `operator doctor` output into GitHub issues: it contains no personal data
+# beyond your home folder's name, which it replaces with ~.
+
+
+hooks="$HOME/.operator/agent-hooks"
+legacy="$HOME/.ghostty-custom/agent-hooks"
+problems=0
+warnings=0
+
+if [ -t 1 ]; then
+  green=$'\e[32m'; red=$'\e[31m'; yellow=$'\e[33m'; dim=$'\e[2m'; bold=$'\e[1m'; reset=$'\e[0m'
+else
+  green=""; red=""; yellow=""; dim=""; bold=""; reset=""
+fi
+
+ok() { printf '  %s✓%s %s\n' "$green" "$reset" "$1"; }
+bad() { printf '  %s✗%s %s\n' "$red" "$reset" "$1"; problems=$((problems + 1)); }
+warn() { printf '  %s!%s %s\n' "$yellow" "$reset" "$1"; warnings=$((warnings + 1)); }
+note() { printf '    %s%s%s\n' "$dim" "$1" "$reset"; }
+section() { printf '\n%s%s%s\n' "$bold" "$1" "$reset"; }
+tidy() { sed "s|$HOME|~|g"; }
+
+# Which of our hook entries an agent's config is missing or runs from elsewhere.
+# Usage: check_agent <name> <config file> <agent> <event>...
+check_agent() {
+  local name=$1 file=$2 agent=$3; shift 3
+  local display; display=$(tidy <<<"$file")
+  if [ ! -f "$file" ]; then
+    bad "$name: $display doesn't exist, so it has no Operator hooks"
+    note "Fix: Operator > Check Setup… > Connect $name"
+    return
+  fi
+  if ! jq empty "$file" 2>/dev/null; then
+    bad "$name: $display isn't valid JSON"
+    return
+  fi
+  local missing=() elsewhere=() event command
+  for event in "$@"; do
+    command=$(jq -r --arg suffix "agent-hook.sh $agent $event" \
+      '[.hooks // {} | .[] | .[]? | .hooks[]? | .command? // empty | select(endswith($suffix))] | first // empty' "$file")
+    if [ -z "$command" ]; then
+      missing+=("$event")
+    else
+      command=${command/#\~/$HOME}
+      case "$command" in
+        "$hooks/agent-hook.sh "*|"$legacy/agent-hook.sh "*) ;;
+        *) elsewhere+=("$event") ;;
+      esac
+    fi
+  done
+  if [ ${#missing[@]} -eq 0 ] && [ ${#elsewhere[@]} -eq 0 ]; then
+    ok "$name: all $# hooks connected"
+  else
+    [ ${#missing[@]} -gt 0 ] && bad "$name: missing hooks for ${missing[*]}"
+    [ ${#elsewhere[@]} -gt 0 ] && bad "$name: hooks for ${elsewhere[*]} run from outside ~/.operator (macOS can block those)"
+    note "Fix: Operator > Check Setup… > Connect $name"
+    [ "$agent" = codex ] && note "Codex asks you to approve new hooks once, the next time it starts"
+  fi
+}
+
+doctor() {
+  printf '%sOperator doctor%s\n' "$bold" "$reset"
+
+  section "Terminal"
+  inside=0
+  if [ "${GHOSTTY_EXTREME_AGENT_EVENTS:-}" = "1" ] && [ -n "${GHOSTTY_EXTREME_EVENT_TOKEN:-}" ]; then
+    ok "Running inside Operator"
+    inside=1
+  else
+    warn "Not running inside Operator: agent status only works in its own terminals"
+  fi
+  case "${SHELL:-}" in
+    */zsh) ok "Shell: zsh" ;;
+    *) warn "Shell: ${SHELL:-unknown}. Agent logos appear when an agent starts only with zsh; status still works" ;;
+  esac
+  if [ -f "$HOME/.zshrc" ] && grep -qE 'ghostty-(extreme|custom)\.zsh' "$HOME/.zshrc"; then
+    ok "~/.zshrc loads the agent detection"
+  else
+    warn "~/.zshrc doesn't load the agent detection"
+    note "Fix: Operator > Check Setup… > Add to ~/.zshrc"
+  fi
+
+  section "Tools"
+  if command -v jq >/dev/null 2>&1; then
+    ok "jq $(jq --version 2>/dev/null | sed 's/^jq-//')"
+  else
+    bad "jq isn't installed; the hooks need it to report anything"
+    note "Fix: brew install jq"
+  fi
+  local tool
+  for tool in claude codex git python3 gh docker; do
+    if command -v "$tool" >/dev/null 2>&1; then
+      ok "$tool: $(command -v "$tool" | tidy)"
+    else
+      printf '  %s-%s %s isn'"'"'t installed\n' "$dim" "$reset" "$tool"
+    fi
+  done
+
+  section "Hooks"
+  if [ -x "$hooks/agent-hook.sh" ]; then
+    ok "Installed in ~/.operator/agent-hooks"
+  else
+    bad "Not installed in ~/.operator/agent-hooks"
+    note "Fix: Operator > Check Setup… > Install hooks"
+  fi
+  if [ -x "$HOME/.operator/bin/localhost" ]; then
+    ok "localhost command installed"
+  else
+    warn "localhost command isn't installed: dev servers agents start won't get their own tab"
+  fi
+  if [ -e "$HOME/.operator/features/localhost-off" ]; then
+    note "Localhost sessions are turned off in Settings"
+  fi
+  if command -v jq >/dev/null 2>&1; then
+    # An agent marked "I don't use it" in Operator's Setup Check is left out.
+    if [ -e "$HOME/.operator/features/claude-off" ]; then
+      note "Claude Code is skipped: marked as not used in Operator > Check Setup…"
+    elif command -v claude >/dev/null 2>&1 || [ -d "$HOME/.claude" ]; then
+      check_agent "Claude Code" "$HOME/.claude/settings.json" claude \
+        session_start prompt_submit tool_complete permission_request notification stop stop_failure session_end pre_tool_use
+    fi
+    if [ -e "$HOME/.operator/features/codex-off" ]; then
+      note "Codex is skipped: marked as not used in Operator > Check Setup…"
+    elif command -v codex >/dev/null 2>&1 || [ -d "$HOME/.codex" ]; then
+      check_agent "Codex" "$HOME/.codex/hooks.json" codex \
+        session_start prompt_submit pre_tool_use permission_request tool_complete stop session_end subagent_start subagent_stop interrupt
+    fi
+  fi
+
+  # Claude Code records failed hooks in its transcripts.
+  if [ -d "$HOME/.claude/projects" ]; then
+    local errors latest
+    # The records themselves, not messages that mention them.
+    errors=$(find "$HOME/.claude/projects" -name '*.jsonl' -mtime -1 -print0 2>/dev/null \
+      | xargs -0 grep -h 'hook_non_blocking_error' 2>/dev/null \
+      | jq -c 'select(.attachment.type? == "hook_non_blocking_error"
+                      and ((.attachment.command // "") | contains("agent-hook.sh")))' 2>/dev/null || true)
+    if [ -n "$errors" ]; then
+      latest=$(tail -n 1 <<<"$errors" | jq -r '.attachment.stderr // empty' 2>/dev/null | head -c 200 | tidy)
+      warn "Claude Code reported $(wc -l <<<"$errors" | tr -d ' ') hook error(s) in the last day"
+      [ -n "$latest" ] && note "Latest: $latest"
+    else
+      ok "No hook errors from Claude Code in the last day"
+    fi
+  fi
+
+  section "Live test"
+  if [ "$inside" = 1 ] && [ -x "$hooks/agent-hook.sh" ] && command -v jq >/dev/null 2>&1; then
+    # The same path a real Claude Code event takes: run the hook, then write what it
+    # returns to this terminal, the way Claude Code does.
+    local sequence
+    sequence=$(printf '{}' | "$hooks/agent-hook.sh" claude check 2>/dev/null | jq -r '.terminalSequence // empty' 2>/dev/null)
+    if [ -z "$sequence" ]; then
+      bad "The hook ran but produced no event"
+    elif { printf '%s' "$sequence" > /dev/tty; } 2>/dev/null; then
+      ok "Sent a test event. Operator confirms it in the sidebar when it arrives"
+    else
+      bad "Couldn't write to this terminal (no /dev/tty)"
+    fi
+  else
+    note "Skipped (needs Operator, jq and the installed hooks)"
+  fi
+
+  printf '\n'
+  if [ "$problems" -eq 0 ] && [ "$warnings" -eq 0 ]; then
+    printf '%sEverything looks right.%s\n' "$green" "$reset"
+  else
+    printf '%d problem(s), %d warning(s).\n' "$problems" "$warnings"
+  fi
+  [ "$problems" -eq 0 ]
+}
+
+# --- Phone (Tailscale) -------------------------------------------------------------
+# Never turns on `tailscale funnel`: the phone reaches this Mac only inside your tailnet.
+
+# Tailscale.app's own binary acts as the CLI only with this set (as its `tailscale` link does).
+export TAILSCALE_BE_CLI=1
+
+ts_bin() {
+  command -v tailscale 2>/dev/null && return
+  local app=/Applications/Tailscale.app/Contents/MacOS/Tailscale
+  [ -x "$app" ] && echo "$app"
+}
+
+# Prints one of: not-installed app-off stopped needs-login starting https-off no-phone ready,
+# then (for ready/no-phone) this Mac's name and the online phone's name.
+phone_state() {
+  local ts json state
+  command -v jq >/dev/null || { echo "no-jq"; return; }
+  ts=$(ts_bin) || { echo "not-installed"; return; }
+  [ -n "$ts" ] || { echo "not-installed"; return; }
+  json=$("$ts" status --json 2>/dev/null) && [ -n "$json" ] && jq empty <<<"$json" 2>/dev/null \
+    || { echo "app-off"; return; }
+  state=$(jq -r .BackendState <<<"$json")
+  case "$state" in
+    Running) ;;
+    Stopped) echo "stopped"; return ;;
+    NeedsLogin|NeedsMachineAuth) echo "needs-login"; return ;;
+    *) echo "starting"; return ;;
+  esac
+  local mac https magic phones online
+  mac=$(jq -r '.Self.DNSName // "" | rtrimstr(".")' <<<"$json")
+  magic=$(jq -r '.CurrentTailnet.MagicDNSEnabled // false' <<<"$json")
+  https=$(jq -r '(.CertDomains // []) | length' <<<"$json")
+  phones=$(jq -r '[.Peer // {} | .[] | select(.OS == "iOS" or .OS == "android")] | length' <<<"$json")
+  online=$(jq -r '[.Peer // {} | .[] | select((.OS == "iOS" or .OS == "android") and .Online)
+    | (if (.HostName // "") == "" or .HostName == "localhost" then (.DNSName | split(".")[0]) else .HostName end)] | first // ""' <<<"$json")
+  if [ "$magic" != true ] || [ "$https" = 0 ]; then echo "https-off $mac"; return; fi
+  [ "$phones" = 0 ] && { echo "no-phone $mac"; return; }
+  echo "ready $mac $online"
+}
+
+phone_status() {
+  local state mac online
+  read -r state mac online <<<"$(phone_state)"
+  case "$state" in
+    no-jq) printf '%s!%s Phone · needs jq to read Tailscale'"'"'s status   %sbrew install jq%s\n' "$yellow" "$reset" "$dim" "$reset" ;;
+    not-installed) printf '%s○%s Phone · Tailscale not installed   %soperator phone setup%s\n' "$dim" "$reset" "$dim" "$reset" ;;
+    app-off|stopped) printf '%s○%s Phone · Tailscale off   %soperator phone setup%s\n' "$dim" "$reset" "$dim" "$reset" ;;
+    needs-login) printf '%s●%s Phone · sign in to Tailscale   %soperator phone setup%s\n' "$yellow" "$reset" "$dim" "$reset" ;;
+    starting) printf '%s●%s Phone · Tailscale connecting…\n' "$yellow" "$reset" ;;
+    https-off) printf '%s●%s Phone · turn on HTTPS for your tailnet   %soperator phone setup%s\n' "$yellow" "$reset" "$dim" "$reset" ;;
+    no-phone) printf '%s●%s Phone · add your phone to your tailnet (%s)\n' "$yellow" "$reset" "$mac" ;;
+    ready)
+      if [ -n "$online" ]; then
+        printf '%s●%s Phone · ready · %s online · %s\n' "$green" "$reset" "$online" "$mac"
+      else
+        printf '%s●%s Phone · ready · phone offline · %s\n' "$green" "$reset" "$mac"
+      fi ;;
+  esac
+}
+
+# Enter means yes; no terminal or end of input means no.
+ask() {
+  local reply
+  printf '%s [Y/n] ' "$1"
+  { read -r reply </dev/tty; } 2>/dev/null || { echo; return 1; }
+  [[ -z "$reply" || "$reply" =~ ^[Yy] ]]
+}
+
+phone_setup() {
+  command -v jq >/dev/null || { echo "operator: jq is required (brew install jq)" >&2; return 1; }
+  local state mac online ts
+  local steps=0
+  while [ $steps -lt 8 ]; do
+    steps=$((steps + 1))
+    read -r state mac online <<<"$(phone_state)"
+    ts=$(ts_bin)
+    case "$state" in
+      not-installed)
+        if command -v brew >/dev/null && ask "Tailscale isn't installed. Install it with Homebrew (brew install --cask tailscale)?"; then
+          brew install --cask tailscale && open -a Tailscale && sleep 4 || return 1
+        else
+          echo "Get it from https://tailscale.com/download, then run this again."; return 1
+        fi ;;
+      app-off)
+        ask "Tailscale isn't running. Open it?" || return 1
+        open -a Tailscale; sleep 4 ;;
+      stopped|needs-login)
+        ask "Turn Tailscale on (tailscale up)? Signing in opens in your browser." || return 1
+        "$ts" up || return 1 ;;
+      starting) sleep 2 ;;
+      https-off)
+        echo "Turn on MagicDNS and HTTPS Certificates on Tailscale's DNS page:"
+        echo "  https://login.tailscale.com/admin/dns"
+        ask "Open it now?" && open "https://login.tailscale.com/admin/dns"
+        printf 'Waiting for HTTPS to be on (Ctrl-C to stop)'
+        while [ "$(phone_state | cut -d' ' -f1)" = https-off ]; do printf '.'; sleep 3; done
+        echo ;;
+      no-phone)
+        echo "Install Tailscale on your phone and sign in with the same account: https://tailscale.com/download"
+        printf 'Waiting for your phone to join (Ctrl-C to stop)'
+        while [ "$(phone_state | cut -d' ' -f1)" = no-phone ]; do printf '.'; sleep 3; done
+        echo ;;
+      ready) phone_status; return 0 ;;
+    esac
+  done
+  phone_status
+}
+
+# A chat with a model: on this Mac, where nothing leaves it, or on Venice. `local codex` is Codex
+# on a model on this Mac.
+local_model() {
+  case "${1:-}" in
+    codex) shift; local_codex "$@" ;;
+    "")
+      printf 'Usage: operator local [--provider ollama|lmstudio|openai|apple|venice] [--base URL] <model>\n       operator local codex [-m <model>] [--provider ollama|lmstudio] [codex options]\n' >&2
+      return 2 ;;
+  esac
+  exec python3 "$hooks/local-chat.py" "$@"
+}
+
+venice_stop() {
+  printf '%s\n' "$1" >&2
+  exit 1
+}
+
+# Codex on a Venice account. Everything of Codex's own stays: its folder, config, hooks, AGENTS.md,
+# skills, MCP servers and sessions. Only where its model requests go changes, through command-line
+# settings for this run; its config file isn't touched. It talks to the proxy inside Operator
+# with a token, set for this one command, so it never has the account's key.
+venice_toml() {
+  local text=${1//\\/\\\\}
+  printf '%s' "${text//\"/\\\"}"
+}
+
+# The fallback for web search: a SearXNG of the user's own, by default in Docker on this Mac only.
+VENICE_SEARXNG_IMAGE=docker.io/searxng/searxng:2026.11.2-cccbc9e15
+VENICE_SEARXNG_NAME=operator-searxng
+VENICE_SEARXNG_URL=http://127.0.0.1:8899
+
+venice_search_address() {
+  local folder="$1" address=""
+  [ -r "$folder/searxng-url" ] && address=$(cat "$folder/searxng-url")
+  printf '%s' "${address:-$VENICE_SEARXNG_URL}"
+}
+
+venice_search_setup() {
+  local folder="$1" settings="$1/searxng" tries=0
+  type -P docker >/dev/null || venice_stop "SearXNG runs in Docker here, and Docker isn't installed. To use a SearXNG you already have: operator venice search use <address>"
+  docker info >/dev/null 2>&1 || venice_stop "Docker isn't running. Start it, then try again."
+  mkdir -p "$settings" || venice_stop "Couldn't create $settings"
+  if [ ! -f "$settings/settings.yml" ]; then
+    # The secret only signs this SearXNG's own cookies.
+    printf 'use_default_settings: true\nserver:\n  secret_key: "%s"\n  limiter: false\n  image_proxy: false\nsearch:\n  formats:\n    - html\n    - json\n' \
+      "$(openssl rand -hex 32)" > "$settings/settings.yml" || venice_stop "Couldn't write its settings"
+  fi
+  if docker inspect "$VENICE_SEARXNG_NAME" >/dev/null 2>&1; then
+    docker start "$VENICE_SEARXNG_NAME" >/dev/null || venice_stop "Couldn't start SearXNG"
+  else
+    # On 127.0.0.1 alone, so nothing else on the network can use it.
+    docker run -d --name "$VENICE_SEARXNG_NAME" --restart unless-stopped -p "127.0.0.1:8899:8080" \
+      -v "$settings:/etc/searxng" "$VENICE_SEARXNG_IMAGE" >/dev/null || venice_stop "Couldn't start SearXNG"
+  fi
+  rm -f "$folder/searxng-url"
+  while [ "$tries" -lt 60 ]; do
+    if curl -fsS -m 3 -o /dev/null "$VENICE_SEARXNG_URL/healthz" 2>/dev/null; then
+      printf 'SearXNG is running at %s, for this Mac only. Web search falls back to it when Exa is limited.\n' "$VENICE_SEARXNG_URL"
+      return 0
+    fi
+    tries=$((tries + 1))
+    sleep 1
+  done
+  venice_stop "SearXNG started but isn't answering. See: docker logs $VENICE_SEARXNG_NAME"
+}
+
+venice_search() {
+  local folder="${TELLURION_TEST_HOME:-$HOME}/.operator/venice" address
+  case "${1:-status}" in
+    setup) venice_search_setup "$folder" ;;
+    use)
+      case "${2:-}" in
+        http://*|https://*) mkdir -p "$folder" && printf '%s\n' "$2" > "$folder/searxng-url" && printf 'Web search falls back to %s.\n' "$2" ;;
+        *) venice_stop "Usage: operator venice search use <http or https address of a SearXNG with JSON turned on>" ;;
+      esac
+      ;;
+    stop)
+      if type -P docker >/dev/null && docker inspect "$VENICE_SEARXNG_NAME" >/dev/null 2>&1; then
+        docker rm -f "$VENICE_SEARXNG_NAME" >/dev/null || venice_stop "Couldn't remove SearXNG"
+        printf 'SearXNG is stopped and removed.\n'
+      else
+        printf "SearXNG isn't set up here.\n"
+      fi
+      ;;
+    status)
+      address=$(venice_search_address "$folder")
+      if [ -e "$folder/use-web-search" ]; then printf 'Web search: on\n'; else printf 'Web search: off (Tools → Local models)\n'; fi
+      if curl -fsS -m 10 -o /dev/null "$address/search?q=test&format=json" 2>/dev/null; then
+        printf 'SearXNG: answering at %s\n' "$address"
+      else
+        printf "SearXNG: not answering at %s (set it up with: operator venice search setup)\n" "$address"
+      fi
+      ;;
+    *) printf 'Usage: operator venice search [status|setup|use <address>|stop]\n' >&2; exit 2 ;;
+  esac
+}
+
+# Codex's table of paths a Venice session can't read: logins, keys and history in the home folder, and
+# secret files in any project, under the home folder or the one it's working in.
+venice_denied_reads() {
+  local root="$1" home item table="" names="" name
+  home=${HOME//\\/\\\\}; home=${home//\"/\\\"}
+  root=${root//\\/\\\\}; root=${root//\"/\\\"}
+  for item in .ssh .aws .azure .gnupg .kube .netrc .npmrc .pypirc .git-credentials .docker/config.json \
+    .config/gcloud .config/gh .config/op .password-store .codex/auth.json .claude/.credentials.json \
+    .zsh_history .bash_history Library/Keychains Library/Cookies Library/Mail Library/Messages Library/Safari \
+    "Library/Application Support/Google/Chrome" "Library/Application Support/Firefox"; do
+    table+="\"$home/$item\"=\"deny\","
+  done
+  table+="\"$root/venice-proxy.json\"=\"deny\",\"$root/accounts\"=\"deny\","
+  for name in .env .env.local '.env.*.local' .env.development .env.production .env.staging .env.test \
+    '*.pem' '*.key' '*.p12' '*.pfx' id_rsa id_ed25519 id_ecdsa credentials.json; do
+    table+="\"$home/**/$name\"=\"deny\","
+    names+="\"**/$name\"=\"deny\","
+  done
+  printf '{%s":workspace_roots"={%s},glob_scan_max_depth=8}' "$table" "${names%,}"
+}
+
+venice_codex() {
+  local root="${TELLURION_TEST_HOME:-$HOME}/.operator"
+  local info="$root/venice-proxy.json" folder="$root/venice" here port token codex model="" chosen=0 argument
+  [ -r "$info" ] || venice_stop "Operator isn't connected to Venice. Connect your account in Tools → Local models."
+  # What the proxy wrote, and nothing else: a number, and letters and dashes.
+  port=$(sed -n 's/.*"port":\([0-9]\{1,5\}\).*/\1/p' "$info")
+  token=$(sed -n 's/.*"token":"\([A-Za-z0-9-]\{1,200\}\)".*/\1/p' "$info")
+  [ -n "$port" ] && [ -n "$token" ] || venice_stop "Operator's connection to Venice can't be read. Reconnect in Tools → Local models."
+  (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null || venice_stop "Operator isn't running, so Codex can't reach Venice. Open Operator, then try again."
+  codex=$(type -P codex) || venice_stop "Codex isn't installed, or isn't on your PATH."
+
+  for argument in "$@"; do
+    case "$argument" in
+      --) break ;;
+      -m|--model|-m?*|--model=*) chosen=1 ;;
+    esac
+  done
+
+  here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+  local script="$root/agent-hooks/venice-catalog.py"
+  [ -f "$script" ] || script="$here/venice-catalog.py"
+  local settings=()
+  if TELLURION_VENICE_TOKEN="$token" python3 "$script" --port "$port" --codex "$codex" --out "$folder" && [ -f "$folder/codex-catalog.json" ]; then
+    settings+=(-c "model_catalog_json=\"$folder/codex-catalog.json\"")
+  else
+    printf 'Codex will start without its details for Venice models, so it edits files with shell commands instead of apply_patch.\n' >&2
+  fi
+
+  if [ "$chosen" = 0 ]; then
+    model=${TELLURION_VENICE_MODEL:-}
+    [ -n "$model" ] || model=$(cat "$folder/default-model" 2>/dev/null)
+    [ -n "$model" ] || venice_stop "No Venice model chosen. Use operator venice codex -m <model>, or pick one in Tools → Local models."
+    case "$model" in
+      -*|*[!A-Za-z0-9_.:-]*) venice_stop "That Venice model name can't be right: $model" ;;
+    esac
+    settings+=(-m "$model")
+  fi
+
+  # Tells the sidebar which backend this pane is on, signed like every agent event.
+  if [ "${GHOSTTY_EXTREME_AGENT_EVENTS:-}" = 1 ] && [ "$chosen" = 0 ]; then
+    { printf '\033]777;notify;operator://agent;{"agent":"codex","event":"backend","detail":"venice:%s","t":"%s"}\a' \
+      "$model" "${GHOSTTY_EXTREME_EVENT_TOKEN:-}" > /dev/tty; } 2>/dev/null
+  elif [ "${GHOSTTY_EXTREME_AGENT_EVENTS:-}" = 1 ]; then
+    { printf '\033]777;notify;operator://agent;{"agent":"codex","event":"backend","detail":"venice:","t":"%s"}\a' \
+      "${GHOSTTY_EXTREME_EVENT_TOKEN:-}" > /dev/tty; } 2>/dev/null
+  fi
+
+  # Local panes stay attached to their own terminal, as the zsh wrapper does for plain Codex.
+  if [ -t 1 ] && [ -t 0 ]; then
+    GHOSTTY_EXTREME_CODEX_TTY="${GHOSTTY_EXTREME_CODEX_TTY:-$(tty)}"
+    export GHOSTTY_EXTREME_CODEX_TTY
+    settings=(--no-daemon "${settings[@]}")
+  fi
+
+  # Off unless switched on in Tools → Local models. A Venice session is never written to Codex's
+  # memory either way, or its contents could reach OpenAI from a later subscription session.
+  # Computer use comes from plugins, whose servers only a whole definition can replace.
+  local options=(-c 'memories.generate_memories=false')
+  [ -e "$folder/use-codex-memory" ] || options+=(-c 'features.memories=false')
+  if [ ! -e "$folder/allow-computer-use" ]; then
+    local off='{command="/usr/bin/false",enabled=false}'
+    options+=(-c 'features.computer_use=false' -c "mcp_servers.cua_repl=$off" -c "mcp_servers.computer-use=$off" -c "mcp_servers.node_repl=$off")
+  fi
+
+  # What it reads goes to Venice, so secret files stay out of its reach unless that's switched on.
+  # The sandbox enforces this for commands and edits; MCP servers and hooks run outside it, which is
+  # why the proxy also takes known key formats out of what it sends.
+  # Commands have no network and Codex's own search runs on OpenAI's servers, so a session can only
+  # search through an MCP server, which runs outside the sandbox: this one tries Exa, then SearXNG.
+  if [ -e "$folder/use-web-search" ] && [ -n "$(type -P python3)" ]; then
+    local search="$root/agent-hooks/venice-search.py"
+    [ -f "$search" ] || search="$here/venice-search.py"
+    options+=(-c "mcp_servers.operator_search={command=\"$(venice_toml "$(type -P python3)")\",args=[\"-I\",\"$(venice_toml "$search")\",\"--folder\",\"$(venice_toml "$folder")\"],startup_timeout_sec=10}")
+  fi
+
+  # A --sandbox flag would replace that protection without saying so, so the flag becomes the profile's
+  # base instead, and anything that would take the protection away is refused.
+  if [ ! -e "$folder/allow-secret-files" ]; then
+    local base=":workspace" kept=() mode next="" setting=""
+    for argument in "$@"; do
+      if [ -n "$setting" ]; then
+        # Only as a setting: the same words in a prompt are just words.
+        setting=""
+        case "$argument" in
+          default_permissions=*|permissions.*) mode=danger-full-access ;;
+          *) kept+=("$argument"); continue ;;
+        esac
+      elif [ -n "$next" ]; then
+        next=""; mode=$argument
+      else
+        mode=""
+        case "$argument" in
+          --) kept+=("$argument"); next=""; break ;;
+          -s|--sandbox) next=1; continue ;;
+          --sandbox=*) mode=${argument#--sandbox=} ;;
+          -s?*) mode=${argument#-s} ;;
+          -c|--config) kept+=("$argument"); setting=1; continue ;;
+          --config=default_permissions=*|--config=permissions.*|-cdefault_permissions=*|-cpermissions.*) mode=danger-full-access ;;
+          --dangerously-bypass-approvals-and-sandbox|--yolo) mode=danger-full-access ;;
+          *) kept+=("$argument"); continue ;;
+        esac
+      fi
+      case "$mode" in
+        read-only) base=":read-only" ;;
+        workspace-write) base=":workspace" ;;
+        *) venice_stop "That would let a Venice session read your secret files and send them to Venice. To allow it, turn on \"Let it read secret files\" in Tools → Local models." ;;
+      esac
+    done
+    # Whatever follows a bare -- is Codex's, untouched.
+    if [ "${#kept[@]}" -gt 0 ] && [ "${kept[${#kept[@]}-1]}" = "--" ]; then
+      local seen=0
+      for argument in "$@"; do
+        [ "$seen" = 1 ] && kept+=("$argument")
+        [ "$argument" = "--" ] && seen=1
+      done
+    fi
+    set -- "${kept[@]+"${kept[@]}"}"
+    options+=(-c 'default_permissions="operator-venice"' \
+      -c "permissions.operator-venice.extends=\"$base\"" \
+      -c "permissions.operator-venice.filesystem=$(venice_denied_reads "$root")")
+  fi
+
+  # Settings for this run only. A project's own config can't override them (Codex ignores
+  # model_provider there). Commands the agent runs get the token blanked, by one dotted setting
+  # that leaves any of the user's own environment rules alone. ChatGPT's connected apps stay off:
+  # they act through the ChatGPT sign-in, and their tool definitions alone are most of a request.
+  TELLURION_VENICE_TOKEN="$token" exec "$codex" "${settings[@]}" \
+    -c 'model_provider="venice"' \
+    -c 'analytics.enabled=false' \
+    -c 'features.apps=false' \
+    -c 'shell_environment_policy.set.TELLURION_VENICE_TOKEN=""' \
+    "${options[@]}" \
+    -c "model_providers.venice={name=\"Venice\",base_url=\"http://127.0.0.1:$port/api/v1\",env_key=\"TELLURION_VENICE_TOKEN\",wire_api=\"responses\"}" \
+    "$@"
+}
+
+# Codex on a model on this Mac, in Ollama or LM Studio, through Codex's own support for them.
+# Everything of Codex's own stays, as on Venice: its folder, config, hooks, AGENTS.md, skills, MCP
+# servers and sessions; only the model changes, through settings for this run. Nothing leaves this
+# Mac unless web search is switched on in Tools → Local models.
+local_codex() {
+  local root="${TELLURION_TEST_HOME:-$HOME}/.operator"
+  local folder="$root/local" provider="${TELLURION_LOCAL_PROVIDER:-ollama}" model="${TELLURION_LOCAL_MODEL:-}" base=""
+  local chosen=0 codex here python script found status context argument
+  local kept=() settings=() options=()
+
+  # --provider and --base (an LM Studio server that isn't on 127.0.0.1:1234; Ollama's is
+  # OLLAMA_HOST) are ours. A model named for Codex (-m) is checked here first, and stays Codex's.
+  local arguments=("$@") i=0
+  while [ "$i" -lt "${#arguments[@]}" ]; do
+    argument=${arguments[$i]}; i=$((i + 1))
+    case "$argument" in
+      --) kept+=("${arguments[@]:$((i - 1))}"); break ;;
+      --provider) provider=${arguments[$i]:-}; i=$((i + 1)) ;;
+      --provider=*) provider=${argument#--provider=} ;;
+      --base) base=${arguments[$i]:-}; i=$((i + 1)) ;;
+      --base=*) base=${argument#--base=} ;;
+      -m|--model) model=${arguments[$i]:-}; chosen=1; kept+=("$argument" "${arguments[$i]:-}"); i=$((i + 1)) ;;
+      -m?*) model=${argument#-m}; chosen=1; kept+=("$argument") ;;
+      --model=*) model=${argument#--model=}; chosen=1; kept+=("$argument") ;;
+      *) kept+=("$argument") ;;
+    esac
+  done
+  set -- "${kept[@]+"${kept[@]}"}"
+
+  case "$provider" in
+    ollama|lmstudio) ;;
+    *) venice_stop "Codex can run on a model in Ollama or LM Studio (--provider ollama|lmstudio), not \"$provider\"." ;;
+  esac
+  case "$model" in
+    "") ;;
+    -*|*[!A-Za-z0-9_.:/-]*) venice_stop "That model name can't be right: $model" ;;
+  esac
+  codex=$(type -P codex) || venice_stop "Codex isn't installed, or isn't on your PATH."
+  python=$(type -P python3) || venice_stop "python3 is needed to check the model and set Codex up for it."
+
+  # Checks the server and the model, loads the model, and writes Codex's details for it. It
+  # says what's wrong itself (exit 2 and 3); without its details Codex still runs (exit 1).
+  here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+  script="$root/agent-hooks/local-catalog.py"
+  [ -f "$script" ] || script="$here/local-catalog.py"
+  case "$base" in
+    ""|http://*|https://*) ;;
+    *) venice_stop "--base needs a web address (http://…), not \"$base\"." ;;
+  esac
+  found=$("$python" -I "$script" --provider "$provider" --codex "$codex" --out "$folder" ${model:+--model "$model"} ${base:+--base "$base"})
+  status=$?
+  case "$status" in
+    0) settings+=(-c "model_catalog_json=\"$folder/codex-catalog.json\"") ;;
+    1) printf 'Codex will start without its details for this model, so it edits files with shell commands instead of apply_patch.\n' >&2 ;;
+    *) exit 1 ;;
+  esac
+  # What the script found, and nothing else: a model name, and a number.
+  model=$(printf '%s' "$found" | sed -n 's/.*"model": *"\([A-Za-z0-9_.:/-]*\)".*/\1/p')
+  context=$(printf '%s' "$found" | sed -n 's/.*"context": *\([0-9]*\).*/\1/p')
+  [ -n "$model" ] || venice_stop "No model was chosen."
+  [ "$chosen" = 1 ] || settings+=(-m "$model")
+  if [ -n "$context" ] && [ "$context" -lt 24000 ]; then
+    local app="LM Studio"
+    [ "$provider" = ollama ] && app=Ollama
+    printf '%s serves %s with %s tokens of context. Codex'"'"'s instructions and tools take about 17,000 of those, leaving little room to work: raise the context length in %s'"'"'s settings.\n' \
+      "$app" "$model" "$context" "$app" >&2
+  fi
+
+  # Tells the sidebar which backend this pane is on, signed like every agent event.
+  if [ "${GHOSTTY_EXTREME_AGENT_EVENTS:-}" = 1 ]; then
+    { printf '\033]777;notify;operator://agent;{"agent":"codex","event":"backend","detail":"local:%s:%s","t":"%s"}\a' \
+      "$provider" "$model" "${GHOSTTY_EXTREME_EVENT_TOKEN:-}" > /dev/tty; } 2>/dev/null
+  fi
+
+  # Local panes stay attached to their own terminal, as the zsh wrapper does for plain Codex.
+  if [ -t 1 ] && [ -t 0 ]; then
+    GHOSTTY_EXTREME_CODEX_TTY="${GHOSTTY_EXTREME_CODEX_TTY:-$(tty)}"
+    export GHOSTTY_EXTREME_CODEX_TTY
+    settings=(--no-daemon "${settings[@]}")
+  fi
+
+  # Codex's memory can be read, since that stays on this Mac, but a session on a small model
+  # doesn't write it: what it remembers reaches every later session, on any provider.
+  options+=(-c 'memories.generate_memories=false')
+  # The one thing that would leave this Mac, so it's off until switched on. The same server as
+  # Venice's, and the same SearXNG if one is set up.
+  if [ -e "$folder/use-web-search" ]; then
+    local search="$root/agent-hooks/venice-search.py"
+    [ -f "$search" ] || search="$here/venice-search.py"
+    options+=(-c "mcp_servers.operator_search={command=\"$(venice_toml "$python")\",args=[\"-I\",\"$(venice_toml "$search")\",\"--folder\",\"$(venice_toml "$root/venice")\"],startup_timeout_sec=10}")
+  fi
+
+  # Settings for this run only; Codex's config file isn't touched. ChatGPT's connected apps stay
+  # off: they act through the ChatGPT sign-in, and their tool definitions alone would fill a
+  # small model's context.
+  exec "$codex" "${settings[@]}" \
+    -c "model_provider=\"$provider\"" --oss --local-provider "$provider" \
+    -c 'analytics.enabled=false' \
+    -c 'features.apps=false' \
+    "${options[@]}" \
+    "$@"
+}
+
+venice() {
+  case "${1:-}" in
+    codex) shift; venice_codex "$@" ;;
+    search) shift; venice_search "$@" ;;
+    *) printf 'Usage: operator venice codex [codex options]\n       operator venice search [status|setup|use <address>|stop]\n' >&2; exit 2 ;;
+  esac
+}
+
+case "${1:-doctor}" in
+  doctor) doctor ;;
+  local) shift; local_model "$@" ;;
+  venice) shift; venice "$@" ;;
+  phone)
+    case "${2:-status}" in
+      status) phone_status ;;
+      setup) phone_setup ;;
+      *) printf 'Usage: operator phone [status|setup]\n' >&2; exit 2 ;;
+    esac ;;
+  -h|--help|help)
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
+    ;;
+  *)
+    printf 'Unknown command: %s\n' "$1" >&2
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//' >&2
+    exit 2
+    ;;
+esac

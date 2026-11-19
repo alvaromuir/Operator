@@ -119,28 +119,28 @@ struct ModelCatalogView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 8) {
-                TellurionSectionLabel("Popular")
+                OperatorSectionLabel("Popular")
                 Picker("Size", selection: $tier) {
                     ForEach(ModelCatalog.Tier.allCases) { Text($0.rawValue).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 Text(tier.detail + (tier == ModelCatalog.bestTier ? " · best fit for this Mac" : ""))
-                    .font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
+                    .font(Operator.font(11)).foregroundColor(Operator.dim)
                 VStack(spacing: 2) {
                     ForEach(ModelCatalog.popular[tier] ?? []) { CatalogRow(model: $0, installed: isInstalled($0)) }
                 }
             }
             HuggingFaceSection(installed: installed)
             VStack(alignment: .leading, spacing: 8) {
-                TellurionSectionLabel("Uncensored") {
+                OperatorSectionLabel("Uncensored") {
                     Button(showUncensored ? "Hide" : "Show") { showUncensored.toggle() }
-                        .buttonStyle(.plain).font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
+                        .buttonStyle(.plain).font(Operator.font(11)).foregroundColor(Operator.dim)
                 }
                 if showUncensored {
                     Text("Abliterated and uncensored builds answer without refusing. They're community versions, "
                          + "not from the original makers, and can be less accurate. Most downloaded first.")
-                        .font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
+                        .font(Operator.font(11)).foregroundColor(Operator.dim)
                         .fixedSize(horizontal: false, vertical: true)
                     VStack(spacing: 2) {
                         ForEach(ModelCatalog.uncensored) { CatalogRow(model: $0, installed: isInstalled($0)) }
@@ -166,40 +166,40 @@ private struct CatalogRow: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 6) {
-                    Text(model.name).font(Tellurion.mono(12)).foregroundColor(model.fits ? Tellurion.text : Tellurion.dim)
+                    Text(model.name).font(Operator.mono(12)).foregroundColor(model.fits ? Operator.text : Operator.dim)
                         .lineLimit(1).truncationMode(.middle)
                     ForEach(model.tags, id: \.self) { tag in
-                        Text(tag.uppercased()).font(Tellurion.font(8.5, weight: .bold)).foregroundColor(Tellurion.muted)
+                        Text(tag.uppercased()).font(Operator.font(8.5, weight: .bold)).foregroundColor(Operator.muted)
                             .padding(.horizontal, 4).padding(.vertical, 1)
-                            .background(RoundedRectangle(cornerRadius: 3).strokeBorder(Tellurion.line, lineWidth: 1))
+                            .background(RoundedRectangle(cornerRadius: 3).strokeBorder(Operator.line, lineWidth: 1))
                     }
                 }
-                Text(model.note).font(Tellurion.font(11)).foregroundColor(Tellurion.dim).lineLimit(1)
+                Text(model.note).font(Operator.font(11)).foregroundColor(Operator.dim).lineLimit(1)
             }
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 1) {
-                Text(model.size).font(Tellurion.font(11, weight: .medium)).foregroundColor(model.fits ? Tellurion.muted : Tellurion.warn)
-                Text("\(model.downloads) downloads").font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                Text(model.size).font(Operator.font(11, weight: .medium)).foregroundColor(model.fits ? Operator.muted : Operator.warn)
+                Text("\(model.downloads) downloads").font(Operator.font(10)).foregroundColor(Operator.dim)
             }
             .frame(width: 96, alignment: .trailing)
             if installed {
-                Text("Downloaded").font(Tellurion.font(11)).foregroundColor(Tellurion.live).frame(width: 84)
+                Text("Downloaded").font(Operator.font(11)).foregroundColor(Operator.live).frame(width: 84)
             } else if let progress = models.downloads[model.name] {
                 VStack(spacing: 2) {
-                    ProgressView(value: progress ?? 0).progressViewStyle(.linear).tint(Tellurion.gold)
-                    Text(progress.map { "\(Int($0 * 100))%" } ?? "Starting…").font(Tellurion.font(10)).foregroundColor(Tellurion.dim)
+                    ProgressView(value: progress ?? 0).progressViewStyle(.linear).tint(Operator.gold)
+                    Text(progress.map { "\(Int($0 * 100))%" } ?? "Starting…").font(Operator.font(10)).foregroundColor(Operator.dim)
                 }
                 .frame(width: 84)
             } else {
                 Button("Download") { models.download(model.name) }
-                    .buttonStyle(TellurionButtonStyle())
+                    .buttonStyle(OperatorButtonStyle())
                     .frame(width: 84)
                     .help(model.fits ? "Download \(model.name) through Ollama" : "Probably too big for this Mac's memory")
             }
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
-        .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(hovering ? Tellurion.raised : .clear))
+        .background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(hovering ? Operator.raised : .clear))
         .onHover { hovering = $0 }
     }
 }

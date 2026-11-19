@@ -22,7 +22,7 @@ extension Ghostty {
         case custom
         case customStyle = "custom-style"
 
-        /// Bundled asset name for built-in icons. Tellurion bundles none of Ghostty's
+        /// Bundled asset name for built-in icons. Operator bundles none of Ghostty's
         /// alternate icons, so every style uses the app icon.
         var assetName: String? { nil }
     }

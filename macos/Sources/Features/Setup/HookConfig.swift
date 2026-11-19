@@ -1,7 +1,7 @@
 #if os(macOS)
 import Foundation
 
-/// The agent hook entries Tellurion adds to Claude Code's `settings.json` and Codex's
+/// The agent hook entries Operator adds to Claude Code's `settings.json` and Codex's
 /// `hooks.json`, and the line it adds to `~/.zshrc`.
 ///
 /// Pure data in, data out: it never touches files itself (`HookInstaller` does), so the
@@ -52,7 +52,7 @@ enum HookConfig {
     /// Where the hooks are installed. Agents run them from here rather than from the repo:
     /// macOS privacy protection can block terminal processes from reading ~/Desktop or
     /// ~/Documents, which silently breaks every hook.
-    static func hooksFolder(home: String) -> String { home + "/.ghostty-extreme/agent-hooks" }
+    static func hooksFolder(home: String) -> String { home + "/.operator/agent-hooks" }
 
     /// Before the rebrand the hooks lived here. Codex ties its hook approvals to the exact
     /// command, so a working legacy path is kept rather than replaced.
@@ -170,22 +170,22 @@ enum HookConfig {
 
     // MARK: Shell
 
-    /// The line added to ~/.zshrc. It does nothing outside Tellurion.
+    /// The line added to ~/.zshrc. It does nothing outside Operator.
     static let zshrcBlock = """
 
-    # Tellurion: shows which coding agent each pane runs (does nothing in other terminals)
-    [[ -n "$GHOSTTY_EXTREME_AGENT_EVENTS" ]] && source ~/.ghostty-extreme/agent-hooks/ghostty-extreme.zsh
+    # Operator: shows which coding agent each pane runs (does nothing in other terminals)
+    [[ -n "$GHOSTTY_EXTREME_AGENT_EVENTS" ]] && source ~/.operator/agent-hooks/operator.zsh
 
     """
 
     static func zshrcHasIntegration(_ text: String) -> Bool {
-        text.contains("ghostty-extreme.zsh") || text.contains("ghostty-custom.zsh")
+        text.contains("operator.zsh") || text.contains("ghostty-custom.zsh")
     }
 
     /// The comment above the `source` line, as this and earlier versions wrote it.
     private static let zshrcComments = Set([
-        "# Tellurion: shows which coding agent each pane runs (does nothing in other terminals)",
-        "# GhosttyEXTREME: shows which coding agent each pane runs (does nothing in other terminals)",
+        "# Operator: shows which coding agent each pane runs (does nothing in other terminals)",
+        "# Operator: shows which coding agent each pane runs (does nothing in other terminals)",
     ].map(squeezed))
 
     /// The `source` line, with its spacing squeezed. Every version wrote this one line; a

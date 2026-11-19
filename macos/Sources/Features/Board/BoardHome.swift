@@ -44,7 +44,7 @@ final class BoardProjectsIndex: ObservableObject {
 
 enum BoardHome {
     static func show() {
-        AgentToolWindows.show(id: "board-home", title: "Tellurion", size: NSSize(width: 1000, height: 660)) {
+        AgentToolWindows.show(id: "board-home", title: "Operator", size: NSSize(width: 1000, height: 660)) {
             BoardHomeView()
         }
     }
@@ -88,7 +88,7 @@ struct BoardTopBar: View {
     @State private var waiting: [UUID: Int] = [:]
     @ObservedObject private var index = BoardProjectsIndex.shared
     @ObservedObject private var usage = UsageMonitor.shared
-    @ObservedObject private var settings = TellurionSettings.shared
+    @ObservedObject private var settings = OperatorSettings.shared
 
     var body: some View {
         let key = BoardProjectsIndex.key(of: controller.workspace)
@@ -104,21 +104,21 @@ struct BoardTopBar: View {
                 Divider()
                 Button("New Project…") { BoardHome.chooseProject() }
             } label: {
-                Label(project?.name ?? "No project", systemImage: "folder").font(Tellurion.font(12, weight: .medium))
+                Label(project?.name ?? "No project", systemImage: "folder").font(Operator.font(12, weight: .medium))
             }
             .menuStyle(.borderlessButton).menuIndicator(.visible).fixedSize()
             .padding(.horizontal, 10).frame(height: 28)
-            .background(Capsule().fill(Tellurion.panel.opacity(0.95)))
-            .overlay(Capsule().strokeBorder(Tellurion.lineStrong))
+            .background(Capsule().fill(Operator.panel.opacity(0.95)))
+            .overlay(Capsule().strokeBorder(Operator.lineStrong))
             ForEach(project?.boards ?? [], id: \.id) { board in tab(board) }
             pill { BoardHome.newBoard(in: project?.folder ?? controller.workspace.folder) } label: { Image(systemName: "plus") }
                 .help("New board in this project")
             pill { controller.window?.performClose(nil) } label: { Label("Close", systemImage: "xmark") }
-            Rectangle().fill(Tellurion.line).frame(width: 1, height: 18).padding(.horizontal, 2)
+            Rectangle().fill(Operator.line).frame(width: 1, height: 18).padding(.horizontal, 2)
             live
             if let reset = soonestReset {
-                pill { if TellurionSettings.isOn(.accounts) { model.showAccounts = true } } label: {
-                    Label("resets \(Self.time(reset))", systemImage: "clock").font(Tellurion.font(11.5))
+                pill { if OperatorSettings.isOn(.accounts) { model.showAccounts = true } } label: {
+                    Label("resets \(Self.time(reset))", systemImage: "clock").font(Operator.font(11.5))
                 }
                 .help("When your usage limit resets next. Click for accounts.")
             }
@@ -143,16 +143,16 @@ struct BoardTopBar: View {
             if !current, let ghostty = BoardHome.ghostty { Board.reopen(ghostty, board) }
         } label: {
             HStack(spacing: 5) {
-                Text(board.name).font(Tellurion.font(12, weight: current ? .semibold : .regular)).lineLimit(1)
+                Text(board.name).font(Operator.font(12, weight: current ? .semibold : .regular)).lineLimit(1)
                 if waiting > 0 {
-                    Text("\(waiting)").font(Tellurion.font(10, weight: .bold)).foregroundColor(.white)
+                    Text("\(waiting)").font(Operator.font(10, weight: .bold)).foregroundColor(.white)
                         .padding(.horizontal, 5).frame(height: 15).background(Capsule().fill(Color.red))
                 }
             }
-            .foregroundColor(current ? Tellurion.text : Tellurion.muted)
+            .foregroundColor(current ? Operator.text : Operator.muted)
             .padding(.horizontal, 11).frame(height: 28)
-            .background(Capsule().fill(current ? Tellurion.raised : Tellurion.panel.opacity(0.95)))
-            .overlay(Capsule().strokeBorder(current ? Tellurion.core.opacity(0.7) : Tellurion.lineStrong))
+            .background(Capsule().fill(current ? Operator.raised : Operator.panel.opacity(0.95)))
+            .overlay(Capsule().strokeBorder(current ? Operator.core.opacity(0.7) : Operator.lineStrong))
         }
         .buttonStyle(.plain)
     }
@@ -160,12 +160,12 @@ struct BoardTopBar: View {
     private var live: some View {
         let count = liveCount
         return HStack(spacing: 5) {
-            Circle().fill(count > 0 ? Color.green : Tellurion.dim).frame(width: 6, height: 6)
-            Text("\(count) live").font(Tellurion.font(11.5)).foregroundColor(Tellurion.muted)
+            Circle().fill(count > 0 ? Color.green : Operator.dim).frame(width: 6, height: 6)
+            Text("\(count) live").font(Operator.font(11.5)).foregroundColor(Operator.muted)
         }
         .padding(.horizontal, 10).frame(height: 28)
-        .background(Capsule().fill(Tellurion.panel.opacity(0.95)))
-        .overlay(Capsule().strokeBorder(Tellurion.lineStrong))
+        .background(Capsule().fill(Operator.panel.opacity(0.95)))
+        .overlay(Capsule().strokeBorder(Operator.lineStrong))
         .help("Agents running on this board")
     }
 
@@ -192,10 +192,10 @@ struct BoardTopBar: View {
 
     private func pill<Content: View>(_ action: @escaping () -> Void, @ViewBuilder label: () -> Content) -> some View {
         Button(action: action) {
-            label().font(Tellurion.font(12, weight: .medium)).foregroundColor(Tellurion.text)
+            label().font(Operator.font(12, weight: .medium)).foregroundColor(Operator.text)
                 .padding(.horizontal, 10).frame(height: 28)
-                .background(Capsule().fill(Tellurion.panel.opacity(0.95)))
-                .overlay(Capsule().strokeBorder(Tellurion.lineStrong))
+                .background(Capsule().fill(Operator.panel.opacity(0.95)))
+                .overlay(Capsule().strokeBorder(Operator.lineStrong))
         }
         .buttonStyle(.plain)
     }
@@ -215,15 +215,15 @@ struct BoardGitChip: View {
             Button { showPanel.toggle() } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.triangle.branch").font(.system(size: 10.5, weight: .semibold))
-                    Text(info.branch).font(Tellurion.mono(11.5)).lineLimit(1)
+                    Text(info.branch).font(Operator.mono(11.5)).lineLimit(1)
                     if info.added + info.removed > 0 {
-                        Text("+\(info.added) −\(info.removed)").font(Tellurion.mono(10.5)).foregroundColor(Tellurion.core)
+                        Text("+\(info.added) −\(info.removed)").font(Operator.mono(10.5)).foregroundColor(Operator.core)
                     }
                 }
-                .foregroundColor(Tellurion.text)
+                .foregroundColor(Operator.text)
                 .padding(.horizontal, 10).frame(height: 26)
-                .background(Capsule().fill(Tellurion.panel.opacity(0.95)))
-                .overlay(Capsule().strokeBorder(Tellurion.lineStrong))
+                .background(Capsule().fill(Operator.panel.opacity(0.95)))
+                .overlay(Capsule().strokeBorder(Operator.lineStrong))
             }
             .buttonStyle(.plain)
             .help("Changes in \((folder as NSString).abbreviatingWithTildeInPath)")
@@ -247,12 +247,12 @@ struct BoardHomeView: View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Projects").font(Tellurion.font(22, weight: .bold)).foregroundColor(Tellurion.text)
-                    Text("Each project's boards. Open one to carry on where you left off.").font(Tellurion.font(12)).foregroundColor(Tellurion.muted)
+                    Text("Projects").font(Operator.font(22, weight: .bold)).foregroundColor(Operator.text)
+                    Text("Each project's boards. Open one to carry on where you left off.").font(Operator.font(12)).foregroundColor(Operator.muted)
                 }
                 Spacer()
                 Button("New Project…") { BoardHome.chooseProject() }
-                .buttonStyle(TellurionButtonStyle(prominent: true))
+                .buttonStyle(OperatorButtonStyle(prominent: true))
             }
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 14)], spacing: 14) {
@@ -262,47 +262,47 @@ struct BoardHomeView: View {
         }
         .padding(26)
         .frame(minWidth: 640, minHeight: 420)
-        .background(Tellurion.ink)
+        .background(Operator.ink)
         .onAppear { index.reload() }
     }
 
     private func card(_ project: BoardProjectsIndex.Project) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Image(systemName: "folder.fill").foregroundColor(Tellurion.core)
+                Image(systemName: "folder.fill").foregroundColor(Operator.core)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(project.name).font(Tellurion.font(14, weight: .semibold)).foregroundColor(Tellurion.text)
+                    Text(project.name).font(Operator.font(14, weight: .semibold)).foregroundColor(Operator.text)
                     if let folder = project.folder {
-                        Text((folder as NSString).abbreviatingWithTildeInPath).font(Tellurion.mono(10.5)).foregroundColor(Tellurion.dim)
+                        Text((folder as NSString).abbreviatingWithTildeInPath).font(Operator.mono(10.5)).foregroundColor(Operator.dim)
                             .lineLimit(1).truncationMode(.middle)
                     }
                 }
                 Spacer()
                 Button { BoardHome.newBoard(in: project.folder) } label: { Image(systemName: "plus") }
-                    .buttonStyle(.plain).foregroundColor(Tellurion.muted).help("New board in this project")
+                    .buttonStyle(.plain).foregroundColor(Operator.muted).help("New board in this project")
             }
             ForEach(project.boards, id: \.id) { board in
                 Button {
                     if let ghostty = BoardHome.ghostty { Board.reopen(ghostty, board) }
                 } label: {
                     HStack(spacing: 8) {
-                        Circle().fill(BoardController.all.contains { $0.workspace.id == board.id } ? Color.green : Tellurion.dim)
+                        Circle().fill(BoardController.all.contains { $0.workspace.id == board.id } ? Color.green : Operator.dim)
                             .frame(width: 6, height: 6)
-                        Text(board.name).font(Tellurion.font(12.5)).foregroundColor(Tellurion.text).lineLimit(1)
+                        Text(board.name).font(Operator.font(12.5)).foregroundColor(Operator.text).lineLimit(1)
                         Spacer()
-                        Text("\(board.tiles.count) tile\(board.tiles.count == 1 ? "" : "s")").font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
-                        Text(board.updated, style: .relative).font(Tellurion.font(11)).foregroundColor(Tellurion.dim)
+                        Text("\(board.tiles.count) tile\(board.tiles.count == 1 ? "" : "s")").font(Operator.font(11)).foregroundColor(Operator.dim)
+                        Text(board.updated, style: .relative).font(Operator.font(11)).foregroundColor(Operator.dim)
                     }
                     .padding(.horizontal, 10).frame(height: 30)
-                    .background(RoundedRectangle(cornerRadius: 8).fill(Tellurion.raised))
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Operator.raised))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Tellurion.panel))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Tellurion.line))
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Operator.panel))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Operator.line))
     }
 }
 #endif

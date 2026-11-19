@@ -236,7 +236,7 @@ enum BackendProbe {
     /// (holding nothing but the project's ref) keeps the user's repository untouched.
     private static func supabaseQuery(ref: String, sql: String) -> Any {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("GhosttyEXTREME/supabase/\(ref)")
+            .appendingPathComponent("Operator/supabase/\(ref)")
         let temp = support.appendingPathComponent("supabase/.temp")
         try? FileManager.default.createDirectory(at: temp, withIntermediateDirectories: true)
         try? ref.write(to: temp.appendingPathComponent("project-ref"), atomically: true, encoding: .utf8)
@@ -333,7 +333,7 @@ enum BackendProbe {
     private static func confirmOpening(_ url: URL) -> Bool {
         let alert = NSAlert()
         alert.messageText = "Open \(url.host ?? "this site") in your browser?"
-        alert.informativeText = "This address comes from the project's config files, not from Tellurion:\n\n\(url.absoluteString)"
+        alert.informativeText = "This address comes from the project's config files, not from Operator:\n\n\(url.absoluteString)"
         alert.addButton(withTitle: "Open")
         alert.addButton(withTitle: "Cancel")
         return alert.runModal() == .alertFirstButtonReturn

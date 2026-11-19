@@ -128,7 +128,7 @@ private struct VerticalTabsPanelStyle: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .tellurionPanel(active: true, fill: Tellurion.ink)
+            .operatorPanel(active: true, fill: Operator.ink)
             .shadow(color: .black.opacity(0.6), radius: 14, y: 6)
     }
 }
@@ -162,8 +162,8 @@ private struct VerticalTabsHoverCard: View {
             if let label = pane.badge.pillLabel, let symbol = pane.badge.symbol {
                 let color = pane.badge.color(palette)
                 HStack(spacing: 6) {
-                    Image(systemName: symbol).font(Tellurion.font(11))
-                    Text(label).font(Tellurion.font(12))
+                    Image(systemName: symbol).font(Operator.font(11))
+                    Text(label).font(Operator.font(12))
                 }
                 .foregroundColor(color)
                 .padding(.horizontal, 8)
@@ -174,39 +174,39 @@ private struct VerticalTabsHoverCard: View {
             if let pwd = pane.pwd {
                 HStack(spacing: 6) {
                     Text(VerticalTabsHoverCard.abbreviate(pwd))
-                        .foregroundColor(Tellurion.text)
+                        .foregroundColor(Operator.text)
                     if let info = git.info(for: pwd) {
-                        Text("•").foregroundColor(Tellurion.muted)
-                        Image(systemName: "arrow.triangle.branch").font(Tellurion.font(11))
-                            .foregroundColor(Tellurion.muted)
-                        Text(info.branch).foregroundColor(Tellurion.text)
+                        Text("•").foregroundColor(Operator.muted)
+                        Image(systemName: "arrow.triangle.branch").font(Operator.font(11))
+                            .foregroundColor(Operator.muted)
+                        Text(info.branch).foregroundColor(Operator.text)
                         if info.added > 0 { Text("+\(info.added)").foregroundColor(palette.green) }
                         if info.removed > 0 { Text("-\(info.removed)").foregroundColor(palette.red) }
                     }
                 }
-                .font(Tellurion.font(12.5))
+                .font(Operator.font(12.5))
                 .lineLimit(1)
                 .truncationMode(.head)
             }
 
             Text(pane.title.isEmpty ? hover.tabTitle : pane.title)
-                .font(Tellurion.font(15))
-                .foregroundColor(Tellurion.text.opacity(0.85))
+                .font(Operator.font(15))
+                .foregroundColor(Operator.text.opacity(0.85))
                 .lineLimit(2)
 
             if let agent = pane.agent {
                 if let task = agent.task {
                     Text(task)
-                        .font(Tellurion.font(12.5))
-                        .foregroundColor(Tellurion.muted)
+                        .font(Operator.font(12.5))
+                        .foregroundColor(Operator.muted)
                         .lineLimit(3)
                 }
                 if let detail = agent.detail {
                     HStack(alignment: .top, spacing: 6) {
-                        Image(systemName: "arrow.turn.down.right").font(Tellurion.font(10))
+                        Image(systemName: "arrow.turn.down.right").font(Operator.font(10))
                         Text(detail).lineLimit(2)
                     }
-                    .font(Tellurion.font(12))
+                    .font(Operator.font(12))
                     .foregroundColor(agent.activity.badge.color(palette))
                 }
                 HStack(spacing: 6) {
@@ -214,15 +214,15 @@ private struct VerticalTabsHoverCard: View {
                         .frame(width: 14, height: 14)
                     Text(agent.name)
                 }
-                .font(Tellurion.font(12))
-                .foregroundColor(Tellurion.muted)
+                .font(Operator.font(12))
+                .foregroundColor(Operator.muted)
             } else {
                 HStack(spacing: 6) {
-                    Text(">_").font(Tellurion.font(11))
+                    Text(">_").font(Operator.font(11))
                     Text("Terminal")
                 }
-                .font(Tellurion.font(12))
-                .foregroundColor(Tellurion.muted)
+                .font(Operator.font(12))
+                .foregroundColor(Operator.muted)
             }
         }
         .padding(14)
@@ -275,12 +275,12 @@ private struct VerticalTabsMenuPanel: View {
                 item("Close code editor") {
                     editorPanel.hide(returningFocusTo: controller)
                 }
-            } else if TellurionSettings.isOn(.editor) {
+            } else if OperatorSettings.isOn(.editor) {
                 item("Open folder in code editor", enabled: pane.pwd != nil) {
                     editorPanel.show(from: controller, folder: pane.pwd)
                 }
             }
-            if TellurionSettings.isOn(.memory) {
+            if OperatorSettings.isOn(.memory) {
                 item("Project memory…", enabled: pane.pwd != nil) {
                     MemoryWindow.show(folder: pane.pwd)
                 }
@@ -302,7 +302,7 @@ private struct VerticalTabsMenuPanel: View {
                 guard let surface = pane.surface else { return }
                 PipelineSetup.show(writer: surface, in: controller)
             }
-            if TellurionSettings.isOn(.races) {
+            if OperatorSettings.isOn(.races) {
                 item("Race agents on this project…", enabled: pane.pwd != nil) {
                     VerticalTabsActions.select(controller)
                     AgentRaces.showSetup(from: controller)
@@ -338,7 +338,7 @@ private struct VerticalTabsMenuPanel: View {
     /// Undo the agent's last turn, an earlier one, or a restore (see TurnCheckpoints).
     @ViewBuilder
     private var undoItems: some View {
-        if let surface = pane.surface, TellurionSettings.isOn(.undo) {
+        if let surface = pane.surface, OperatorSettings.isOn(.undo) {
             let list = checkpoints.list(for: surface)
             if !list.isEmpty {
                 separator
@@ -377,8 +377,8 @@ private struct VerticalTabsMenuPanel: View {
                         if let ns = color.displayColor {
                             Circle().fill(Color(nsColor: ns))
                         } else {
-                            Circle().stroke(Tellurion.text.opacity(0.6), lineWidth: 1.5)
-                            Rectangle().fill(Tellurion.text.opacity(0.6)).frame(width: 1.5).rotationEffect(.degrees(45))
+                            Circle().stroke(Operator.text.opacity(0.6), lineWidth: 1.5)
+                            Rectangle().fill(Operator.text.opacity(0.6)).frame(width: 1.5).rotationEffect(.degrees(45))
                         }
                     }
                     .frame(width: 16, height: 16)
@@ -404,8 +404,8 @@ private struct VerticalTabsMenuItem: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(Tellurion.font(13))
-                .foregroundColor(enabled ? .primary : Tellurion.muted.opacity(0.6))
+                .font(Operator.font(13))
+                .foregroundColor(enabled ? .primary : Operator.muted.opacity(0.6))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 5)

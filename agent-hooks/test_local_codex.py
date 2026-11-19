@@ -1,4 +1,4 @@
-"""Codex on a model on this Mac: `tellurion local codex`, local-catalog.py and the zsh wrapper."""
+"""Codex on a model on this Mac: `operator local codex`, local-catalog.py and the zsh wrapper."""
 import http.server
 import importlib.util
 import json
@@ -163,12 +163,12 @@ def closed_port():
         return sock.getsockname()[1]
 
 
-class TellurionLocalCodexTests(unittest.TestCase):
+class OperatorLocalCodexTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.home = Path(temporary.name)
-        self.root = self.home / ".ghostty-extreme"
+        self.root = self.home / ".operator"
         self.root.mkdir()
         self.bin = self.home / "path"
         self.bin.mkdir()
@@ -191,7 +191,7 @@ class TellurionLocalCodexTests(unittest.TestCase):
     def run_cli(self, *args, **env):
         environment = {"HOME": str(self.home), "PATH": f"{self.bin}:/usr/bin:/bin:/opt/homebrew/bin", "TELLURION_TEST_HOME": str(self.home),
                        "OLLAMA_HOST": self.address, "FAKE_LOG": str(self.log), "FAKE_BUNDLED": str(self.home / "bundled.json"), **env}
-        return subprocess.run([str(HERE / "tellurion"), "local", "codex", *args], env=environment, capture_output=True, text=True,
+        return subprocess.run([str(HERE / "operator"), "local", "codex", *args], env=environment, capture_output=True, text=True,
                               stdin=subprocess.DEVNULL, timeout=30)
 
     def argv(self):
@@ -314,14 +314,14 @@ class TellurionLocalCodexTests(unittest.TestCase):
 
     def test_web_search_is_off_by_default(self):
         self.run_cli()
-        self.assertFalse(any("tellurion_search" in a for a in self.argv()))
+        self.assertFalse(any("operator_search" in a for a in self.argv()))
 
     def test_web_search_can_be_turned_on_and_shares_venices_searxng(self):
         (self.root / "local").mkdir()
         (self.root / "local/use-web-search").touch()
         self.run_cli()
         argv = self.argv()
-        search = self.setting(argv, "mcp_servers.tellurion_search")
+        search = self.setting(argv, "mcp_servers.operator_search")
         self.assertIn("venice-search.py", search)
         self.assertIn(f'"--folder","{self.root}/venice"', search)
         self.assertIn('"-I"', search)
@@ -366,25 +366,25 @@ class ZshWrapperTests(unittest.TestCase):
         fake.chmod(0o755)
 
     def install_cli(self):
-        bin_folder = self.home / ".ghostty-extreme/bin"
+        bin_folder = self.home / ".operator/bin"
         bin_folder.mkdir(parents=True)
-        cli = bin_folder / "tellurion"
-        cli.write_text(f'#!/bin/bash\nprintf "tellurion %s\\n" "$*" >> "{self.log}"\n')
+        cli = bin_folder / "operator"
+        cli.write_text(f'#!/bin/bash\nprintf "operator %s\\n" "$*" >> "{self.log}"\n')
         cli.chmod(0o755)
 
     def zsh(self, script, **env):
         environment = {"HOME": str(self.home), "PATH": f"{self.path}:/usr/bin:/bin", "TELLURION_TEST_HOME": str(self.home),
                        "GHOSTTY_EXTREME_AGENT_EVENTS": "1", "GHOSTTY_EXTREME_EVENT_TOKEN": "t", **env}
-        return subprocess.run(["/bin/zsh", "-f", "-c", f'source "{HERE}/ghostty-extreme.zsh"; {script}'], env=environment,
+        return subprocess.run(["/bin/zsh", "-f", "-c", f'source "{HERE}/operator.zsh"; {script}'], env=environment,
                               capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=20)
 
     def logged(self):
         return self.log.read_text() if self.log.exists() else ""
 
-    def test_a_pane_on_a_local_model_goes_through_tellurion(self):
+    def test_a_pane_on_a_local_model_goes_through_operator(self):
         self.install_cli()
         self.assertEqual(self.zsh("codex resume abc", TELLURION_CODEX_BACKEND="local").returncode, 0)
-        self.assertEqual(self.logged(), "tellurion local codex resume abc\n")
+        self.assertEqual(self.logged(), "operator local codex resume abc\n")
 
     def test_without_the_command_it_stops_instead_of_using_plain_codex(self):
         result = self.zsh("codex; print -r -- rc=$?", TELLURION_CODEX_BACKEND="local")
@@ -398,9 +398,9 @@ class ZshWrapperTests(unittest.TestCase):
         self.assertTrue(self.logged().startswith("plain "))
 
     def test_the_sidebar_sees_codex_when_started_locally(self):
-        marked = self.zsh("""_gc_agent_preexec "" "" "'/some where/tellurion' local codex -m qwen3:4b"; print -r -- agent=$_gc_running_agent""")
+        marked = self.zsh("""_gc_agent_preexec "" "" "'/some where/operator' local codex -m qwen3:4b"; print -r -- agent=$_gc_running_agent""")
         self.assertIn("agent=codex", marked.stdout)
-        other = self.zsh("""_gc_agent_preexec "" "" "tellurion local qwen3:4b"; print -r -- agent=$_gc_running_agent""")
+        other = self.zsh("""_gc_agent_preexec "" "" "operator local qwen3:4b"; print -r -- agent=$_gc_running_agent""")
         self.assertIn("agent=\n", other.stdout, "a chat reports itself")
 
 

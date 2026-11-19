@@ -27,10 +27,10 @@ struct VeniceCodexTests {
         #expect(!VeniceCodex.needsFolder("/Users/me/project", home: "/Users/me"))
     }
 
-    @Test func startingCodexInAVenicePaneGoesThroughTellurion() {
+    @Test func startingCodexInAVenicePaneGoesThroughOperator() {
         let adapted = VeniceCodex.adapted("codex\n")
         #expect(adapted.hasPrefix(" "))
-        #expect(adapted.hasSuffix("tellurion' venice codex\n") || adapted.hasSuffix("tellurion venice codex\n"))
+        #expect(adapted.hasSuffix("operator' venice codex\n") || adapted.hasSuffix("operator venice codex\n"))
         #expect(VeniceCodex.adapted(" codex resume abc\n").contains("venice codex resume abc\n"))
         #expect(VeniceCodex.adapted("codex --yolo\n").contains("venice codex --yolo\n"))
     }
@@ -44,17 +44,17 @@ struct VeniceCodexTests {
     @Test func switchingToVeniceClearsTheProfileFolder() {
         let venice = BoardAccount(provider: .codex, name: "V", veniceModel: "model-1", venicePrivate: true)
         let line = VeniceCodex.switchLine(to: venice, provider: .codex)
-        #expect(line.hasPrefix("unset CODEX_HOME; export TELLURION_CODEX_BACKEND=venice TELLURION_VENICE_MODEL="))
+        #expect(line.hasPrefix("unset CODEX_HOME; export OPERATOR_CODEX_BACKEND=venice OPERATOR_VENICE_MODEL="))
         #expect(line.contains("model-1"))
         #expect(line.contains("venice codex"))
     }
 
     @Test func switchingAwayFromVeniceClearsItSoNothingStaysOnIt() {
         let usual = VeniceCodex.switchLine(to: nil, provider: .codex)
-        #expect(usual == "unset TELLURION_CODEX_BACKEND TELLURION_VENICE_MODEL CODEX_HOME; codex")
+        #expect(usual == "unset OPERATOR_CODEX_BACKEND OPERATOR_VENICE_MODEL CODEX_HOME; codex")
         let profile = BoardAccount(provider: .codex, name: "P")
         let line = VeniceCodex.switchLine(to: profile, provider: .codex)
-        #expect(line.hasPrefix("unset TELLURION_CODEX_BACKEND TELLURION_VENICE_MODEL; export CODEX_HOME="))
+        #expect(line.hasPrefix("unset OPERATOR_CODEX_BACKEND OPERATOR_VENICE_MODEL; export CODEX_HOME="))
         #expect(line.hasSuffix("; codex"))
     }
 
@@ -68,7 +68,7 @@ struct VeniceCodexTests {
         #expect(entry.venice == nil)
     }
 
-    @Test func aSessionOnVeniceResumesThroughTellurion() {
+    @Test func aSessionOnVeniceResumesThroughOperator() {
         var session = ActivitySession(id: "s1", agent: "codex")
         #expect(!session.onVenice)
         session.codexProvider = "openai"

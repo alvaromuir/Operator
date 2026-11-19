@@ -2,8 +2,8 @@ import Foundation
 import Testing
 @testable import Ghostty
 
-/// Agents the user said they don't use (the TellurionSkippedAgents preference), the marker
-/// files that tell `tellurion doctor` about them, and the doctor's reading of those files.
+/// Agents the user said they don't use (the OperatorSkippedAgents preference), the marker
+/// files that tell `operator doctor` about them, and the doctor's reading of those files.
 struct SetupSkipTests {
     @Test func readsTheSavedChoiceAndIgnoresUnknownNames() {
         #expect(SetupChecks.skipped(from: nil).isEmpty)
@@ -43,11 +43,11 @@ struct SetupSkipTests {
         #expect(FileManager.default.fileExists(atPath: folder.path))
     }
 
-    // MARK: tellurion doctor
+    // MARK: operator doctor
 
     /// A leftover `~/.codex` folder without the marker is a problem; with the marker it's a note.
     @Test func doctorLeavesOutASkippedAgent() throws {
-        guard let script = HookInstaller.bundled?.appendingPathComponent("tellurion"), let jq = Self.jq else { return }
+        guard let script = HookInstaller.bundled?.appendingPathComponent("operator"), let jq = Self.jq else { return }
         let scratch = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         defer { try? FileManager.default.removeItem(at: scratch) }
         let home = scratch.appendingPathComponent("home", isDirectory: true)
@@ -62,13 +62,13 @@ struct SetupSkipTests {
         #expect(before.contains("Claude Code: ~/.claude/settings.json doesn't exist"))
         #expect(!before.contains("is skipped"))
 
-        SetupChecks.writeSkipFlags([.codex], in: home.appendingPathComponent(".ghostty-extreme/features", isDirectory: true))
+        SetupChecks.writeSkipFlags([.codex], in: home.appendingPathComponent(".operator/features", isDirectory: true))
         let after = try Self.doctor(script, home: home, bin: bin)
         #expect(after.contains("Codex is skipped"))
         #expect(!after.contains("Codex: ~/.codex/hooks.json doesn't exist"))
         #expect(after.contains("Claude Code: ~/.claude/settings.json doesn't exist"))
 
-        SetupChecks.writeSkipFlags([], in: home.appendingPathComponent(".ghostty-extreme/features", isDirectory: true))
+        SetupChecks.writeSkipFlags([], in: home.appendingPathComponent(".operator/features", isDirectory: true))
         let back = try Self.doctor(script, home: home, bin: bin)
         #expect(back.contains("Codex: ~/.codex/hooks.json doesn't exist"))
         #expect(!back.contains("is skipped"))
@@ -79,7 +79,7 @@ struct SetupSkipTests {
             .first { FileManager.default.isExecutableFile(atPath: $0.path) }
     }
 
-    /// Runs `tellurion doctor` with `home` as the home folder and only `bin` (jq) besides the
+    /// Runs `operator doctor` with `home` as the home folder and only `bin` (jq) besides the
     /// system paths, so no agent command on this Mac takes part.
     private static func doctor(_ script: URL, home: URL, bin: URL) throws -> String {
         let process = Process()

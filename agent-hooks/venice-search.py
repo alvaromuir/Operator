@@ -6,7 +6,7 @@ how it searches. It tries Exa's hosted server, which needs no key, and goes to S
 limited or down. Exa's code limits keyless use by IP address to 2 searches a second and 50 a day.
 
 Usage: venice-search.py --folder FOLDER
-FOLDER may hold "searxng-url", the SearXNG to use; otherwise it's the one `tellurion venice search
+FOLDER may hold "searxng-url", the SearXNG to use; otherwise it's the one `operator venice search
 setup` runs. Only the standard library, so it runs wherever Python does.
 """
 import argparse
@@ -23,7 +23,7 @@ SEARXNG_URL = "http://127.0.0.1:8899"
 TIMEOUT = 25
 MAX_RESPONSE = 8 * 1024 * 1024
 MAX_RESULTS = 10
-USER_AGENT = "Tellurion"
+USER_AGENT = "Operator"
 # A daily limit reports a long wait, and a session shouldn't ask again until it's over.
 LONGEST_COOLDOWN = 24 * 3600
 
@@ -118,7 +118,7 @@ class Exa:
             raise Unavailable("Exa's free limit is reached")
         if not self.session:
             self._post("initialize", {"protocolVersion": "2025-06-18", "capabilities": {},
-                                      "clientInfo": {"name": "tellurion", "version": "1"}})
+                                      "clientInfo": {"name": "operator", "version": "1"}})
         message = self._post("tools/call", {"name": tool, "arguments": arguments})
         result = message.get("result")
         if not isinstance(result, dict) or result.get("isError"):
@@ -141,7 +141,7 @@ def searxng(base, query, count):
     except ValueError as error:
         raise Unavailable("SearXNG's answer couldn't be read") from error
     except OSError as error:
-        raise Unavailable("SearXNG isn't running (set it up with: tellurion venice search setup)") from error
+        raise Unavailable("SearXNG isn't running (set it up with: operator venice search setup)") from error
     results = answer.get("results") if isinstance(answer, dict) else None
     if not isinstance(results, list):
         raise Unavailable("SearXNG's answer couldn't be read")
@@ -201,7 +201,7 @@ def handle(search, message):
     if method == "initialize":
         version = (message.get("params") or {}).get("protocolVersion") or "2025-06-18"
         result = {"protocolVersion": version, "capabilities": {"tools": {}},
-                  "serverInfo": {"name": "tellurion-search", "version": "1"}}
+                  "serverInfo": {"name": "operator-search", "version": "1"}}
     elif method == "ping":
         result = {}
     elif method == "tools/list":

@@ -3,22 +3,22 @@
 ## Reporting a vulnerability
 
 Please report security problems privately, not in a public issue: use
-[Report a vulnerability](https://github.com/steventsvik/Tellurion/security/advisories/new)
+[Report a vulnerability](https://github.com/alvaromuir/Operator/security/advisories/new)
 on the repository's Security tab. Include what you found, how to reproduce it, and which
-version you're on (Tellurion → About).
+version you're on (Operator → About).
 
 You'll get a reply within a few days. Fixes ship in a new release, and the advisory is
 published once people have had a chance to update.
 
-Problems in Ghostty itself (the terminal emulator, not Tellurion's additions) should
+Problems in Ghostty itself (the terminal emulator, not Operator's additions) should
 go to the [Ghostty project](https://github.com/ghostty-org/ghostty/security).
 
 ## Supported versions
 
-Only the latest release gets security fixes. Tellurion updates itself through
+Only the latest release gets security fixes. Operator updates itself through
 **Check for Updates…**; downloads are checked against a signature built into the app.
 
-## What Tellurion does and doesn't do
+## What Operator does and doesn't do
 
 - **Nothing leaves your Mac.** No account, telemetry or server. Agent tracking reads the
   session files Claude Code and Codex already write.

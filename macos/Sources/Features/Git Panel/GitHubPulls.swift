@@ -61,7 +61,7 @@ final class GitHubPulls: ObservableObject {
     private var inFlight: Set<String> = []
     private var gh: String?
     private var checkedAuthAt: Date?
-    private let queue = DispatchQueue(label: "com.steventsvik.ghostty-extreme.github", qos: .utility)
+    private let queue = DispatchQueue(label: "com.alvaromuir.operator.github", qos: .utility)
     private var cancellables: Set<AnyCancellable> = []
     private static let maxAge: TimeInterval = 60
 
@@ -88,7 +88,7 @@ final class GitHubPulls: ObservableObject {
 
     /// Fetches if the answer is missing or older than a minute (or `force`).
     func fetch(root: String, branch: String, force: Bool = false) {
-        guard TellurionSettings.isOn(.git), available != false || force else { return }
+        guard OperatorSettings.isOn(.git), available != false || force else { return }
         let key = Self.key(root, branch)
         guard !inFlight.contains(key) else { return }
         if !force, let at = fetchedAt[key], Date().timeIntervalSince(at) < Self.maxAge { return }

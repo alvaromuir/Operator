@@ -1,8 +1,8 @@
 #if os(macOS)
 import AppKit
 
-#if TELLURION_TEST_HOOKS
-/// Test-only: `TELLURION_DEMO=<file>` plays a timed script against the first window so
+#if OPERATOR_TEST_HOOKS
+/// Test-only: `OPERATOR_DEMO=<file>` plays a timed script against the first window so
 /// a demo can be screen-recorded without UI scripting. Each line is
 /// `<seconds since launch> <action> [args]`; `#` starts a comment. Tabs are 1-based.
 ///
@@ -17,7 +17,7 @@ import AppKit
 ///     mission | localhost | review | activity
 ///     close <window id>       close a tool window (mission-control, activity, ...)
 ///     race <n> <task>         race one Claude and one Codex in tab n's folder
-///     mark <label>            append "<label> <unix time>" to TELLURION_DEMO_MARKS
+///     mark <label>            append "<label> <unix time>" to OPERATOR_DEMO_MARKS
 ///     editorat <n> <folder>   open tab n's code editor on a folder
 ///     js <n> <script>         run JavaScript in tab n's code editor
 ///     background              open the Background window
@@ -29,10 +29,10 @@ enum DemoDirector {
     private static var started = false
 
     static func startIfRequested(from controller: TerminalController) {
-        guard !started, let path = TestHooks.value("TELLURION_DEMO"),
+        guard !started, let path = TestHooks.value("OPERATOR_DEMO"),
               let script = try? String(contentsOfFile: path, encoding: .utf8) else { return }
         started = true
-        let marks = TestHooks.value("TELLURION_DEMO_MARKS")
+        let marks = TestHooks.value("OPERATOR_DEMO_MARKS")
         for raw in script.split(separator: "\n") {
             let line = raw.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false)[0]
                 .trimmingCharacters(in: .whitespaces)
@@ -45,7 +45,7 @@ enum DemoDirector {
         }
     }
 
-    /// Appends a line to the test log (`TELLURION_TEST_LOG`), where a test run reads it.
+    /// Appends a line to the test log (`OPERATOR_TEST_LOG`), where a test run reads it.
     nonisolated static func note(_ line: @autoclosure () -> String) {
         guard TestHooks.log != nil else { return }
         TestHooks.note("[demo] \(line())")

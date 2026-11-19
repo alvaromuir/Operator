@@ -32,7 +32,7 @@ final class BoardCardView: BoardNodeView {
         clip.layer?.cornerCurve = .continuous
         clip.layer?.masksToBounds = true
         clip.layer?.borderWidth = 1.25
-        clip.layer?.backgroundColor = Tellurion.chrome.panel.nsColor.cgColor
+        clip.layer?.backgroundColor = Operator.chrome.panel.nsColor.cgColor
         addSubview(clip)
         // An orchestrator is a widget: rounder, one thin border in its color, and a soft shadow.
         if card.kind == .orchestrator {
@@ -93,7 +93,7 @@ final class BoardCardView: BoardNodeView {
         // A note's color, or an Agent Map's project color.
         let tint = card.kind == .note ? SketchStyle.color(card.color)
             : card.folder.flatMap { controller?.model.colors[$0] }.map(BoardProjects.nsColor)
-        clip.layer?.borderColor = (tint?.withAlphaComponent(0.6) ?? Tellurion.chrome.lineStrong.nsColor).cgColor
+        clip.layer?.borderColor = (tint?.withAlphaComponent(0.6) ?? Operator.chrome.lineStrong.nsColor).cgColor
         if card.kind == .orchestrator, let team = controller?.orchestrator(card.id) {
             let accent = BoardProjects.nsColor(team.color)
             let wiring = controller?.model.wiring == card.id
@@ -291,22 +291,22 @@ private struct BoardCardHeader: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: state.kind.symbol).font(.system(size: 11, weight: .medium))
-                .foregroundColor(state.tint.map { Color(nsColor: $0) } ?? Tellurion.muted)
-            Text(state.title).font(Tellurion.font(12, weight: .semibold)).foregroundColor(Tellurion.text).lineLimit(1)
+                .foregroundColor(state.tint.map { Color(nsColor: $0) } ?? Operator.muted)
+            Text(state.title).font(Operator.font(12, weight: .semibold)).foregroundColor(Operator.text).lineLimit(1)
             if let summary = state.summary {
-                Text(summary).font(Tellurion.font(11)).foregroundColor(Tellurion.dim).lineLimit(1)
+                Text(summary).font(Operator.font(11)).foregroundColor(Operator.dim).lineLimit(1)
             }
             Spacer(minLength: 4)
             ForEach(["ellipsis", "arrow.up.left.and.arrow.down.right", "xmark"], id: \.self) { symbol in
-                Image(systemName: symbol).font(.system(size: 9.5, weight: .bold)).foregroundColor(Tellurion.muted)
+                Image(systemName: symbol).font(.system(size: 9.5, weight: .bold)).foregroundColor(Operator.muted)
                     .frame(width: 18, height: 18)
             }
         }
         .padding(.horizontal, state.kind == .orchestrator ? 14 : 10)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Tellurion.panel)
+        .background(Operator.panel)
         // A widget's header is part of it; other cards have a title bar.
-        .overlay(Rectangle().fill(state.kind == .orchestrator ? .clear : Tellurion.line).frame(height: 1), alignment: .bottom)
+        .overlay(Rectangle().fill(state.kind == .orchestrator ? .clear : Operator.line).frame(height: 1), alignment: .bottom)
     }
 }
 
@@ -317,15 +317,15 @@ private struct BoardCardOverview: View {
         GeometryReader { geo in
             VStack(spacing: 6) {
                 Image(systemName: state.kind.symbol).font(.system(size: 20, weight: .medium))
-                    .foregroundColor(state.tint.map { Color(nsColor: $0) } ?? Tellurion.text)
-                Text(state.title).font(Tellurion.font(13, weight: .semibold)).foregroundColor(Tellurion.text).lineLimit(1)
+                    .foregroundColor(state.tint.map { Color(nsColor: $0) } ?? Operator.text)
+                Text(state.title).font(Operator.font(13, weight: .semibold)).foregroundColor(Operator.text).lineLimit(1)
                 if let summary = state.summary {
-                    Text(summary).font(Tellurion.font(11)).foregroundColor(Tellurion.muted)
+                    Text(summary).font(Operator.font(11)).foregroundColor(Operator.muted)
                 }
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
             .frame(maxWidth: 200)
-            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Tellurion.panel.opacity(0.92)))
+            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Operator.panel.opacity(0.92)))
             .scaleEffect(min(1 / max(state.zoom, 0.08), geo.size.width / 220))
             .frame(width: geo.size.width, height: geo.size.height)
         }
@@ -925,7 +925,7 @@ final class KanbanCard: NSView, NSTextFieldDelegate {
         wantsLayer = true
         layer?.cornerRadius = 8
         layer?.cornerCurve = .continuous
-        layer?.backgroundColor = Tellurion.chrome.raised.nsColor.cgColor
+        layer?.backgroundColor = Operator.chrome.raised.nsColor.cgColor
         layer?.borderWidth = 1
         layer?.borderColor = NSColor.separatorColor.cgColor
         label.font = .systemFont(ofSize: 13)
