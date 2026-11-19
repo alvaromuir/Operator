@@ -9,6 +9,7 @@ What changed in each Tellurion (formerly GhosttyEXTREME) release. Work in progre
 - **New is a split button.** Clicking **New** opens a terminal right away; the arrow beside it opens the menu of agents, Docker and localhost sessions.
 - **The new-tab splash is off by default.** Turn it on in **Settings → Look → New tab splash**. It also does not play when Animation is set to **Status only**.
 - **A narrow sidebar keeps its left edge.** Dragged to its narrowest, the sidebar no longer slides the logo and the New button off the window's edge; anything that doesn't fit is cut on the terminal's side.
+- **Renaming a tab updates the left rail immediately.** Right-click a tab, choose **Rename Tab…**, and the sidebar title changes the moment you click OK — no delay.
 
 ## 1.9.2
 

@@ -451,6 +451,7 @@ class BaseTerminalController: NSWindowController,
             } else {
                 self.titleOverride = newTitle
             }
+            VerticalTabsTicker.shared.tickNow()
         }
     }
 

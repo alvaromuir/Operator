@@ -203,18 +203,23 @@ struct VerticalTabPaneSnapshot: Equatable, Identifiable {
 /// What the sidebar shows for one tab, captured at a point in time.
 struct VerticalTabSnapshot: Equatable {
     let title: String
+    /// The user-set tab title (from "Rename Tab…"), tracked separately so a rename is
+    /// detected even when window.title hasn't updated yet (e.g. window momentarily nil).
+    let titleOverride: String?
     let panes: [VerticalTabPaneSnapshot]
 
-    static let empty = VerticalTabSnapshot(title: "", panes: [])
+    static let empty = VerticalTabSnapshot(title: "", titleOverride: nil, panes: [])
 
-    init(title: String, panes: [VerticalTabPaneSnapshot]) {
+    init(title: String, titleOverride: String?, panes: [VerticalTabPaneSnapshot]) {
         self.title = title
+        self.titleOverride = titleOverride
         self.panes = panes
     }
 
     init(controller: TerminalController) {
         let focused = controller.focusedSurface
         self.title = controller.window?.title ?? ""
+        self.titleOverride = controller.titleOverride
         self.panes = controller.surfaceTree.map {
             VerticalTabPaneSnapshot(surface: $0, isFocused: $0 === focused)
         }
