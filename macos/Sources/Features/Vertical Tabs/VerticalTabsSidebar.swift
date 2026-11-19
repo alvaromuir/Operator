@@ -337,6 +337,13 @@ struct VerticalTabsSidebar: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 9) {
                 LivingSigil(size: 30)
+                    .contextMenu {
+                        Text("Animation Style")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Divider()
+                        AnimationStyleMenuItems()
+                    }
                 VStack(alignment: .leading, spacing: 1) {
                     Text("OPERATOR")
                         .font(Operator.font(11.5))
@@ -345,7 +352,7 @@ struct VerticalTabsSidebar: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                         .operatorGlint()
-                    Text("Α Ι · ΣΥΣΤΗΜΑ")
+                    Text("ΑGΕNΤΙC · ΙNTΕRFΑCΕ")
                         .font(Operator.font(9))
                         .kerning(2.4)
                         .foregroundColor(Operator.dim)
@@ -353,6 +360,7 @@ struct VerticalTabsSidebar: View {
                         .minimumScaleFactor(0.6)
                 }
                 Spacer(minLength: 0)
+                AnimationStyleMenuButton()
             }
             // As many tool icons as fit; the Tools button lists all of them.
             ViewThatFits(in: .horizontal) {

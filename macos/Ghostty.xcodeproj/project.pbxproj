@@ -595,7 +595,7 @@
 				MARKETING_VERSION = 0.1;
 				"OTHER_LDFLAGS[arch=*]" = "-lstdc++";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alvaromuir.operator";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Operator;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) $(OPERATOR_TEST_HOOKS)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/ghostty-bridging-header.h";
@@ -994,7 +994,7 @@
 				MARKETING_VERSION = 0.1;
 				"OTHER_LDFLAGS[arch=*]" = "-lstdc++";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alvaromuir.operator.debug";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Operator;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) $(OPERATOR_TEST_HOOKS)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/ghostty-bridging-header.h";
@@ -1051,7 +1051,7 @@
 				MARKETING_VERSION = 0.1;
 				"OTHER_LDFLAGS[arch=*]" = "-lstdc++";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.alvaromuir.operator";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Operator;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/ghostty-bridging-header.h";
 				SWIFT_VERSION = 5.0;
