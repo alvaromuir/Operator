@@ -6,6 +6,8 @@ What changed in each Operator (formerly Operator) release. Work in progress coll
 
 ## Unreleased
 
+- **Operator has a new icon and name.** The dock icon, window chrome, and sidebar branding now read "Operator."
+- **Five animation styles.** Choose Radar, Waveform, Comet, Geometric, or Status only from the header button in the sidebar. The sigil orbits continuously at idle; it speeds up when agents are active.
 - **New is a split button.** Clicking **New** opens a terminal right away; the arrow beside it opens the menu of agents, Docker and localhost sessions.
 - **The new-tab splash is off by default.** Turn it on in **Settings → Look → New tab splash**. It also does not play when Animation is set to **Status only**.
 - **A narrow sidebar keeps its left edge.** Dragged to its narrowest, the sidebar no longer slides the logo and the New button off the window's edge; anything that doesn't fit is cut on the terminal's side.
