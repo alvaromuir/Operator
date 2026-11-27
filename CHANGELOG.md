@@ -6,6 +6,8 @@ What changed in each Operator (formerly Operator) release. Work in progress coll
 
 ## Unreleased
 
+- **Sweeping animations move at second-hand speed.** The activity bar, spinner, and bracket animations now run at one revolution or pass per 60 seconds — the pace of a clock's second hand — with constant-speed (linear) motion throughout.
+- **Split Right and Split Down in the new-session menu.** The ▾ arrow beside **New** now includes **Split Right** and **Split Down**, so you can open a second pane in the same window without right-clicking or using the menu bar.
 - **Operator has a new icon and name.** The dock icon, window chrome, and sidebar branding now read "Operator."
 - **Five animation styles.** Choose Radar, Waveform, Comet, Geometric, or Status only from the header button in the sidebar. The sigil orbits continuously at idle; it speeds up when agents are active.
 - **New is a split button.** Clicking **New** opens a terminal right away; the arrow beside it opens the menu of agents, Docker and localhost sessions.

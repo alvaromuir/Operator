@@ -432,14 +432,16 @@ struct SpinnerLayer: NSViewRepresentable {
             case .original:
                 let turn = CABasicAnimation(keyPath: "transform.rotation.z")
                 turn.fromValue = 0; turn.toValue = Double.pi * 2
-                turn.duration = 0.85; turn.repeatCount = .infinity
+                turn.duration = 60.0; turn.repeatCount = .infinity
+                turn.timingFunction = CAMediaTimingFunction(name: .linear)
                 turn.preferredFrameRateRange = Motion.chromeRate
                 spin.add(turn, forKey: "spin")
 
             case .radar:
                 let turn = CABasicAnimation(keyPath: "transform.rotation.z")
                 turn.fromValue = 0; turn.toValue = Double.pi * 2
-                turn.duration = 2.5; turn.repeatCount = .infinity
+                turn.duration = 60.0; turn.repeatCount = .infinity
+                turn.timingFunction = CAMediaTimingFunction(name: .linear)
                 turn.preferredFrameRateRange = Motion.chromeRate
                 spin.add(turn, forKey: "spin")
 
@@ -460,7 +462,7 @@ struct SpinnerLayer: NSViewRepresentable {
                 // Rotate the comet arc around the ring.
                 let turn = CABasicAnimation(keyPath: "transform.rotation.z")
                 turn.fromValue = 0; turn.toValue = Double.pi * 2
-                turn.duration = 1.0; turn.repeatCount = .infinity
+                turn.duration = 60.0; turn.repeatCount = .infinity
                 turn.timingFunction = CAMediaTimingFunction(name: .linear)
                 turn.preferredFrameRateRange = Motion.chromeRate
                 spin.add(turn, forKey: "spin")
@@ -578,25 +580,25 @@ struct ActivityBarLayer: NSViewRepresentable {
                 let move = CABasicAnimation(keyPath: "position.x")
                 move.fromValue = -bounds.width * 0.175
                 move.toValue = bounds.width * 1.175
-                move.duration = 1.3; move.repeatCount = .infinity
+                move.duration = 60.0; move.repeatCount = .infinity
                 move.preferredFrameRateRange = Motion.chromeRate
-                move.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                move.timingFunction = CAMediaTimingFunction(name: .linear)
                 sweep.add(move, forKey: "sweep")
 
             case .comet:
                 let move = CABasicAnimation(keyPath: "position.x")
                 move.fromValue = -bounds.width * 0.10
                 move.toValue = bounds.width * 1.10
-                move.duration = 0.7; move.repeatCount = .infinity
+                move.duration = 60.0; move.repeatCount = .infinity
                 move.preferredFrameRateRange = Motion.chromeRate
-                move.timingFunction = CAMediaTimingFunction(name: .easeIn)
+                move.timingFunction = CAMediaTimingFunction(name: .linear)
                 sweep.add(move, forKey: "sweep")
 
             case .radar:
                 let move = CABasicAnimation(keyPath: "position.x")
                 move.fromValue = CGFloat(0)
                 move.toValue = bounds.width
-                move.duration = 1.5; move.repeatCount = .infinity
+                move.duration = 60.0; move.repeatCount = .infinity
                 move.preferredFrameRateRange = Motion.chromeRate
                 move.timingFunction = CAMediaTimingFunction(name: .linear)
                 scanLine.add(move, forKey: "sweep")

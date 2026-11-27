@@ -320,9 +320,9 @@ struct BracketLights: NSViewRepresentable {
                 switch animStyle {
                 case .original, .radar:
                     if animStyle == .original {
-                        // Five pixels falling down the spine in steps, a lap every ~1.2 s or more.
+                        // Five pixels falling down the spine in steps, one lap per 60 s.
                         let segment: CGFloat = 6
-                        let lap = max(1.2, Double(h) / 110)
+                        let lap = 60.0
                         let steps = Int((h + segment * 5) / segment) + 1
                         for i in 0..<5 {
                             let piece = CALayer()
@@ -338,8 +338,8 @@ struct BracketLights: NSViewRepresentable {
                             piece.addLoop(discrete("position", ys), duration: lap, key: "fall")
                         }
                     } else {
-                        // Radar: single pixel laps the full bracket perimeter.
-                        let lap: Double = 1.4
+                        // Radar: single pixel laps the full bracket perimeter in 60 s.
+                        let lap: Double = 60.0
                         let perimeter: [CGPoint] = {
                             var pts: [CGPoint] = []
                             let steps = 20
@@ -387,9 +387,9 @@ struct BracketLights: NSViewRepresentable {
                     }
 
                 case .comet:
-                    // Five pixels, faster lap (0.6 s), head brighter.
+                    // Five pixels, lap in 60 s, head brighter.
                     let segment: CGFloat = 6
-                    let lap = 0.6
+                    let lap = 60.0
                     let steps = Int((h + segment * 5) / segment) + 1
                     for i in 0..<5 {
                         let piece = CALayer()
