@@ -121,6 +121,13 @@ enum NewSessionMenuBuilder {
             menu.addItem(ClosureMenuItem(kind.title, image: icon(for: kind)) { kind.open(from: owner) })
             if kind == .codex { menu.addItem(dockerItem(owner)) }
         }
+        menu.addItem(.separator())
+        menu.addItem(ClosureMenuItem("Split Right", image: NSImage(systemSymbolName: "rectangle.split.2x1", accessibilityDescription: nil)) {
+            owner.splitRight(menu)
+        })
+        menu.addItem(ClosureMenuItem("Split Down", image: NSImage(systemSymbolName: "rectangle.split.1x2", accessibilityDescription: nil)) {
+            owner.splitDown(menu)
+        })
         if OperatorSettings.isOn(.localhost) {
             menu.addItem(.separator())
             menu.addItem(ClosureMenuItem("Localhost Server…", image: NSImage(systemSymbolName: "globe", accessibilityDescription: nil)) {
